@@ -14,7 +14,26 @@ function must<R extends { data: unknown; error: unknown }>(r: R): NonNullable<R[
   return r.data as NonNullable<R["data"]>;
 }
 
-export const EXPORT_TABLES = ["organizations", "organization_letterheads", "memberships", "board_positions", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
+export const EXPORT_TABLES = [
+  "organizations",
+  "organization_letterheads",
+  "memberships",
+  "board_positions",
+  "board_terms",
+  "committees",
+  "committee_members",
+  "meetings",
+  "agenda_items",
+  "attendance",
+  "motions",
+  "minutes",
+  "documents",
+  "document_versions",
+  "packets",
+  "action_items",
+  "meeting_templates",
+  "audit_log",
+] as const;
 export type ExportTable = (typeof EXPORT_TABLES)[number];
 
 /** Lovable Cloud implementation of the data layer. All reads/writes run under row-level security as the signed-in user. */
@@ -33,7 +52,13 @@ export const cloudAdapter = {
       must(await supabase.auth.signInWithPassword({ email, password }));
     },
     async signUp(email: string, password: string, fullName: string, redirectTo: string) {
-      const data = must(await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo, data: { full_name: fullName } } }));
+      const data = must(
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: redirectTo, data: { full_name: fullName } },
+        }),
+      );
       return { needsConfirmation: !data.session };
     },
     async signInWithGoogle(redirectUri: string) {
@@ -46,13 +71,25 @@ export const cloudAdapter = {
 
   orgs: {
     async listMine(userId: string) {
-      const data = must(await supabase.from("memberships").select("role, organizations(id, name, timezone, quorum_count, vote_recording, vote_close_modes, vote_timer_minutes, vote_closer_roles, seconder_required, decision_rule)").eq("user_id", userId));
+      const data = must(
+        await supabase
+          .from("memberships")
+          .select(
+            "role, organizations(id, name, timezone, quorum_count, vote_recording, vote_close_modes, vote_timer_minutes, vote_closer_roles, seconder_required, decision_rule)",
+          )
+          .eq("user_id", userId),
+      );
       return (data ?? [])
         .filter((m) => m.organizations)
-        .map((m) => ({ ...(m.organizations as Omit<OrgSummary, "role">), role: m.role as OrgRole }));
+        .map((m) => ({
+          ...(m.organizations as Omit<OrgSummary, "role">),
+          role: m.role as OrgRole,
+        }));
     },
     async create(name: string, timezone: string) {
-      return must(await supabase.rpc("create_organization", { _name: name, _timezone: timezone })) as string;
+      return must(
+        await supabase.rpc("create_organization", { _name: name, _timezone: timezone }),
+      ) as string;
     },
     async update(orgId: string, patch: TablesUpdate<"organizations">) {
       must(await supabase.from("organizations").update(patch).eq("id", orgId));
@@ -61,7 +98,12 @@ export const cloudAdapter = {
       const out: Record<string, Record<string, unknown>[]> = {};
       for (const t of EXPORT_TABLES) {
         const col = t === "organizations" ? "id" : "organization_id";
-        const data = must(await supabase.from(t).select("*").eq(col as "id", orgId));
+        const data = must(
+          await supabase
+            .from(t)
+            .select("*")
+            .eq(col as "id", orgId),
+        );
         out[t] = (data ?? []) as Record<string, unknown>[];
       }
       return out;
@@ -70,13 +112,29 @@ export const cloudAdapter = {
 
   letterhead: {
     async get(orgId: string) {
-      const r = await supabase.from("organization_letterheads").select("*").eq("organization_id", orgId).maybeSingle();
+      const r = await supabase
+        .from("organization_letterheads")
+        .select("*")
+        .eq("organization_id", orgId)
+        .maybeSingle();
       if (r.error) throw r.error;
       return r.data;
     },
     async save(row: TablesInsert<"organization_letterheads">, file?: Blob) {
-      if (file) must(await supabase.storage.from(BUCKET).upload(row.storage_path, file, { contentType: row.mime_type, upsert: false }));
-      must(await supabase.from("organization_letterheads").upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "organization_id" }));
+      if (file)
+        must(
+          await supabase.storage
+            .from(BUCKET)
+            .upload(row.storage_path, file, { contentType: row.mime_type, upsert: false }),
+        );
+      must(
+        await supabase
+          .from("organization_letterheads")
+          .upsert(
+            { ...row, updated_at: new Date().toISOString() },
+            { onConflict: "organization_id" },
+          ),
+      );
     },
     async remove(orgId: string) {
       must(await supabase.from("organization_letterheads").delete().eq("organization_id", orgId));
@@ -85,12 +143,25 @@ export const cloudAdapter = {
 
   members: {
     async list(orgId: string) {
-      const ms = must(await supabase.from("memberships").select("id, user_id, role").eq("organization_id", orgId)) ?? [];
+      const ms =
+        must(
+          await supabase
+            .from("memberships")
+            .select("id, user_id, role")
+            .eq("organization_id", orgId),
+        ) ?? [];
       const ids = ms.map((m) => m.user_id);
-      const ps = ids.length ? must(await supabase.from("profiles").select("id, full_name, email").in("id", ids)) ?? [] : [];
+      const ps = ids.length
+        ? (must(await supabase.from("profiles").select("id, full_name, email").in("id", ids)) ?? [])
+        : [];
       return ms.map((m) => {
         const p = ps.find((x) => x.id === m.user_id);
-        return { ...m, role: m.role as OrgRole, name: p?.full_name || p?.email || "Member", email: p?.email ?? "" };
+        return {
+          ...m,
+          role: m.role as OrgRole,
+          name: p?.full_name || p?.email || "Member",
+          email: p?.email ?? "",
+        };
       });
     },
     async setRole(membershipId: string, role: OrgRole) {
@@ -103,10 +174,21 @@ export const cloudAdapter = {
 
   invitations: {
     async listOpen(orgId: string) {
-      return must(await supabase.from("invitations").select("*").eq("organization_id", orgId).is("accepted_at", null).order("created_at", { ascending: false })) ?? [];
+      return (
+        must(
+          await supabase
+            .from("invitations")
+            .select("*")
+            .eq("organization_id", orgId)
+            .is("accepted_at", null)
+            .order("created_at", { ascending: false }),
+        ) ?? []
+      );
     },
     async create(orgId: string, email: string, role: OrgRole) {
-      return must(await supabase.rpc("create_invitation", { _org: orgId, _email: email, _role: role })) as string;
+      return must(
+        await supabase.rpc("create_invitation", { _org: orgId, _email: email, _role: role }),
+      ) as string;
     },
     async revoke(id: string) {
       must(await supabase.from("invitations").delete().eq("id", id));
@@ -118,7 +200,15 @@ export const cloudAdapter = {
 
   terms: {
     async list(orgId: string) {
-      return must(await supabase.from("board_terms").select("*").eq("organization_id", orgId).order("start_date", { ascending: false })) ?? [];
+      return (
+        must(
+          await supabase
+            .from("board_terms")
+            .select("*")
+            .eq("organization_id", orgId)
+            .order("start_date", { ascending: false }),
+        ) ?? []
+      );
     },
     async add(row: TablesInsert<"board_terms">) {
       must(await supabase.from("board_terms").insert(row));
@@ -128,9 +218,14 @@ export const cloudAdapter = {
       const d = new Date(row.start_date + "T00:00:00Z");
       d.setUTCDate(d.getUTCDate() - 1);
       const dayBefore = d.toISOString().slice(0, 10);
-      must(await supabase.from("board_terms").update({ end_date: dayBefore })
-        .eq("position_id", row.position_id).lt("start_date", row.start_date)
-        .or(`end_date.is.null,end_date.gte.${row.start_date}`));
+      must(
+        await supabase
+          .from("board_terms")
+          .update({ end_date: dayBefore })
+          .eq("position_id", row.position_id)
+          .lt("start_date", row.start_date)
+          .or(`end_date.is.null,end_date.gte.${row.start_date}`),
+      );
       must(await supabase.from("board_terms").insert(row));
     },
     async remove(id: string) {
@@ -140,7 +235,16 @@ export const cloudAdapter = {
 
   positions: {
     async list(orgId: string) {
-      return must(await supabase.from("board_positions").select("*").eq("organization_id", orgId).order("sort_order").order("title")) ?? [];
+      return (
+        must(
+          await supabase
+            .from("board_positions")
+            .select("*")
+            .eq("organization_id", orgId)
+            .order("sort_order")
+            .order("title"),
+        ) ?? []
+      );
     },
     async add(row: TablesInsert<"board_positions">) {
       must(await supabase.from("board_positions").insert(row));
@@ -155,7 +259,15 @@ export const cloudAdapter = {
 
   committees: {
     async list(orgId: string) {
-      return must(await supabase.from("committees").select("*, committee_members(*)").eq("organization_id", orgId).order("name")) ?? [];
+      return (
+        must(
+          await supabase
+            .from("committees")
+            .select("*, committee_members(*)")
+            .eq("organization_id", orgId)
+            .order("name"),
+        ) ?? []
+      );
     },
     async add(row: TablesInsert<"committees">) {
       must(await supabase.from("committees").insert(row));
@@ -170,7 +282,15 @@ export const cloudAdapter = {
 
   meetings: {
     async list(orgId: string) {
-      return must(await supabase.from("meetings").select("*").eq("organization_id", orgId).order("meeting_date", { ascending: false })) ?? [];
+      return (
+        must(
+          await supabase
+            .from("meetings")
+            .select("*")
+            .eq("organization_id", orgId)
+            .order("meeting_date", { ascending: false }),
+        ) ?? []
+      );
     },
     async get(id: string) {
       const r = await supabase.from("meetings").select("*").eq("id", id).maybeSingle();
@@ -191,7 +311,15 @@ export const cloudAdapter = {
 
   agenda: {
     async list(meetingId: string) {
-      return must(await supabase.from("agenda_items").select("*").eq("meeting_id", meetingId).order("position")) ?? [];
+      return (
+        must(
+          await supabase
+            .from("agenda_items")
+            .select("*")
+            .eq("meeting_id", meetingId)
+            .order("position"),
+        ) ?? []
+      );
     },
     async add(row: TablesInsert<"agenda_items">) {
       must(await supabase.from("agenda_items").insert(row));
@@ -206,7 +334,15 @@ export const cloudAdapter = {
 
   attendance: {
     async list(meetingId: string) {
-      return must(await supabase.from("attendance").select("*").eq("meeting_id", meetingId).order("person_name")) ?? [];
+      return (
+        must(
+          await supabase
+            .from("attendance")
+            .select("*")
+            .eq("meeting_id", meetingId)
+            .order("person_name"),
+        ) ?? []
+      );
     },
     async add(rows: TablesInsert<"attendance"> | TablesInsert<"attendance">[]) {
       must(await supabase.from("attendance").insert(rows));
@@ -221,7 +357,15 @@ export const cloudAdapter = {
 
   motions: {
     async list(meetingId: string) {
-      return must(await supabase.from("motions").select("*").eq("meeting_id", meetingId).order("created_at")) ?? [];
+      return (
+        must(
+          await supabase
+            .from("motions")
+            .select("*")
+            .eq("meeting_id", meetingId)
+            .order("created_at"),
+        ) ?? []
+      );
     },
     async add(row: TablesInsert<"motions">) {
       must(await supabase.from("motions").insert(row));
@@ -233,7 +377,15 @@ export const cloudAdapter = {
 
   minutes: {
     async list(meetingId: string) {
-      return must(await supabase.from("minutes").select("*").eq("meeting_id", meetingId).order("version", { ascending: false })) ?? [];
+      return (
+        must(
+          await supabase
+            .from("minutes")
+            .select("*")
+            .eq("meeting_id", meetingId)
+            .order("version", { ascending: false }),
+        ) ?? []
+      );
     },
     async create(row: TablesInsert<"minutes">) {
       return must(await supabase.from("minutes").insert(row).select("id").single()).id;
@@ -245,27 +397,52 @@ export const cloudAdapter = {
 
   documents: {
     async list(orgId: string) {
-      return must(await supabase.from("documents").select("*, document_versions(*), meetings(title, meeting_date)").eq("organization_id", orgId).order("created_at", { ascending: false })) ?? [];
+      return (
+        must(
+          await supabase
+            .from("documents")
+            .select("*, document_versions(*), meetings(title, meeting_date)")
+            .eq("organization_id", orgId)
+            .order("created_at", { ascending: false }),
+        ) ?? []
+      );
     },
     async create(row: TablesInsert<"documents">) {
       return must(await supabase.from("documents").insert(row).select("id").single()).id;
     },
     async addVersion(row: TablesInsert<"document_versions">, file: Blob, contentType?: string) {
-      must(await supabase.storage.from(BUCKET).upload(row.storage_path, file, contentType ? { contentType } : {}));
+      must(
+        await supabase.storage
+          .from(BUCKET)
+          .upload(row.storage_path, file, contentType ? { contentType } : {}),
+      );
       must(await supabase.from("document_versions").insert(row));
     },
   },
 
   packets: {
     async list(meetingId: string) {
-      return must(await supabase.from("packets").select("*").eq("meeting_id", meetingId).order("version", { ascending: false })) ?? [];
+      return (
+        must(
+          await supabase
+            .from("packets")
+            .select("*")
+            .eq("meeting_id", meetingId)
+            .order("version", { ascending: false }),
+        ) ?? []
+      );
     },
     async create(row: TablesInsert<"packets">, pdf: Blob) {
       must(await supabase.storage.from(BUCKET).upload(row.storage_path, pdf, { upsert: false }));
       must(await supabase.from("packets").insert(row));
     },
     async distribute(id: string) {
-      must(await supabase.from("packets").update({ distributed_at: new Date().toISOString() }).eq("id", id));
+      must(
+        await supabase
+          .from("packets")
+          .update({ distributed_at: new Date().toISOString() })
+          .eq("id", id),
+      );
     },
   },
 
@@ -283,17 +460,37 @@ export const cloudAdapter = {
   records: {
     /** Everything the board record export needs for meetings dated in [from, to]. */
     async forRange(orgId: string, from: string, to: string) {
-      const meetings = must(await supabase.from("meetings")
-        .select("*, attendance(*), motions(*), minutes(*), packets(*), agenda_items(*)")
-        .eq("organization_id", orgId).gte("meeting_date", from).lte("meeting_date", to).order("meeting_date")) ?? [];
-      const documents = must(await supabase.from("documents").select("*, document_versions(*)").eq("organization_id", orgId).not("meeting_id", "is", null)) ?? [];
+      const meetings =
+        must(
+          await supabase
+            .from("meetings")
+            .select("*, attendance(*), motions(*), minutes(*), packets(*), agenda_items(*)")
+            .eq("organization_id", orgId)
+            .gte("meeting_date", from)
+            .lte("meeting_date", to)
+            .order("meeting_date"),
+        ) ?? [];
+      const documents =
+        must(
+          await supabase
+            .from("documents")
+            .select("*, document_versions(*)")
+            .eq("organization_id", orgId)
+            .not("meeting_id", "is", null),
+        ) ?? [];
       return { meetings, documents };
     },
   },
 
   actions: {
-    async list(orgId: string, opts: { meetingId?: string | undefined; assigneeId?: string | undefined } = {}) {
-      let q = supabase.from("action_items").select("*, meetings(title, meeting_date)").eq("organization_id", orgId);
+    async list(
+      orgId: string,
+      opts: { meetingId?: string | undefined; assigneeId?: string | undefined } = {},
+    ) {
+      let q = supabase
+        .from("action_items")
+        .select("*, meetings(title, meeting_date)")
+        .eq("organization_id", orgId);
       if (opts.meetingId) q = q.eq("meeting_id", opts.meetingId);
       if (opts.assigneeId) q = q.eq("assignee_id", opts.assigneeId);
       return must(await q.order("due_date", { nullsFirst: false })) ?? [];
@@ -309,61 +506,151 @@ export const cloudAdapter = {
   overview: {
     async load(orgId: string, userId: string, today: string) {
       const [meetings, tasks, minutes] = await Promise.all([
-        supabase.from("meetings").select("*").eq("organization_id", orgId).gte("meeting_date", today).neq("status", "archived").order("meeting_date").limit(3),
-        supabase.from("action_items").select("*").eq("organization_id", orgId).eq("assignee_id", userId).in("status", ["open", "in_progress"]).order("due_date"),
-        supabase.from("minutes").select("id, version, meeting_id, meetings(title, meeting_date)").eq("organization_id", orgId).eq("status", "submitted"),
+        supabase
+          .from("meetings")
+          .select("*")
+          .eq("organization_id", orgId)
+          .gte("meeting_date", today)
+          .neq("status", "archived")
+          .order("meeting_date")
+          .limit(3),
+        supabase
+          .from("action_items")
+          .select("*")
+          .eq("organization_id", orgId)
+          .eq("assignee_id", userId)
+          .in("status", ["open", "in_progress"])
+          .order("due_date"),
+        supabase
+          .from("minutes")
+          .select("id, version, meeting_id, meetings(title, meeting_date)")
+          .eq("organization_id", orgId)
+          .eq("status", "submitted"),
       ]);
-      return { meetings: must(meetings) ?? [], tasks: must(tasks) ?? [], minutes: must(minutes) ?? [] };
+      return {
+        meetings: must(meetings) ?? [],
+        tasks: must(tasks) ?? [],
+        minutes: must(minutes) ?? [],
+      };
     },
   },
 
   audit: {
     async list(orgId: string) {
-      return must(await supabase.from("audit_log").select("*").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(300)) ?? [];
+      return (
+        must(
+          await supabase
+            .from("audit_log")
+            .select("*")
+            .eq("organization_id", orgId)
+            .order("created_at", { ascending: false })
+            .limit(300),
+        ) ?? []
+      );
     },
   },
 
   voting: {
     /** Opens a live vote (creates the motion and freezes the electorate) in one database transaction. */
-    async start(meetingId: string, v: { agenda_item_id: string | null; motion_text: string; moved_by: string | null; seconded_by: string | null }) {
-      return must(await supabase.rpc("start_vote", { _meeting: meetingId, _agenda_item: v.agenda_item_id as string, _text: v.motion_text, _moved_by: v.moved_by as string, _seconded_by: v.seconded_by as string })) as string;
+    async start(
+      meetingId: string,
+      v: {
+        agenda_item_id: string | null;
+        motion_text: string;
+        moved_by: string | null;
+        seconded_by: string | null;
+      },
+    ) {
+      return must(
+        await supabase.rpc("start_vote", {
+          _meeting: meetingId,
+          _agenda_item: v.agenda_item_id as string,
+          _text: v.motion_text,
+          _moved_by: v.moved_by as string,
+          _seconded_by: v.seconded_by as string,
+        }),
+      ) as string;
     },
     async cast(motionId: string, vote: "yes" | "no" | "abstain" | "recused") {
-      return must(await supabase.rpc("cast_vote", { _motion: motionId, _vote: vote })) as "recorded" | "expired";
+      return must(await supabase.rpc("cast_vote", { _motion: motionId, _vote: vote })) as
+        "recorded" | "expired";
     },
     async close(motionId: string) {
       const r = await supabase.rpc("close_vote", { _motion: motionId });
       if (r.error) throw r.error;
     },
-    async recordDisposition(motionId: string, outcome: Database["public"]["Enums"]["motion_outcome"], note: string) {
-      const r = await supabase.rpc("record_disposition", { _motion: motionId, _outcome: outcome, _note: note });
+    async recordDisposition(
+      motionId: string,
+      outcome: Database["public"]["Enums"]["motion_outcome"],
+      note: string,
+    ) {
+      const r = await supabase.rpc("record_disposition", {
+        _motion: motionId,
+        _outcome: outcome,
+        _note: note,
+      });
       if (r.error) throw r.error;
     },
     async progress(motionId: string) {
-      return must(await supabase.rpc("vote_progress", { _motion: motionId })) as { cast: number; electorate: number };
+      return must(await supabase.rpc("vote_progress", { _motion: motionId })) as {
+        cast: number;
+        electorate: number;
+      };
     },
     async electorate(motionId: string) {
-      return must(await supabase.from("vote_electorate").select("*").eq("motion_id", motionId).order("person_name")) ?? [];
+      return (
+        must(
+          await supabase
+            .from("vote_electorate")
+            .select("*")
+            .eq("motion_id", motionId)
+            .order("person_name"),
+        ) ?? []
+      );
     },
     /** Returns the caller's own vote before close (RLS), or every vote after close. */
     async votes(motionId: string) {
-      return must(await supabase.from("member_votes").select("*").eq("motion_id", motionId).order("person_name")) ?? [];
+      return (
+        must(
+          await supabase
+            .from("member_votes")
+            .select("*")
+            .eq("motion_id", motionId)
+            .order("person_name"),
+        ) ?? []
+      );
     },
   },
 
   templates: {
     async list(orgId: string) {
-      const rows = must(await supabase.from("meeting_templates").select("*").eq("organization_id", orgId).order("name")) ?? [];
+      const rows =
+        must(
+          await supabase
+            .from("meeting_templates")
+            .select("*")
+            .eq("organization_id", orgId)
+            .order("name"),
+        ) ?? [];
       return rows.map((t) => ({ ...t, agenda: normalizeAgenda(t.agenda) }));
     },
-    async save(row: Omit<TablesInsert<"meeting_templates">, "agenda"> & { agenda: TemplateAgendaItem[]; id?: string }) {
-      const payload = { ...row, agenda: normalizeAgenda(row.agenda) as unknown as Tables<"meeting_templates">["agenda"] };
+    async save(
+      row: Omit<TablesInsert<"meeting_templates">, "agenda"> & {
+        agenda: TemplateAgendaItem[];
+        id?: string;
+      },
+    ) {
+      const payload = {
+        ...row,
+        agenda: normalizeAgenda(row.agenda) as unknown as Tables<"meeting_templates">["agenda"],
+      };
       if (row.id) {
         const { id, organization_id: _o, created_by: _c, ...patch } = payload;
         must(await supabase.from("meeting_templates").update(patch).eq("id", id!));
         return id!;
       }
-      return must(await supabase.from("meeting_templates").insert(payload).select("id").single()).id;
+      return must(await supabase.from("meeting_templates").insert(payload).select("id").single())
+        .id;
     },
     async remove(id: string) {
       must(await supabase.from("meeting_templates").delete().eq("id", id));

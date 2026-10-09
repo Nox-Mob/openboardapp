@@ -1,25 +1,74 @@
 import { describe, expect, it } from "vitest";
-import { agendaRowsFor, agendaToText, normalizeAgenda, parseAgendaText, STANDARD_AGENDA, totalMinutes } from "./templates";
+import {
+  agendaRowsFor,
+  agendaToText,
+  normalizeAgenda,
+  parseAgendaText,
+  STANDARD_AGENDA,
+  totalMinutes,
+} from "./templates";
 
 describe("meeting templates", () => {
   it("standard agenda keeps the six default items in order", () => {
-    expect(STANDARD_AGENDA.map((a) => a.title)).toEqual(["Call to order", "Approval of previous minutes", "Treasurer's report", "Old business", "New business", "Adjournment"]);
+    expect(STANDARD_AGENDA.map((a) => a.title)).toEqual([
+      "Call to order",
+      "Approval of previous minutes",
+      "Treasurer's report",
+      "Old business",
+      "New business",
+      "Adjournment",
+    ]);
   });
   it("blank and malformed agenda entries are dropped", () => {
-    expect(normalizeAgenda([{ title: "  " }, null, 5, { title: " Budget " }])).toEqual([{ title: "Budget", presenter: null, duration_minutes: null, description: null, proposed_motion: null, is_vote_item: false, decision_rule: null }]);
+    expect(normalizeAgenda([{ title: "  " }, null, 5, { title: " Budget " }])).toEqual([
+      {
+        title: "Budget",
+        presenter: null,
+        duration_minutes: null,
+        description: null,
+        proposed_motion: null,
+        is_vote_item: false,
+        decision_rule: null,
+      },
+    ]);
     expect(normalizeAgenda("nope")).toEqual([]);
   });
   it("invalid durations are cleared", () => {
-    expect(normalizeAgenda([{ title: "A", duration_minutes: -5 }, { title: "B", duration_minutes: 9999 }, { title: "C", duration_minutes: 15 }]).map((a) => a.duration_minutes)).toEqual([null, null, 15]);
+    expect(
+      normalizeAgenda([
+        { title: "A", duration_minutes: -5 },
+        { title: "B", duration_minutes: 9999 },
+        { title: "C", duration_minutes: 15 },
+      ]).map((a) => a.duration_minutes),
+    ).toEqual([null, null, 15]);
   });
   it("new meeting agenda rows are numbered from 0 and tied to the meeting and org", () => {
     const rows = agendaRowsFor([{ title: "One" }, { title: "Two" }], "m1", "o1");
-    expect(rows.map((r) => [r.position, r.meeting_id, r.organization_id])).toEqual([[0, "m1", "o1"], [1, "m1", "o1"]]);
+    expect(rows.map((r) => [r.position, r.meeting_id, r.organization_id])).toEqual([
+      [0, "m1", "o1"],
+      [1, "m1", "o1"],
+    ]);
   });
   it("agenda text editor parses Title | Presenter | Minutes", () => {
     expect(parseAgendaText("Budget | Treasurer | 20\n\nAdjourn")).toEqual([
-      { title: "Budget", presenter: "Treasurer", duration_minutes: 20, description: null, proposed_motion: null, is_vote_item: false, decision_rule: null },
-      { title: "Adjourn", presenter: null, duration_minutes: null, description: null, proposed_motion: null, is_vote_item: false, decision_rule: null },
+      {
+        title: "Budget",
+        presenter: "Treasurer",
+        duration_minutes: 20,
+        description: null,
+        proposed_motion: null,
+        is_vote_item: false,
+        decision_rule: null,
+      },
+      {
+        title: "Adjourn",
+        presenter: null,
+        duration_minutes: null,
+        description: null,
+        proposed_motion: null,
+        is_vote_item: false,
+        decision_rule: null,
+      },
     ]);
   });
   it("text round-trips and totals minutes", () => {
@@ -29,7 +78,12 @@ describe("meeting templates", () => {
   });
   it("vote items keep their own decision rule; non-vote items and unknown rules fall back to the org default", () => {
     const [a, b, c] = normalizeAgenda([
-      { title: "Bylaws amendment", is_vote_item: true, decision_rule: "two_thirds_cast", proposed_motion: "Amend Art. 3" },
+      {
+        title: "Bylaws amendment",
+        is_vote_item: true,
+        decision_rule: "two_thirds_cast",
+        proposed_motion: "Amend Art. 3",
+      },
       { title: "Report", is_vote_item: false, decision_rule: "two_thirds_cast" },
       { title: "Budget", is_vote_item: true, decision_rule: "unanimous" },
     ]);

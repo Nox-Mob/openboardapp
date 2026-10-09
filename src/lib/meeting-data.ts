@@ -10,7 +10,10 @@ export function useAgenda(meetingId: string) {
 }
 
 export function useAttendance(meetingId: string) {
-  return useQuery({ queryKey: ["attendance", meetingId], queryFn: () => db.attendance.list(meetingId) });
+  return useQuery({
+    queryKey: ["attendance", meetingId],
+    queryFn: () => db.attendance.list(meetingId),
+  });
 }
 
 export function useMotions(meetingId: string) {
@@ -27,7 +30,8 @@ export function useTemplates(orgId: string) {
 
 export function useInvalidateMeeting(meetingId: string) {
   const qc = useQueryClient();
-  return (...keys: string[]) => keys.forEach((k) => qc.invalidateQueries({ queryKey: [k, meetingId] }));
+  return (...keys: string[]) =>
+    keys.forEach((k) => qc.invalidateQueries({ queryKey: [k, meetingId] }));
 }
 
 export function signedUrl(path: string) {

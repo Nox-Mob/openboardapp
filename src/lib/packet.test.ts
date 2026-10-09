@@ -10,32 +10,58 @@ describe("PDF generation", () => {
     expect(doc.getPageCount()).toBe(1);
   });
   it("long text flows onto more pages", async () => {
-    const doc = await PDFDocument.load(await textToPdf("Long", Array(200).fill("A paragraph of minutes text.").join("\n")));
+    const doc = await PDFDocument.load(
+      await textToPdf("Long", Array(200).fill("A paragraph of minutes text.").join("\n")),
+    );
     expect(doc.getPageCount()).toBeGreaterThan(1);
   });
   it("packet appends attached PDF pages after the agenda", async () => {
     const att = await PDFDocument.create();
-    att.addPage(); att.addPage();
+    att.addPage();
+    att.addPage();
     const attBytes = await att.save();
-    const packet = await PDFDocument.load(await buildPacket({
-      title: "Packet v1",
-      agendaText: "Agenda\n1. Call to order",
-      attachments: [
-        { title: "Budget", fileName: "budget.pdf v1", bytes: attBytes.buffer.slice(0) as ArrayBuffer },
-        { title: "Photo", fileName: "photo.jpg v1", bytes: null },
-      ],
-    }));
+    const packet = await PDFDocument.load(
+      await buildPacket({
+        title: "Packet v1",
+        agendaText: "Agenda\n1. Call to order",
+        attachments: [
+          {
+            title: "Budget",
+            fileName: "budget.pdf v1",
+            bytes: attBytes.buffer.slice(0) as ArrayBuffer,
+          },
+          { title: "Photo", fileName: "photo.jpg v1", bytes: null },
+        ],
+      }),
+    );
     expect(packet.getPageCount()).toBe(3);
   });
   it("an unreadable attachment does not break the packet", async () => {
-    const packet = await PDFDocument.load(await buildPacket({ title: "P", agendaText: "A", attachments: [{ title: "Bad", fileName: "bad.pdf", bytes: new TextEncoder().encode("not a pdf").buffer as ArrayBuffer }] }));
+    const packet = await PDFDocument.load(
+      await buildPacket({
+        title: "P",
+        agendaText: "A",
+        attachments: [
+          {
+            title: "Bad",
+            fileName: "bad.pdf",
+            bytes: new TextEncoder().encode("not a pdf").buffer as ArrayBuffer,
+          },
+        ],
+      }),
+    );
     expect(packet.getPageCount()).toBe(1);
   });
 });
 
 describe("CSV export", () => {
   it("writes a header from all columns and escapes values", () => {
-    expect(toCsv([{ a: 1, b: "x,y" }, { a: "=1+1", c: null }])).toBe('a,b,c\n1,"x,y",\n\'=1+1,,');
+    expect(
+      toCsv([
+        { a: 1, b: "x,y" },
+        { a: "=1+1", c: null },
+      ]),
+    ).toBe('a,b,c\n1,"x,y",\n\'=1+1,,');
   });
   it("empty tables export as empty text", () => {
     expect(toCsv([])).toBe("");

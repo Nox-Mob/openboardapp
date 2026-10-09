@@ -35,7 +35,10 @@ function InvitePage() {
     setBusy(true);
     const { data, error } = await attempt(db.invitations.accept(token));
     setBusy(false);
-    if (error !== null) { setError(errorMessage(error)); return; }
+    if (error !== null) {
+      setError(errorMessage(error));
+      return;
+    }
     localStorage.setItem("board.currentOrg", data as string);
     navigate({ to: "/board" });
   }
@@ -47,9 +50,17 @@ function InvitePage() {
         <h1 className="mt-2 text-2xl">You've been invited to join a board</h1>
         {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
         {signedIn === false && (
-          <Button asChild className="mt-6"><Link to="/auth" search={{ redirect: `/invite/${token}` }}>Sign in to accept</Link></Button>
+          <Button asChild className="mt-6">
+            <Link to="/auth" search={{ redirect: `/invite/${token}` }}>
+              Sign in to accept
+            </Link>
+          </Button>
         )}
-        {signedIn && <Button className="mt-6" onClick={accept} disabled={busy}>Accept invitation</Button>}
+        {signedIn && (
+          <Button className="mt-6" onClick={accept} disabled={busy}>
+            Accept invitation
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -4,11 +4,18 @@
 import { readFileSync, readdirSync } from "node:fs";
 
 const dir = "drizzle/migrations";
-const files = readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
-const sql = files.map((f) => readFileSync(`${dir}/${f}`, "utf8")).join("\n").toLowerCase();
+const files = readdirSync(dir)
+  .filter((f) => f.endsWith(".sql"))
+  .sort();
+const sql = files
+  .map((f) => readFileSync(`${dir}/${f}`, "utf8"))
+  .join("\n")
+  .toLowerCase();
 
 const tables = new Set();
-for (const m of sql.matchAll(/create table (?:if not exists )?(?:public\.)?"?([a-z_][a-z0-9_]*)"?\s*\(/g))
+for (const m of sql.matchAll(
+  /create table (?:if not exists )?(?:public\.)?"?([a-z_][a-z0-9_]*)"?\s*\(/g,
+))
   tables.add(m[1]);
 
 const problems = [];

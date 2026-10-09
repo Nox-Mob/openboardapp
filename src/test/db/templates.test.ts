@@ -8,7 +8,11 @@ describe.skipIf(!hasDb)("meeting templates (live database)", () => {
   });
 
   async function make() {
-    const r = await a.from("meeting_templates").insert({ organization_id: ORG_A, name: tag(), agenda: [{ title: "Call to order" }] }).select("id").single();
+    const r = await a
+      .from("meeting_templates")
+      .insert({ organization_id: ORG_A, name: tag(), agenda: [{ title: "Call to order" }] })
+      .select("id")
+      .single();
     if (r.error) throw r.error;
     return r.data.id;
   }
@@ -19,7 +23,9 @@ describe.skipIf(!hasDb)("meeting templates (live database)", () => {
     expect(data).toHaveLength(1);
   });
   it("plain members cannot create templates", async () => {
-    const { error } = await member.from("meeting_templates").insert({ organization_id: ORG_A, name: tag() });
+    const { error } = await member
+      .from("meeting_templates")
+      .insert({ organization_id: ORG_A, name: tag() });
     expect(error).toBeTruthy();
   });
   it("another organization cannot see or delete the template", async () => {
@@ -35,12 +41,18 @@ describe.skipIf(!hasDb)("meeting templates (live database)", () => {
     expect(error).toBeTruthy();
   });
   it("agenda must be a list", async () => {
-    const { error } = await a.from("meeting_templates").insert({ organization_id: ORG_A, name: tag(), agenda: { title: "x" } });
+    const { error } = await a
+      .from("meeting_templates")
+      .insert({ organization_id: ORG_A, name: tag(), agenda: { title: "x" } });
     expect(error).toBeTruthy();
   });
   it("template changes are written to the audit log", async () => {
     const id = await make();
-    const { data } = await a.from("audit_log").select("action").eq("entity", "meeting_templates").eq("entity_id", id);
+    const { data } = await a
+      .from("audit_log")
+      .select("action")
+      .eq("entity", "meeting_templates")
+      .eq("entity_id", id);
     expect(data?.map((r) => r.action)).toContain("insert");
   });
 });

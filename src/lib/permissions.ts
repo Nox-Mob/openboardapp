@@ -1,6 +1,7 @@
 // The single role → capability table. The database policies mirror it:
 // manage = can_manage_org, edit = can_edit_records. permissions.test.ts pins every cell.
-export type OrgRole = "owner" | "admin" | "chair" | "secretary" | "treasurer" | "member" | "observer";
+export type OrgRole =
+  "owner" | "admin" | "chair" | "secretary" | "treasurer" | "member" | "observer";
 
 export type Capability =
   | "org.manage"
@@ -11,7 +12,15 @@ export type Capability =
   | "export.run"
   | "records.read";
 
-export const ROLES: OrgRole[] = ["owner", "admin", "chair", "secretary", "treasurer", "member", "observer"];
+export const ROLES: OrgRole[] = [
+  "owner",
+  "admin",
+  "chair",
+  "secretary",
+  "treasurer",
+  "member",
+  "observer",
+];
 
 export const ROLE_LABELS: Record<OrgRole, string> = {
   owner: "Owner",

@@ -10,7 +10,9 @@ export function escapeCell(value: unknown): string {
 export function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
   const cols = Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
-  return [cols.join(","), ...rows.map((r) => cols.map((c) => escapeCell(r[c])).join(","))].join("\n");
+  return [cols.join(","), ...rows.map((r) => cols.map((c) => escapeCell(r[c])).join(","))].join(
+    "\n",
+  );
 }
 
 export function downloadBlob(blob: Blob, filename: string) {
@@ -24,6 +26,7 @@ export function downloadBlob(blob: Blob, filename: string) {
 
 export function errorMessage(e: unknown): string {
   if (e instanceof Error) return e.message;
-  if (e && typeof e === "object" && "message" in e) return String((e as { message: unknown }).message);
+  if (e && typeof e === "object" && "message" in e)
+    return String((e as { message: unknown }).message);
   return "Something went wrong";
 }

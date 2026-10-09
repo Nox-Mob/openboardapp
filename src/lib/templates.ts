@@ -26,23 +26,51 @@ export function normalizeAgenda(raw: unknown): TemplateAgendaItem[] {
   const out: TemplateAgendaItem[] = [];
   for (const r of raw) {
     if (!r || typeof r !== "object") continue;
-    const o = r as { title?: unknown; presenter?: unknown; duration_minutes?: unknown; description?: unknown; proposed_motion?: unknown; is_vote_item?: unknown; decision_rule?: unknown };
+    const o = r as {
+      title?: unknown;
+      presenter?: unknown;
+      duration_minutes?: unknown;
+      description?: unknown;
+      proposed_motion?: unknown;
+      is_vote_item?: unknown;
+      decision_rule?: unknown;
+    };
     const title = typeof o.title === "string" ? o.title.trim() : "";
     if (!title) continue;
-    const presenter = typeof o.presenter === "string" && o.presenter.trim() ? o.presenter.trim() : null;
+    const presenter =
+      typeof o.presenter === "string" && o.presenter.trim() ? o.presenter.trim() : null;
     const d = Number(o.duration_minutes);
     const duration_minutes = Number.isInteger(d) && d > 0 && d <= 600 ? d : null;
-    const description = typeof o.description === "string" && o.description.trim() ? o.description.trim() : null;
-    const proposed_motion = typeof o.proposed_motion === "string" && o.proposed_motion.trim() ? o.proposed_motion.trim() : null;
+    const description =
+      typeof o.description === "string" && o.description.trim() ? o.description.trim() : null;
+    const proposed_motion =
+      typeof o.proposed_motion === "string" && o.proposed_motion.trim()
+        ? o.proposed_motion.trim()
+        : null;
     const is_vote_item = o.is_vote_item === true || !!proposed_motion;
-    const decision_rule = is_vote_item && typeof o.decision_rule === "string" && RULES.includes(o.decision_rule) ? o.decision_rule : null;
-    out.push({ title, presenter, duration_minutes, description, proposed_motion, is_vote_item, decision_rule });
+    const decision_rule =
+      is_vote_item && typeof o.decision_rule === "string" && RULES.includes(o.decision_rule)
+        ? o.decision_rule
+        : null;
+    out.push({
+      title,
+      presenter,
+      duration_minutes,
+      description,
+      proposed_motion,
+      is_vote_item,
+      decision_rule,
+    });
   }
   return out;
 }
 
 /** Turns a template's agenda into rows for a new meeting, numbered in order. */
-export function agendaRowsFor(items: TemplateAgendaItem[], meetingId: string, organizationId: string) {
+export function agendaRowsFor(
+  items: TemplateAgendaItem[],
+  meetingId: string,
+  organizationId: string,
+) {
   return normalizeAgenda(items).map((a, position) => ({
     ...a,
     position,
@@ -63,7 +91,9 @@ export function parseAgendaText(text: string): TemplateAgendaItem[] {
 
 export function agendaToText(items: TemplateAgendaItem[]): string {
   return normalizeAgenda(items)
-    .map((a) => [a.title, a.presenter ?? "", a.duration_minutes ?? ""].join(" | ").replace(/( \| )+$/, ""))
+    .map((a) =>
+      [a.title, a.presenter ?? "", a.duration_minutes ?? ""].join(" | ").replace(/( \| )+$/, ""),
+    )
     .join("\n");
 }
 

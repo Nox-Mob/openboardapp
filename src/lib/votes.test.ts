@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { formatMotion } from "./minutes";
-import { canCloseEarly, computeDisposition, parseRollCall, presentAttendees, rollCallVoters, tally } from "./votes";
+import {
+  canCloseEarly,
+  computeDisposition,
+  parseRollCall,
+  presentAttendees,
+  rollCallVoters,
+  tally,
+} from "./votes";
 
 const att = [
   { id: "1", person_name: "Ana", status: "present", is_voting: true },
@@ -17,22 +24,47 @@ describe("motion voting", () => {
     expect(rollCallVoters(att).map((a) => a.person_name)).toEqual(["Ana", "Ben"]);
   });
   it("totals come from the roll call", () => {
-    expect(tally([{ attendance_id: "1", person_name: "Ana", vote: "yes" }, { attendance_id: "2", person_name: "Ben", vote: "abstain" }])).toEqual({ votes_yes: 1, votes_no: 0, votes_abstain: 1, votes_recused: 0 });
+    expect(
+      tally([
+        { attendance_id: "1", person_name: "Ana", vote: "yes" },
+        { attendance_id: "2", person_name: "Ben", vote: "abstain" },
+      ]),
+    ).toEqual({ votes_yes: 1, votes_no: 0, votes_abstain: 1, votes_recused: 0 });
   });
   it("bad roll-call entries are ignored", () => {
-    expect(parseRollCall([{ person_name: "A", vote: "maybe" }, null, { person_name: "B", vote: "no" }])).toHaveLength(1);
+    expect(
+      parseRollCall([{ person_name: "A", vote: "maybe" }, null, { person_name: "B", vote: "no" }]),
+    ).toHaveLength(1);
     expect(parseRollCall({})).toEqual([]);
   });
   it("minutes name each member's vote when a roll call was taken", () => {
-    const text = formatMotion({ agenda_item_id: null, motion_text: "Approve budget", votes_yes: 1, votes_no: 1, votes_abstain: 0, outcome: "failed",
-      roll_call: [{ person_name: "Ana", vote: "yes" }, { person_name: "Ben", vote: "no" }] });
+    const text = formatMotion({
+      agenda_item_id: null,
+      motion_text: "Approve budget",
+      votes_yes: 1,
+      votes_no: 1,
+      votes_abstain: 0,
+      outcome: "failed",
+      roll_call: [
+        { person_name: "Ana", vote: "yes" },
+        { person_name: "Ben", vote: "no" },
+      ],
+    });
     expect(text).toContain("Roll call — in favor: Ana; opposed: Ben.");
   });
   it("minutes without a roll call keep totals only", () => {
-    expect(formatMotion({ agenda_item_id: null, motion_text: "X", votes_yes: 3, votes_no: 0, votes_abstain: 0, outcome: "carried" })).not.toContain("Roll call");
+    expect(
+      formatMotion({
+        agenda_item_id: null,
+        motion_text: "X",
+        votes_yes: 3,
+        votes_no: 0,
+        votes_abstain: 0,
+        outcome: "carried",
+      }),
+    ).not.toContain("Roll call");
   });
 });
-
 
 describe("live vote results", () => {
   it("simple majority of votes cast ignores abstentions", () => {
@@ -62,8 +94,21 @@ describe("live vote results", () => {
 
 describe("live vote minutes", () => {
   it("minutes list members who did not vote and the quorum facts", () => {
-    const text = formatMotion({ agenda_item_id: null, motion_text: "Approve", votes_yes: 2, votes_no: 0, votes_abstain: 0, outcome: "carried",
-      vote_record: { electorate: ["Ana", "Ben", "Cy"], not_voting: ["Cy"], quorum_met: true, present_voting: 3, quorum_required: 2 } });
+    const text = formatMotion({
+      agenda_item_id: null,
+      motion_text: "Approve",
+      votes_yes: 2,
+      votes_no: 0,
+      votes_abstain: 0,
+      outcome: "carried",
+      vote_record: {
+        electorate: ["Ana", "Ben", "Cy"],
+        not_voting: ["Cy"],
+        quorum_met: true,
+        present_voting: 3,
+        quorum_required: 2,
+      },
+    });
     expect(text).toContain("Not voting: Cy.");
     expect(text).toContain("Eligible voters: 3; quorum met");
   });
@@ -77,12 +122,15 @@ describe("recusal and quorum", () => {
     expect(cd2("majority_present", { yes: 2, no: 0 }, 3, true, 1)).toBe("carried");
   });
   it("quorum counts present or remote voting members only", () => {
-    const q = qs2([
-      { id: "1", person_name: "A", status: "present", is_voting: true },
-      { id: "2", person_name: "B", status: "remote", is_voting: true },
-      { id: "3", person_name: "C", status: "present", is_voting: false },
-      { id: "4", person_name: "D", status: "absent", is_voting: true },
-    ], 3);
+    const q = qs2(
+      [
+        { id: "1", person_name: "A", status: "present", is_voting: true },
+        { id: "2", person_name: "B", status: "remote", is_voting: true },
+        { id: "3", person_name: "C", status: "present", is_voting: false },
+        { id: "4", person_name: "D", status: "absent", is_voting: true },
+      ],
+      3,
+    );
     expect(q).toEqual({ present: 2, required: 3, met: false, short: 1 });
   });
 });

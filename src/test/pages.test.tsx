@@ -31,7 +31,9 @@ describe("every page has a route", () => {
     });
   }
   it("board pages sit behind the sign-in gate", () => {
-    const ids = router().matchRoutes("/board/meetings").map((m) => m.routeId);
+    const ids = router()
+      .matchRoutes("/board/meetings")
+      .map((m) => m.routeId);
     expect(ids).toContain("/_authenticated");
   });
   it("unknown pages fall through to not found", () => {
@@ -41,7 +43,13 @@ describe("every page has a route", () => {
 
 describe("shared page pieces render", () => {
   it("status badges use plain-language labels", () => {
-    render(<><StatusBadge status="submitted" /><StatusBadge status="in_progress" /><StatusBadge status="carried" /></>);
+    render(
+      <>
+        <StatusBadge status="submitted" />
+        <StatusBadge status="in_progress" />
+        <StatusBadge status="carried" />
+      </>,
+    );
     expect(screen.getByText("Awaiting approval")).toBeTruthy();
     expect(screen.getByText("In progress")).toBeTruthy();
     expect(screen.getByText("Carried")).toBeTruthy();
@@ -51,7 +59,12 @@ describe("shared page pieces render", () => {
     expect(screen.getByText("Boom")).toBeTruthy();
   });
   it("empty state and header render their text", () => {
-    render(<><PageHeader eyebrow="Org" title="Meetings" /><EmptyState title="Nothing here">Add one</EmptyState></>);
+    render(
+      <>
+        <PageHeader eyebrow="Org" title="Meetings" />
+        <EmptyState title="Nothing here">Add one</EmptyState>
+      </>,
+    );
     expect(screen.getByRole("heading", { name: "Meetings" })).toBeTruthy();
     expect(screen.getByText("Nothing here")).toBeTruthy();
   });
