@@ -261,7 +261,7 @@ function PacketPanel({ meetingId, orgId }: { meetingId: string; orgId: string })
   const open = async (path: string) => {
     const { data, error } = await attempt(signedUrl(path));
     if (error) { toast.error(errorMessage(error)); return; }
-    window.open(data, "_blank", "noopener");
+    window.open(data ?? undefined, "_blank", "noopener");
   };
   if (packets.isLoading || docs.isLoading) return <LoadingState />;
   const latest = packets.data?.[0];

@@ -59,3 +59,12 @@ describe("live vote results", () => {
     expect(canCloseEarly("chair", { ...org, vote_close_modes: ["timer"] })).toBe(false);
   });
 });
+
+describe("live vote minutes", () => {
+  it("minutes list members who did not vote and the quorum facts", () => {
+    const text = formatMotion({ agenda_item_id: null, motion_text: "Approve", votes_yes: 2, votes_no: 0, votes_abstain: 0, outcome: "carried",
+      vote_record: { electorate: ["Ana", "Ben", "Cy"], not_voting: ["Cy"], quorum_met: true, present_voting: 3, quorum_required: 2 } });
+    expect(text).toContain("Not voting: Cy.");
+    expect(text).toContain("Eligible voters: 3; quorum met");
+  });
+});
