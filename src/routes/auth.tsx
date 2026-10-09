@@ -93,6 +93,20 @@ function AuthPage() {
             <>
               <h1 className="text-xl">{mode === "in" ? "Sign in" : "Create your account"}</h1>
               <Button variant="outline" className="mt-5 w-full" onClick={google} type="button">Continue with Google</Button>
+              <Button
+                variant="secondary"
+                className="mt-2 w-full"
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  const { error } = await supabase.auth.signInWithPassword({ email: "demo@demo.org", password: "OpenBoardDemo!2026" });
+                  setBusy(false);
+                  if (error) toast.error(errorMessage(error));
+                }}
+              >
+                Explore the demo board
+              </Button>
               <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" /></div>
               <form onSubmit={submit} className="space-y-3">
                 {mode === "up" && (
