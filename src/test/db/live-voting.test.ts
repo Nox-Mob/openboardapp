@@ -230,14 +230,12 @@ describe.skipIf(!hasDb)("live voting (live database)", () => {
     expect((await a.from("motions").delete().eq("id", id)).error).toBeTruthy();
     expect(
       (
-        await a
-          .from("motions")
-          .insert({
-            organization_id: ORG_A,
-            meeting_id: meetingId,
-            motion_text: "fake",
-            voting_status: "closed",
-          })
+        await a.from("motions").insert({
+          organization_id: ORG_A,
+          meeting_id: meetingId,
+          motion_text: "fake",
+          voting_status: "closed",
+        })
       ).error,
     ).toBeTruthy();
   });

@@ -67,15 +67,13 @@ describe.skipIf(!hasDb)("tenant isolation (live database)", () => {
       .from("org-files")
       .upload(filePath, new TextEncoder().encode("top secret"), { contentType: "text/plain" });
     if (up.error) throw up.error;
-    await a
-      .from("document_versions")
-      .insert({
-        organization_id: ORG_A,
-        document_id: docId,
-        version: 1,
-        storage_path: filePath,
-        file_name: "secret.txt",
-      });
+    await a.from("document_versions").insert({
+      organization_id: ORG_A,
+      document_id: docId,
+      version: 1,
+      storage_path: filePath,
+      file_name: "secret.txt",
+    });
   });
 
   const tables = [
@@ -178,15 +176,13 @@ describe.skipIf(!hasDb)("tenant isolation (live database)", () => {
       .insert({ organization_id: ORG_B, title: tag() })
       .select("id")
       .single();
-    const { error } = await b
-      .from("document_versions")
-      .insert({
-        organization_id: ORG_B,
-        document_id: own.data!.id,
-        version: 1,
-        storage_path: filePath,
-        file_name: "stolen",
-      });
+    const { error } = await b.from("document_versions").insert({
+      organization_id: ORG_B,
+      document_id: own.data!.id,
+      version: 1,
+      storage_path: filePath,
+      file_name: "stolen",
+    });
     expect(error?.message).toMatch(/organization folder/i);
   });
   it("B cannot create invitations for A", async () => {

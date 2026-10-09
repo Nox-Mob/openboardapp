@@ -178,14 +178,12 @@ describe.skipIf(!hasDb)("official record versioning (live database)", () => {
     ).toMatch(/cannot be changed/);
   });
   it("packet files must live in the organization's folder", async () => {
-    const { error } = await a
-      .from("packets")
-      .insert({
-        organization_id: ORG_A,
-        meeting_id: meetingId,
-        version: 1,
-        storage_path: "elsewhere/v1.pdf",
-      });
+    const { error } = await a.from("packets").insert({
+      organization_id: ORG_A,
+      meeting_id: meetingId,
+      version: 1,
+      storage_path: "elsewhere/v1.pdf",
+    });
     expect(error?.message).toMatch(/organization folder/);
   });
 });
