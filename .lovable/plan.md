@@ -51,11 +51,15 @@ The existing "Record a motion" form on the Motions tab stays as it is, for votes
   - `organizations.vote_close_modes` (text[], default `{chair}`), `vote_timer_minutes` (int, nullable) and `vote_closer_roles` (org_role[], default owner/admin/chair/secretary).
   - `motions.voting_status` ('manual' | 'open' | 'closed', default 'manual'), plus `opened_at`, `closes_at` and `closed_at`.
   - New `member_votes` table: org, motion, attendance_id, user_id, vote, created_at, unique (motion_id, user_id), with grants, RLS (members can read all votes once the vote closes and their own vote before that), an audit trigger, and a trigger that rejects every UPDATE and DELETE.
-- SECURITY DEFINER RPCs:
-  - `open_vote(motion)`: checks can_edit_records, that the meeting is in progress, and that no other vote is open; sets closes_at from the timer.
-  - `cast_vote(motion, vote)`: checks the meeting is in progress, the vote is open and not past closes_at, and the voter is an eligible linked attendee who hasn't voted yet. It inserts the vote and auto-closes the vote when that mode is on and everyone has voted.
-  - `close_vote(motion)`: allowed for the closer roles, or for anyone once the timer has run out. It writes the totals, roll_call and outcome.
-  - Direct inserts into `member_votes` are not granted.
+- New `vote_electorate` table (motion, attendance_id, user_id, person_name). It is filled by `open_vote` and is insert-only and immutable, like `member_votes`.
+- New organization columns: `seconder_required` (bool, default true) and `decision_rule` ('majority_cast' | 'majority_present' | 'two_thirds_cast' | 'chair', default 'majority_cast').
+- New motion columns: `vote_record` jsonb (the snapshot: electorate, counts, not-voting list, quorum present/required/met, rule, closed_how, and opened_by/closed_by), plus `disposition_source` ('calculated' | 'recorded'), `disposition_note`, `disposition_by` and `disposition_at`.
+- A partial unique index allows only one motion per meeting with voting_status='open'.
+- SECURITY DEFINER RPCs (the only write path; direct table writes are not granted). Each runs in one transaction and takes `SELECT ... FOR UPDATE` on the motion row, so casting and closing are serialized and no vote can be accepted after close:
+  - `open_vote(motion)`: checks can_edit_records, that the meeting is in progress, that no other vote is open, and the seconder rule. It freezes the electorate and records the quorum snapshot, then sets closes_at from the timer.
+  - `cast_vote(motion, vote)`: locks the motion and checks, in order: the meeting is in progress; the vote is open and not past closes_at; `auth.uid()` is in the frozen electorate; the user hasn't voted yet. It inserts exactly once (unique (motion_id, user_id) guards against retries and double-clicks). It auto-closes the vote when that mode is on and the whole electorate has voted.
+  - `close_vote(motion)`: locks the motion. It's allowed for the closer roles, or for anyone once the timer has run out. It writes the totals, roll_call and vote_record, and the calculated disposition when the rule is supported and quorum was met; otherwise the motion stays 'pending'.
+  - `record_disposition(motion, outcome, note)`: closer roles only; the note is required. It is used when the result couldn't be calculated, or to mark a motion tabled or withdrawn.
 - The existing locking trigger on motions keeps rows locked after minutes are approved.
 - New route `src/routes/_authenticated/board.meetings.$meetingId.live.tsx`. The live panels poll every 3 seconds, and the timer counts down on the client, which calls `close_vote` when it reaches zero.
 - New `db.voting.*` methods go through the data layer only. Pure helpers in `src/lib/votes.ts` (eligibility, outcome, close conditions).
