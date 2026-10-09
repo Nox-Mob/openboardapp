@@ -70,6 +70,9 @@ function MeetingPage() {
         }
       >
         {locked && <span className="text-warning">This meeting's record is {approved ? "approved" : "archived"} — attendance and motions are locked.</span>}
+        {m.status === "in_progress" && (
+          <Link to="/board/live/$meetingId" params={{ meetingId: m.id }} className="mt-2 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Join meeting — Board Meeting Dashboard</Link>
+        )}
       </PageHeader>
       <Tabs value={tab} onValueChange={(v) => navigate({ search: { tab: v as Tab }, replace: true })}>
         <TabsList className="mb-6 flex-wrap">
