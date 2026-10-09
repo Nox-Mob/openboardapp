@@ -866,6 +866,47 @@ export type Database = {
           },
         ]
       }
+      organization_letterheads: {
+        Row: {
+          file_name: string
+          footer_points: number
+          header_points: number
+          id: string
+          mime_type: string
+          organization_id: string
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          file_name: string
+          footer_points?: number
+          header_points?: number
+          id?: string
+          mime_type: string
+          organization_id: string
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          file_name?: string
+          footer_points?: number
+          header_points?: number
+          id?: string
+          mime_type?: string
+          organization_id?: string
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_letterheads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
