@@ -21,6 +21,7 @@
 - Invites store only a SHA-256 hash of the token and are claimed once via accept_invitation.
 - Files: private bucket org-files, paths start with the organization id; downloads use 60-second signed URLs.
 - PDFs (minutes, packets) are built client-side with pdf-lib (src/lib/packet.ts) to stay worker-safe.
+- Letterhead: organization_letterheads stores the active private org-files reference; upload paths are unique, managers alone change stationery, and shared prepareLetterhead paints only generated pages with reserved header/footer space, never existing packet attachments.
 - Routing: public website at /, signed-in app under /_authenticated/board; current org is kept in localStorage via OrgProvider.
 - Exports escape formula-looking text via src/lib/export.ts.
 - Demo: demo@demo.org (owner), chair@demo.org, member@demo.org share password OpenBoardDemo!2026 in "Riverside Community Association"; seeded manually, never on page load.

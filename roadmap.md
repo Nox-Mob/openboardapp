@@ -15,4 +15,5 @@
 - [x] npm only
 - [x] Live member voting + Board Meeting Dashboard (frozen electorate, full vote record, org close/decision settings)
 - [x] Formatted minutes PDF, member recusal, live quorum indicator, full board record zip export
+- [x] Organization letterhead upload (PNG/JPG/PDF), instructions, generated documents and tests
 - [ ] v0.2: reminders, backup restore drill

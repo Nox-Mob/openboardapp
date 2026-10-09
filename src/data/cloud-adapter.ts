@@ -14,7 +14,7 @@ function must<R extends { data: unknown; error: unknown }>(r: R): NonNullable<R[
   return r.data as NonNullable<R["data"]>;
 }
 
-export const EXPORT_TABLES = ["organizations", "memberships", "board_positions", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
+export const EXPORT_TABLES = ["organizations", "organization_letterheads", "memberships", "board_positions", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
 export type ExportTable = (typeof EXPORT_TABLES)[number];
 
 /** Lovable Cloud implementation of the data layer. All reads/writes run under row-level security as the signed-in user. */
@@ -65,6 +65,21 @@ export const cloudAdapter = {
         out[t] = (data ?? []) as Record<string, unknown>[];
       }
       return out;
+    },
+  },
+
+  letterhead: {
+    async get(orgId: string) {
+      const r = await supabase.from("organization_letterheads").select("*").eq("organization_id", orgId).maybeSingle();
+      if (r.error) throw r.error;
+      return r.data;
+    },
+    async save(row: TablesInsert<"organization_letterheads">, file?: Blob) {
+      if (file) must(await supabase.storage.from(BUCKET).upload(row.storage_path, file, { contentType: row.mime_type, upsert: false }));
+      must(await supabase.from("organization_letterheads").upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "organization_id" }));
+    },
+    async remove(orgId: string) {
+      must(await supabase.from("organization_letterheads").delete().eq("organization_id", orgId));
     },
   },
 

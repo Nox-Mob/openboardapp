@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/board/committees")({
+  head: () => ({ meta: [{"title": "Committees — OpenBoard"}, {"name": "description", "content": "Manage board committees and their members."}, {"property": "og:title", "content": "Committees — OpenBoard"}, {"property": "og:description", "content": "Manage board committees and their members."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: Committees,
 });
 

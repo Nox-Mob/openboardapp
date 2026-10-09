@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const CATEGORIES = ["Bylaws", "Policies", "Financial reports", "Meeting materials", "Committee reports", "General"];
 
 export const Route = createFileRoute("/_authenticated/board/documents")({
+  head: () => ({ meta: [{"title": "Governance documents — OpenBoard"}, {"name": "description", "content": "Manage private policies, reports and meeting documents."}, {"property": "og:title", "content": "Governance documents — OpenBoard"}, {"property": "og:description", "content": "Manage private policies, reports and meeting documents."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: Documents,
 });
 

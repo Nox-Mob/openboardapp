@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "OpenBoard — Board management for small nonprofits" },
       { name: "description", content: "Open-source board management: agendas, minutes, motions, board packets and action items for volunteer-led organizations." },
       { property: "og:title", content: "OpenBoard — Board management for small nonprofits" },

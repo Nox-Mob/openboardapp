@@ -6,6 +6,7 @@ import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { buildPacket } from "@/lib/packet";
+import { loadLetterhead } from "@/lib/load-letterhead";
 import { nextVersion } from "@/lib/minutes";
 import { currentHolder } from "@/lib/titles";
 import { useAgenda, signedUrl } from "@/lib/meeting-data";
@@ -53,6 +54,7 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
         title: `${org.name} - ${meeting.title} - ${meeting.meeting_date} (Packet v${version})`,
         agendaText: (roster ? "Board roster\n" + roster + "\n\n" : "") + "Agenda\n" + agendaText,
         attachments,
+        letterhead: await loadLetterhead(org.id),
       });
       const path = `${org.id}/packets/${meeting.id}/v${version}.pdf`;
       await db.packets.create(

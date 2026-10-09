@@ -15,6 +15,8 @@ import { errorMessage } from "@/lib/export";
 export const Route = createFileRoute("/_authenticated/board")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Board room — OpenBoard" },
       { name: "description", content: "Your organization's meetings, minutes, documents and tasks." },
       { property: "og:title", content: "Board room — OpenBoard" },
