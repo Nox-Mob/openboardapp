@@ -9,25 +9,39 @@
 
 ## Who can vote
 - Members vote with their own sign-in. A member can vote only if they are on the meeting's attendance list, marked present or remote, marked as a voting member, and linked to their account. The Attendance tab gets a "Linked account" picker so the secretary can connect each attendee to an organization member.
+- **The voter list is frozen when the vote opens.** The eligible voters at that moment become the vote's electorate. If the secretary marks someone present after the vote opens, that person cannot vote on it, because they were not there to hear the motion. Marking someone absent mid-vote doesn't remove them either. Anyone who doesn't vote is recorded as "did not vote".
 - Votes are accepted only while the meeting is **In progress**. In every other status (draft, scheduled, completed, archived) the voting buttons are hidden and the database rejects votes.
 
 ## Opening a vote (chair or secretary)
 - **Prepared motions:** each agenda item gets an optional "Proposed motion" field, which meeting templates copy too. On the dashboard, the chair or secretary sees an "Open vote" button next to any item with a proposed motion. They pick the mover and seconder from the members present, then open the vote.
 - **New business:** a "New motion" form (motion text, mover, seconder, optional agenda item) opens a vote right away.
-- Only one vote can be open at a time in a meeting.
+- **Only one vote can be open at a time** in a meeting. The database enforces this.
+- **Seconder:** a new organization setting, "Motions require a seconder" (default on). When it's on, a vote can't open without a seconder. When it's off, the seconder is optional.
 
 ## Closing a vote (organization settings)
-Owners and admins get two new settings:
+Owners and admins get these settings:
 - **How votes close** (pick one or more):
   - Chair closes it.
   - Closes automatically once every eligible member has voted.
   - Closes when a timer runs out, with the length in minutes set here.
 - **Who can close a vote:** a list of roles to tick (default: Chair and Secretary, plus Owner/Admin).
+- **Decision rule:**
+  - Simple majority of votes cast (abstentions don't count).
+  - Majority of the eligible voters present.
+  - Two-thirds of votes cast.
+  - Custom / determined by the chair: the app works out no result.
 
-When a vote closes:
-- Members who did not vote are listed as "not voting".
-- The in-favor, opposed and abstaining counts and each person's vote are saved to the motion as the official record. The minutes already name each voter's choice.
-- The result is set as carried if more members voted in favor than opposed, and failed otherwise. The chair can still mark it tabled or withdrawn before minutes are approved.
+## The official voting record
+These facts are captured when the vote opens and closes, and stored permanently. They're viewable later on the meeting's Motions tab and in the minutes:
+- The eligible electorate: the frozen list of names.
+- Votes in favor, votes opposed, and abstentions, with each person's vote.
+- Members who did not vote.
+- Quorum information: members present, the quorum required, and whether quorum was met when the vote opened.
+- The decision rule that applied.
+- The resulting disposition (carried, failed, tabled, withdrawn), who recorded it, and how: calculated by the app or recorded by a person.
+- When the vote opened and closed, who opened and closed it, and how it closed (by the chair, automatically, or by the timer).
+
+**Working out the result:** the app calculates the result only when the decision rule is one of the supported ones above and quorum was met. Otherwise (a custom rule, no quorum, or a tie the rule doesn't settle) it shows the counts and asks an authorized person to record the disposition, with a required written explanation that's saved with the record.
 
 The existing "Record a motion" form on the Motions tab stays as it is, for votes taken by show of hands.
 
