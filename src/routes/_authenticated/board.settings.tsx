@@ -19,7 +19,7 @@ const TABLES = EXPORT_TABLES;
 function Settings() {
   const { org, refetch, setOrgId } = useCurrentOrg();
   const manager = can(org.role, "org.manage");
-  const [f, setF] = useState({ name: org.name, timezone: org.timezone, quorum_count: org.quorum_count });
+  const [f, setF] = useState({ name: org.name, timezone: org.timezone, quorum_count: org.quorum_count, vote_recording: org.vote_recording });
   const [newOrg, setNewOrg] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -70,6 +70,13 @@ function Settings() {
           <div><Label>Name</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} disabled={!manager} required /></div>
           <div><Label>Time zone</Label><Input value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })} disabled={!manager} /></div>
           <div><Label>Quorum (members required)</Label><Input type="number" min={1} value={f.quorum_count} onChange={(e) => setF({ ...f, quorum_count: Math.max(1, Number(e.target.value)) })} disabled={!manager} /></div>
+          <div>
+            <Label htmlFor="vote-recording">How votes are recorded</Label>
+            <select id="vote-recording" className="mt-1 h-9 w-full rounded-md border bg-background px-3 text-sm" value={f.vote_recording} onChange={(e) => setF({ ...f, vote_recording: e.target.value })} disabled={!manager}>
+              <option value="totals">Vote totals only (roll call optional per motion)</option>
+              <option value="roll_call">Record how each board member voted</option>
+            </select>
+          </div>
           {manager && <Button type="submit">Save</Button>}
         </form>
         <section className="space-y-3 rounded-lg border bg-card p-5">

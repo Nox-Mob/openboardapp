@@ -15,6 +15,7 @@ export interface MinutesInput {
     votes_no: number;
     votes_abstain: number;
     outcome: string;
+    roll_call?: unknown;
   }[];
   quorum: number;
 }
@@ -27,11 +28,14 @@ const OUTCOME: Record<string, string> = {
   pending: "PENDING",
 };
 
+import { formatRollCall, parseRollCall } from "./votes";
+
 export function formatMotion(m: MinutesInput["motions"][number]): string {
+  const roll = formatRollCall(parseRollCall(m.roll_call));
   const by = [m.moved_by && `Moved by ${m.moved_by}`, m.seconded_by && `seconded by ${m.seconded_by}`]
     .filter(Boolean)
     .join(", ");
-  return `MOTION: ${m.motion_text}${by ? ` (${by})` : ""}. Vote: ${m.votes_yes} in favor, ${m.votes_no} opposed, ${m.votes_abstain} abstaining. ${OUTCOME[m.outcome] ?? m.outcome.toUpperCase()}.`;
+  return `MOTION: ${m.motion_text}${by ? ` (${by})` : ""}. Vote: ${m.votes_yes} in favor, ${m.votes_no} opposed, ${m.votes_abstain} abstaining.${roll ? ` Roll call — ${roll}.` : ""} ${OUTCOME[m.outcome] ?? m.outcome.toUpperCase()}.`;
 }
 
 export function generateMinutes(input: MinutesInput): string {
