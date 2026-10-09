@@ -51,6 +51,7 @@ export function versionAsOf<T extends { created_at: string; version: number }>(
 export function safeName(s: string): string {
   return (
     s
+      // eslint-disable-next-line no-control-regex -- strip control characters from file names
       .replace(/[\\/:*?"<>|\x00-\x1f]+/g, "-")
       .replace(/\s+/g, " ")
       .trim()

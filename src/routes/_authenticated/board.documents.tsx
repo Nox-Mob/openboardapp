@@ -66,7 +66,7 @@ function Documents() {
 
   async function uploadVersion(documentId: string, f: File, existing: { version: number }[]) {
     const version = nextVersion(existing);
-    const safe = f.name.replace(/[^\w.\-]+/g, "_");
+    const safe = f.name.replace(/[^\w.-]+/g, "_");
     const path = `${org.id}/documents/${documentId}/v${version}-${safe}`;
     await db.documents.addVersion(
       {
