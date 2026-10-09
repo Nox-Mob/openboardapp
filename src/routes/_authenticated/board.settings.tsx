@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db, EXPORT_TABLES } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { downloadBlob, errorMessage, toCsv } from "@/lib/export";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/board/settings")({
   component: Settings,
 });
 
-const TABLES = ["organizations", "memberships", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "audit_log"] as const;
+const TABLES = EXPORT_TABLES;
 
 function Settings() {
   const { org, refetch, setOrgId } = useCurrentOrg();
@@ -25,21 +25,14 @@ function Settings() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.from("organizations").update(f).eq("id", org.id);
+    const { error } = await attempt(db.orgs.update(org.id, f));
     if (error) { toast.error(errorMessage(error)); return; }
     refetch();
     toast.success("Settings saved");
   }
 
-  async function fetchAll() {
-    const out: Record<string, Record<string, unknown>[]> = {};
-    for (const t of TABLES) {
-      const col = t === "organizations" ? "id" : "organization_id";
-      const { data, error } = await supabase.from(t).select("*").eq(col as "id", org.id);
-      if (error) throw error;
-      out[t] = (data ?? []) as Record<string, unknown>[];
-    }
-    return out;
+  function fetchAll() {
+    return db.orgs.exportAll(org.id);
   }
 
   async function exportJson() {
@@ -60,8 +53,8 @@ function Settings() {
 
   async function createOrg(e: React.FormEvent) {
     e.preventDefault();
-    const { data, error } = await supabase.rpc("create_organization", { _name: newOrg, _timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-    if (error) { toast.error(errorMessage(error)); return; }
+    const { data, error } = await attempt(db.orgs.create(newOrg, Intl.DateTimeFormat().resolvedOptions().timeZone));
+    if (error !== null) { toast.error(errorMessage(error)); return; }
     setOrgId(data as string);
     refetch();
     setNewOrg("");

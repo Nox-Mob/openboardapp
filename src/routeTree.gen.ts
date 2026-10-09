@@ -21,6 +21,7 @@ import { Route as AuthenticatedBoardDocumentsRouteImport } from './routes/_authe
 import { Route as AuthenticatedBoardMembersRouteImport } from './routes/_authenticated/board.members'
 import { Route as AuthenticatedBoardSettingsRouteImport } from './routes/_authenticated/board.settings'
 import { Route as AuthenticatedBoardTasksRouteImport } from './routes/_authenticated/board.tasks'
+import { Route as AuthenticatedBoardTemplatesRouteImport } from './routes/_authenticated/board.templates'
 import { Route as AuthenticatedBoardMeetingsIndexRouteImport } from './routes/_authenticated/board.meetings.index'
 import { Route as AuthenticatedBoardMeetingsMeetingIdRouteImport } from './routes/_authenticated/board.meetings.$meetingId'
 
@@ -87,6 +88,12 @@ const AuthenticatedBoardTasksRoute = AuthenticatedBoardTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AuthenticatedBoardRoute,
 } as any)
+const AuthenticatedBoardTemplatesRoute =
+  AuthenticatedBoardTemplatesRouteImport.update({
+    id: '/templates',
+    path: '/templates',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
 const AuthenticatedBoardMeetingsIndexRoute =
   AuthenticatedBoardMeetingsIndexRouteImport.update({
     id: '/meetings/',
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/board/members': typeof AuthenticatedBoardMembersRoute
   '/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/board/tasks': typeof AuthenticatedBoardTasksRoute
+  '/board/templates': typeof AuthenticatedBoardTemplatesRoute
   '/board/': typeof AuthenticatedBoardIndexRoute
   '/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/board/members': typeof AuthenticatedBoardMembersRoute
   '/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/board/tasks': typeof AuthenticatedBoardTasksRoute
+  '/board/templates': typeof AuthenticatedBoardTemplatesRoute
   '/board': typeof AuthenticatedBoardIndexRoute
   '/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/board/meetings': typeof AuthenticatedBoardMeetingsIndexRoute
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated/board/members': typeof AuthenticatedBoardMembersRoute
   '/_authenticated/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/_authenticated/board/tasks': typeof AuthenticatedBoardTasksRoute
+  '/_authenticated/board/templates': typeof AuthenticatedBoardTemplatesRoute
   '/_authenticated/board/': typeof AuthenticatedBoardIndexRoute
   '/_authenticated/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/_authenticated/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/board/members'
     | '/board/settings'
     | '/board/tasks'
+    | '/board/templates'
     | '/board/'
     | '/board/meetings/$meetingId'
     | '/board/meetings/'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/board/members'
     | '/board/settings'
     | '/board/tasks'
+    | '/board/templates'
     | '/board'
     | '/board/meetings/$meetingId'
     | '/board/meetings'
@@ -189,6 +201,7 @@ export interface FileRouteTypes {
     | '/_authenticated/board/members'
     | '/_authenticated/board/settings'
     | '/_authenticated/board/tasks'
+    | '/_authenticated/board/templates'
     | '/_authenticated/board/'
     | '/_authenticated/board/meetings/$meetingId'
     | '/_authenticated/board/meetings/'
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoardTasksRouteImport
       parentRoute: typeof AuthenticatedBoardRoute
     }
+    '/_authenticated/board/templates': {
+      id: '/_authenticated/board/templates'
+      path: '/templates'
+      fullPath: '/board/templates'
+      preLoaderRoute: typeof AuthenticatedBoardTemplatesRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
     '/_authenticated/board/meetings/': {
       id: '/_authenticated/board/meetings/'
       path: '/meetings'
@@ -311,6 +331,7 @@ interface AuthenticatedBoardRouteChildren {
   AuthenticatedBoardMembersRoute: typeof AuthenticatedBoardMembersRoute
   AuthenticatedBoardSettingsRoute: typeof AuthenticatedBoardSettingsRoute
   AuthenticatedBoardTasksRoute: typeof AuthenticatedBoardTasksRoute
+  AuthenticatedBoardTemplatesRoute: typeof AuthenticatedBoardTemplatesRoute
   AuthenticatedBoardIndexRoute: typeof AuthenticatedBoardIndexRoute
   AuthenticatedBoardMeetingsMeetingIdRoute: typeof AuthenticatedBoardMeetingsMeetingIdRoute
   AuthenticatedBoardMeetingsIndexRoute: typeof AuthenticatedBoardMeetingsIndexRoute
@@ -323,6 +344,7 @@ const AuthenticatedBoardRouteChildren: AuthenticatedBoardRouteChildren = {
   AuthenticatedBoardMembersRoute: AuthenticatedBoardMembersRoute,
   AuthenticatedBoardSettingsRoute: AuthenticatedBoardSettingsRoute,
   AuthenticatedBoardTasksRoute: AuthenticatedBoardTasksRoute,
+  AuthenticatedBoardTemplatesRoute: AuthenticatedBoardTemplatesRoute,
   AuthenticatedBoardIndexRoute: AuthenticatedBoardIndexRoute,
   AuthenticatedBoardMeetingsMeetingIdRoute:
     AuthenticatedBoardMeetingsMeetingIdRoute,

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
@@ -26,31 +26,24 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
 
   const q = useQuery({
     queryKey: key,
-    queryFn: async () => {
-      let query = supabase.from("action_items").select("*, meetings(title, meeting_date)").eq("organization_id", org.id);
-      if (meetingId) query = query.eq("meeting_id", meetingId);
-      if (mineOnly) query = query.eq("assignee_id", userId);
-      const { data, error } = await query.order("due_date", { nullsFirst: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => db.actions.list(org.id, { meetingId, assigneeId: mineOnly ? userId : undefined }),
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["actions", org.id] });
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.from("action_items").insert({
+    const { error } = await attempt(db.actions.add({
       title: f.title, assignee_id: f.assignee_id || null, due_date: f.due_date || null,
       meeting_id: meetingId ?? null, organization_id: org.id, created_by: userId,
-    });
+    }));
     if (error) { toast.error(errorMessage(error)); return; }
     setF({ title: "", assignee_id: "", due_date: "" });
     refresh();
   }
 
   async function setStatus(id: string, status: Status) {
-    const { error } = await supabase.from("action_items").update({ status }).eq("id", id);
+    const { error } = await attempt(db.actions.setStatus(id, status));
     if (error) { toast.error(errorMessage(error)); return; }
     refresh();
   }

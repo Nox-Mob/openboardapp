@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
@@ -23,27 +23,23 @@ function Committees() {
   const [desc, setDesc] = useState("");
   const q = useQuery({
     queryKey: ["committees", org.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("committees").select("*, committee_members(*)").eq("organization_id", org.id).order("name");
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => db.committees.list(org.id),
   });
   const refresh = () => qc.invalidateQueries({ queryKey: ["committees", org.id] });
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.from("committees").insert({ name, description: desc || null, organization_id: org.id });
+    const { error } = await attempt(db.committees.add({ name, description: desc || null, organization_id: org.id }));
     if (error) { toast.error(errorMessage(error)); return; }
     setName(""); setDesc(""); refresh();
   }
   async function addMember(committeeId: string, person_name: string, role: string) {
-    const { error } = await supabase.from("committee_members").insert({ committee_id: committeeId, person_name, role: role || "Member", organization_id: org.id });
+    const { error } = await attempt(db.committees.addMember({ committee_id: committeeId, person_name, role: role || "Member", organization_id: org.id }));
     if (error) { toast.error(errorMessage(error)); return; }
     refresh();
   }
   async function del(table: "committees" | "committee_members", id: string) {
-    const { error } = await supabase.from(table).delete().eq("id", id);
+    const { error } = await attempt(db.committees.remove(table, id));
     if (error) { toast.error(errorMessage(error)); return; }
     refresh();
   }

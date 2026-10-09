@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2, Copy } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
 import { can, ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
@@ -34,47 +34,47 @@ function Members() {
   const invites = useQuery({
     enabled: manager,
     queryKey: ["invites", org.id],
-    queryFn: async () => (await supabase.from("invitations").select("*").eq("organization_id", org.id).is("accepted_at", null).order("created_at", { ascending: false })).data ?? [],
+    queryFn: () => db.invitations.listOpen(org.id),
   });
   const terms = useQuery({
     queryKey: ["terms", org.id],
-    queryFn: async () => (await supabase.from("board_terms").select("*").eq("organization_id", org.id).order("start_date", { ascending: false })).data ?? [],
+    queryFn: () => db.terms.list(org.id),
   });
 
   async function invite(e: React.FormEvent) {
     e.preventDefault();
-    const { data, error } = await supabase.rpc("create_invitation", { _org: org.id, _email: inv.email, _role: inv.role });
-    if (error) { toast.error(errorMessage(error)); return; }
+    const { data, error } = await attempt(db.invitations.create(org.id, inv.email, inv.role));
+    if (error !== null) { toast.error(errorMessage(error)); return; }
     setLink(`${window.location.origin}/invite/${data}`);
     setInv({ email: "", role: "member" });
     qc.invalidateQueries({ queryKey: ["invites", org.id] });
   }
 
   async function changeRole(id: string, role: OrgRole) {
-    const { error } = await supabase.from("memberships").update({ role }).eq("id", id);
+    const { error } = await attempt(db.members.setRole(id, role));
     if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["org-members", org.id] });
   }
   async function removeMember(id: string) {
     if (!confirm("Remove this person from the organization?")) return;
-    const { error } = await supabase.from("memberships").delete().eq("id", id);
+    const { error } = await attempt(db.members.remove(id));
     if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["org-members", org.id] });
   }
   async function addTerm(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.from("board_terms").insert({ ...term, end_date: term.end_date || null, organization_id: org.id });
+    const { error } = await attempt(db.terms.add({ ...term, end_date: term.end_date || null, organization_id: org.id }));
     if (error) { toast.error(errorMessage(error)); return; }
     setTerm({ person_name: "", position: "Director", start_date: "", end_date: "" });
     qc.invalidateQueries({ queryKey: ["terms", org.id] });
   }
   async function deleteTerm(id: string) {
-    const { error } = await supabase.from("board_terms").delete().eq("id", id);
+    const { error } = await attempt(db.terms.remove(id));
     if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["terms", org.id] });
   }
   async function revoke(id: string) {
-    await supabase.from("invitations").delete().eq("id", id);
+    await attempt(db.invitations.revoke(id));
     qc.invalidateQueries({ queryKey: ["invites", org.id] });
   }
 

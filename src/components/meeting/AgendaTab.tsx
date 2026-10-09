@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { errorMessage } from "@/lib/export";
 import { useAgenda, useInvalidateMeeting } from "@/lib/meeting-data";
@@ -22,7 +22,7 @@ export function AgendaTab({ meetingId, editable }: { meetingId: string; editable
   async function add(e: React.FormEvent) {
     e.preventDefault();
     const position = (agenda.data?.length ?? 0) ? Math.max(...agenda.data!.map((a) => a.position)) + 1 : 0;
-    const { error } = await supabase.from("agenda_items").insert({ title, presenter: presenter || null, position, meeting_id: meetingId, organization_id: org.id });
+    const { error } = await attempt(db.agenda.add({ title, presenter: presenter || null, position, meeting_id: meetingId, organization_id: org.id }));
     if (error) { toast.error(errorMessage(error)); return; }
     setTitle("");
     setPresenter("");
@@ -34,14 +34,14 @@ export function AgendaTab({ meetingId, editable }: { meetingId: string; editable
     const i = list.findIndex((a) => a.id === item.id);
     const other = list[i + dir];
     if (!other) return;
-    await supabase.from("agenda_items").update({ position: other.position }).eq("id", item.id);
-    await supabase.from("agenda_items").update({ position: item.position === other.position ? item.position + dir : item.position }).eq("id", other.id);
+    await attempt(db.agenda.update(item.id, { position: other.position }));
+    await attempt(db.agenda.update(other.id, { position: item.position === other.position ? item.position + dir : item.position }));
     invalidate("agenda");
   }
 
   async function remove(item: Item) {
     if (!confirm(`Remove "${item.title}" from the agenda?`)) return;
-    const { error } = await supabase.from("agenda_items").delete().eq("id", item.id);
+    const { error } = await attempt(db.agenda.remove(item.id));
     if (error) { toast.error(errorMessage(error)); return; }
     invalidate("agenda", "motions");
   }
@@ -93,7 +93,7 @@ function NotesEditor({ item, editable }: { item: Item; editable: boolean }) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       setState("saving");
-      const { error } = await supabase.from("agenda_items").update({ notes: v }).eq("id", item.id);
+      const { error } = await attempt(db.agenda.update(item.id, { notes: v }));
       setState(error ? "error" : "saved");
       if (error) toast.error("Notes didn't save: " + errorMessage(error));
     }, 800);

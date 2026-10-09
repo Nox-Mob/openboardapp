@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage, downloadBlob } from "@/lib/export";
@@ -33,12 +33,9 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
   const nameOf = (id: string | null) => members.data?.find((m) => m.user_id === id)?.name ?? "Unknown";
 
   async function createVersion(content: string) {
-    const { data, error } = await supabase
-      .from("minutes")
-      .insert({ meeting_id: meeting.id, organization_id: org.id, version: nextVersion(versions), content, created_by: userId })
-      .select("id").single();
-    if (error) { toast.error(errorMessage(error)); return; }
-    setSelected(data.id);
+    const { data, error } = await attempt(db.minutes.create({ meeting_id: meeting.id, organization_id: org.id, version: nextVersion(versions), content, created_by: userId }));
+    if (error !== null) { toast.error(errorMessage(error)); return; }
+    setSelected(data);
     invalidate("minutes");
   }
 
@@ -58,7 +55,7 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
     if (!current) return;
     const patch: { status: typeof status; content?: string } = { status };
     if (content !== undefined) patch.content = content;
-    const { error } = await supabase.from("minutes").update(patch).eq("id", current.id);
+    const { error } = await attempt(db.minutes.update(current.id, patch));
     if (error) { toast.error(errorMessage(error)); return; }
     invalidate("minutes");
     toast.success(status === "approved" ? "Minutes approved and locked" : status === "submitted" ? "Submitted for approval" : "Saved");

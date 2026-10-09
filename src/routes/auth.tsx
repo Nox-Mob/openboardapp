@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { attempt, db } from "@/data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,13 +41,12 @@ function AuthPage() {
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: safePath(redirect), replace: true });
+    void db.auth.hasSession().then((yes) => {
+      if (yes) navigate({ to: safePath(redirect), replace: true });
     });
-    const { data } = supabase.auth.onAuthStateChange((e, s) => {
-      if (e === "SIGNED_IN" && s) navigate({ to: safePath(redirect), replace: true });
+    return db.auth.onChange((e, signedIn) => {
+      if (e === "SIGNED_IN" && signedIn) navigate({ to: safePath(redirect), replace: true });
     });
-    return () => data.subscription.unsubscribe();
   }, [navigate, redirect]);
 
   async function submit(e: React.FormEvent) {
@@ -56,16 +54,10 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "in") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        await db.auth.signIn(email, password);
       } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin + "/board", data: { full_name: name } },
-        });
-        if (error) throw error;
-        if (!data.session) setSent(true);
+        const { needsConfirmation } = await db.auth.signUp(email, password, name, window.location.origin + "/board");
+        if (needsConfirmation) setSent(true);
       }
     } catch (err) {
       toast.error(errorMessage(err));
@@ -75,7 +67,7 @@ function AuthPage() {
   }
 
   async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
+    const r = await db.auth.signInWithGoogle(window.location.origin + "/auth");
     if (r.error) toast.error(errorMessage(r.error));
   }
 
@@ -100,7 +92,7 @@ function AuthPage() {
                 disabled={busy}
                 onClick={async () => {
                   setBusy(true);
-                  const { error } = await supabase.auth.signInWithPassword({ email: "demo@demo.org", password: "OpenBoardDemo!2026" });
+                  const { error } = await attempt(db.auth.signIn("demo@demo.org", "OpenBoardDemo!2026"));
                   setBusy(false);
                   if (error) toast.error(errorMessage(error));
                 }}

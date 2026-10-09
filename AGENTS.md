@@ -13,7 +13,9 @@
 
 - Tenancy: every tenant table carries organization_id; RLS uses security-definer helpers is_org_member / can_edit_records / can_manage_org, and same-org triggers reject cross-org parent links, so isolation never depends on the UI.
 - Permissions: CAPABILITIES in src/lib/permissions.ts is the only role table and must mirror the DB helpers; src/lib/board.test.ts pins every cell.
-- Data access: pages query the generated browser client directly under RLS (no server functions yet); privileged multi-step writes (create org, invites) are SECURITY DEFINER RPCs.
+- Data access: UI code calls only `db` from src/data, which detects the platform (src/data/platform.ts) and selects an adapter; only adapters import the database client, enforced by src/data/data-layer.test.ts. Privileged multi-step writes (create org, invites) stay SECURITY DEFINER RPCs.
+- Meeting templates store their agenda as a JSON list in meeting_templates, normalized by src/lib/templates.ts on read and write, so meetings copy the outline at creation and later template edits never change existing meetings.
+- Package manager: npm only (package-lock.json); no bun/yarn/pnpm lockfiles, so installs are reproducible in one tool.
 - Audit: the audit_row trigger writes audit_log for every tenant table; users have no write access to audit_log.
 - Official records: DB triggers lock approved/superseded minutes, motions and attendance of approved or archived meetings, and distributed packets; amendments create a new minutes version.
 - Invites store only a SHA-256 hash of the token and are claimed once via accept_invitation.

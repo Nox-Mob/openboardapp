@@ -10,4 +10,7 @@
 - [x] Tests: permissions, minutes rules, export escaping
 - [x] Demo account with sample data
 - [x] Database rule tests (isolation, permissions, record locks, audit) and page tests
-- [ ] v0.2: reminders, meeting templates, backup restore drill
+- [x] Meeting templates (create/edit/delete, pick when scheduling, save meeting as template)
+- [x] Data layer: all screens go through src/data with platform check
+- [x] npm only
+- [ ] v0.2: reminders, backup restore drill

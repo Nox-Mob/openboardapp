@@ -481,6 +481,50 @@ export type Database = {
           },
         ]
       }
+      meeting_templates: {
+        Row: {
+          agenda: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          meeting_title: string
+          name: string
+          organization_id: string
+          start_time: string | null
+        }
+        Insert: {
+          agenda?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          meeting_title?: string
+          name: string
+          organization_id: string
+          start_time?: string | null
+        }
+        Update: {
+          agenda?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          meeting_title?: string
+          name?: string
+          organization_id?: string
+          start_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meetings: {
         Row: {
           created_at: string

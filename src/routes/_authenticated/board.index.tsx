@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { PageHeader, LoadingState, EmptyState } from "@/components/PageStates";
 import { Badge } from "@/components/ui/badge";
@@ -14,14 +14,7 @@ function Overview() {
   const today = new Date().toLocaleDateString("en-CA");
   const q = useQuery({
     queryKey: ["overview", org.id],
-    queryFn: async () => {
-      const [meetings, tasks, minutes] = await Promise.all([
-        supabase.from("meetings").select("*").eq("organization_id", org.id).gte("meeting_date", today).neq("status", "archived").order("meeting_date").limit(3),
-        supabase.from("action_items").select("*").eq("organization_id", org.id).eq("assignee_id", userId).in("status", ["open", "in_progress"]).order("due_date"),
-        supabase.from("minutes").select("id, version, meeting_id, meetings(title, meeting_date)").eq("organization_id", org.id).eq("status", "submitted"),
-      ]);
-      return { meetings: meetings.data ?? [], tasks: tasks.data ?? [], minutes: minutes.data ?? [] };
-    },
+    queryFn: () => db.overview.load(org.id, userId, today),
   });
 
   return (

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { errorMessage } from "@/lib/export";
 import { formatMotion } from "@/lib/minutes";
@@ -26,14 +26,14 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.from("motions").insert({
+    const { error } = await attempt(db.motions.add({
       ...f,
       agenda_item_id: f.agenda_item_id === "none" ? null : f.agenda_item_id,
       moved_by: f.moved_by || null,
       seconded_by: f.seconded_by || null,
       meeting_id: meetingId,
       organization_id: org.id,
-    });
+    }));
     if (error) { toast.error(errorMessage(error)); return; }
     setF(empty);
     invalidate("motions");
@@ -42,7 +42,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
 
   async function remove(id: string) {
     if (!confirm("Delete this motion?")) return;
-    const { error } = await supabase.from("motions").delete().eq("id", id);
+    const { error } = await attempt(db.motions.remove(id));
     if (error) { toast.error(errorMessage(error)); return; }
     invalidate("motions");
   }

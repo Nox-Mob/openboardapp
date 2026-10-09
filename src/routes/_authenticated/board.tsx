@@ -2,8 +2,8 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, FileText, LayoutDashboard, ListChecks, LogOut, ScrollText, Settings, Users, Network } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { CalendarDays, FileText, LayoutDashboard, ListChecks, LogOut, ScrollText, Settings, Users, Network, LayoutTemplate } from "lucide-react";
+import { attempt, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
 import { can, ROLE_LABELS } from "@/lib/permissions";
 import { LoadingState } from "@/components/PageStates";
@@ -36,6 +36,7 @@ function BoardLayout() {
 const nav = [
   { to: "/board", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/board/meetings", label: "Meetings", icon: CalendarDays },
+  { to: "/board/templates", label: "Meeting templates", icon: LayoutTemplate },
   { to: "/board/tasks", label: "Action items", icon: ListChecks },
   { to: "/board/documents", label: "Documents", icon: FileText },
   { to: "/board/members", label: "Members & terms", icon: Users },
@@ -50,7 +51,7 @@ function Shell() {
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
-    await supabase.auth.signOut();
+    await db.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
 
@@ -124,9 +125,9 @@ function CreateOrg({ onSignOut }: { onSignOut: () => void }) {
     e.preventDefault();
     setBusy(true);
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const { data, error } = await supabase.rpc("create_organization", { _name: name, _timezone: tz });
+    const { data, error } = await attempt(db.orgs.create(name, tz));
     setBusy(false);
-    if (error) { toast.error(errorMessage(error)); return; }
+    if (error !== null) { toast.error(errorMessage(error)); return; }
     setOrgId(data as string);
     refetch();
   }

@@ -8,6 +8,13 @@
       "when": 1791562052888,
       "tag": "0000_board_core_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791563572827,
+      "tag": "0001_meeting_templates",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
@@ -14,6 +14,7 @@ import { AttendanceTab } from "@/components/meeting/AttendanceTab";
 import { MotionsTab } from "@/components/meeting/MotionsTab";
 import { MinutesTab } from "@/components/meeting/MinutesTab";
 import { PacketTab } from "@/components/meeting/PacketTab";
+import { SaveAsTemplate } from "@/components/meeting/SaveAsTemplate";
 import { MeetingActionsTab } from "@/components/meeting/MeetingActionsTab";
 
 const TABS = ["agenda", "attendance", "motions", "minutes", "packet", "actions"] as const;
@@ -44,7 +45,7 @@ function MeetingPage() {
   const editable = can(org.role, "records.edit") && !locked;
 
   async function setStatus(status: string) {
-    const { error } = await supabase.from("meetings").update({ status: status as typeof m.status }).eq("id", m.id);
+    const { error } = await attempt(db.meetings.setStatus(m.id, status as typeof m.status));
     if (error) { toast.error(errorMessage(error)); return; }
     invalidate("meeting");
     toast.success("Meeting status updated");
@@ -57,14 +58,14 @@ function MeetingPage() {
         title={m.title}
         actions={
           can(org.role, "records.edit") ? (
-            <Select value={m.status} onValueChange={setStatus}>
+            <div className="flex gap-2"><SaveAsTemplate meeting={m} /><Select value={m.status} onValueChange={setStatus}>
               <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {["draft", "scheduled", "in_progress", "completed", "archived"].map((s) => (
                   <SelectItem key={s} value={s}><StatusBadge status={s} /></SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select></div>
           ) : <StatusBadge status={m.status} />
         }
       >
