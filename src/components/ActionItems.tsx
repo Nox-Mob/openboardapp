@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
-import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
+import { useCurrentOrg, useOrgMembers, useTitles } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { LoadingState, EmptyState } from "@/components/PageStates";
@@ -18,6 +18,7 @@ type Status = (typeof STATUSES)[number];
 export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineOnly?: boolean }) {
   const { org, userId } = useCurrentOrg();
   const members = useOrgMembers(org.id);
+  const titles = useTitles(org.id);
   const qc = useQueryClient();
   const editor = can(org.role, "records.edit");
   const [f, setF] = useState({ title: "", assignee_id: "", due_date: "" });
@@ -48,7 +49,7 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
     refresh();
   }
 
-  const nameOf = (id: string | null) => members.data?.find((m) => m.user_id === id)?.name ?? "Unassigned";
+  const nameOf = (id: string | null) => { const m = members.data?.find((x) => x.user_id === id); return m ? titles.label(m.name, m.user_id) : "Unassigned"; };
   if (q.isLoading) return <LoadingState />;
 
   return (
@@ -58,7 +59,7 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
           <Input placeholder="What needs to happen?" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} required />
           <Select value={f.assignee_id} onValueChange={(v) => setF({ ...f, assignee_id: v })}>
             <SelectTrigger><SelectValue placeholder="Assign to…" /></SelectTrigger>
-            <SelectContent>{members.data?.map((m) => <SelectItem key={m.user_id} value={m.user_id}>{m.name}</SelectItem>)}</SelectContent>
+            <SelectContent>{members.data?.map((m) => <SelectItem key={m.user_id} value={m.user_id}>{titles.label(m.name, m.user_id)}</SelectItem>)}</SelectContent>
           </Select>
           <Input type="date" value={f.due_date} onChange={(e) => setF({ ...f, due_date: e.target.value })} />
           <Button type="submit">Add</Button>

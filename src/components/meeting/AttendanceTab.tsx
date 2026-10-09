@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { attempt, db } from "@/data";
-import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
+import { useCurrentOrg, useOrgMembers, useTitles } from "@/lib/org-context";
 import { errorMessage } from "@/lib/export";
 import { useAttendance, useInvalidateMeeting } from "@/lib/meeting-data";
 import { LoadingState, EmptyState } from "@/components/PageStates";
@@ -16,6 +16,7 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
   const { org } = useCurrentOrg();
   const att = useAttendance(meetingId);
   const members = useOrgMembers(org.id);
+  const titles = useTitles(org.id);
   const invalidate = useInvalidateMeeting(meetingId);
   const [guest, setGuest] = useState("");
 
@@ -65,13 +66,13 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
           {att.data.map((a) => (
             <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div>
-                <p className="font-medium">{a.person_name}</p>
+                <p className="font-medium">{titles.label(a.person_name, a.user_id)}</p>
                 {!a.is_voting && <p className="text-xs text-muted-foreground">Guest / non-voting</p>}
                 {a.is_voting && !a.user_id && (
                   <select aria-label={`Link ${a.person_name} to an account`} className="mt-1 h-8 rounded-md border bg-background px-2 text-xs" value="" disabled={!editable}
                     onChange={(e) => e.target.value && update(a.id, { user_id: e.target.value })}>
                     <option value="">No account linked — can't vote live</option>
-                    {(members.data ?? []).map((mb) => <option key={mb.user_id} value={mb.user_id}>{mb.name}</option>)}
+                    {(members.data ?? []).map((mb) => <option key={mb.user_id} value={mb.user_id}>{titles.label(mb.name, mb.user_id)}</option>)}
                   </select>
                 )}
               </div>

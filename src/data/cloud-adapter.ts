@@ -14,7 +14,7 @@ function must<R extends { data: unknown; error: unknown }>(r: R): NonNullable<R[
   return r.data as NonNullable<R["data"]>;
 }
 
-export const EXPORT_TABLES = ["organizations", "memberships", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
+export const EXPORT_TABLES = ["organizations", "memberships", "board_positions", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
 export type ExportTable = (typeof EXPORT_TABLES)[number];
 
 /** Lovable Cloud implementation of the data layer. All reads/writes run under row-level security as the signed-in user. */
@@ -108,8 +108,33 @@ export const cloudAdapter = {
     async add(row: TablesInsert<"board_terms">) {
       must(await supabase.from("board_terms").insert(row));
     },
+    /** Hands a role to a new holder: open terms for that role end the day before, history is kept. */
+    async assign(row: TablesInsert<"board_terms"> & { position_id: string }) {
+      const d = new Date(row.start_date + "T00:00:00Z");
+      d.setUTCDate(d.getUTCDate() - 1);
+      const dayBefore = d.toISOString().slice(0, 10);
+      must(await supabase.from("board_terms").update({ end_date: dayBefore })
+        .eq("position_id", row.position_id).lt("start_date", row.start_date)
+        .or(`end_date.is.null,end_date.gte.${row.start_date}`));
+      must(await supabase.from("board_terms").insert(row));
+    },
     async remove(id: string) {
       must(await supabase.from("board_terms").delete().eq("id", id));
+    },
+  },
+
+  positions: {
+    async list(orgId: string) {
+      return must(await supabase.from("board_positions").select("*").eq("organization_id", orgId).order("sort_order").order("title")) ?? [];
+    },
+    async add(row: TablesInsert<"board_positions">) {
+      must(await supabase.from("board_positions").insert(row));
+    },
+    async update(id: string, patch: { title?: string; term_years?: number | null }) {
+      must(await supabase.from("board_positions").update(patch).eq("id", id));
+    },
+    async remove(id: string) {
+      must(await supabase.from("board_positions").delete().eq("id", id));
     },
   },
 

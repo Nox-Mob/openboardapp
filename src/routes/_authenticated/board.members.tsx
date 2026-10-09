@@ -4,9 +4,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2, Copy } from "lucide-react";
 import { attempt, db } from "@/data";
-import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
+import { useCurrentOrg, useOrgMembers, useTitles } from "@/lib/org-context";
 import { can, ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
+import { currentHolder, termEnd } from "@/lib/titles";
+import type { Tables } from "@/integrations/supabase/types";
 import { PageHeader, LoadingState, EmptyState } from "@/components/PageStates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +21,97 @@ export const Route = createFileRoute("/_authenticated/board/members")({
 });
 
 const INVITABLE = ROLES.filter((r) => r !== "owner");
+const TERM_OPTIONS = [1, 2, 3, 4, 5];
+
+function TermSelect({ value, onChange, disabled }: { value: number | null; onChange: (v: number | null) => void; disabled?: boolean }) {
+  return (
+    <Select value={value ? String(value) : "none"} onValueChange={(v) => onChange(v === "none" ? null : Number(v))} disabled={!!disabled}>
+      <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        {TERM_OPTIONS.map((y) => <SelectItem key={y} value={String(y)}>{y} year{y > 1 ? "s" : ""}</SelectItem>)}
+        <SelectItem value="none">No fixed term</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
+type Candidate = { user_id: string; name: string };
+
+function RoleCard({ role, terms, today, editor, candidates, orgId }: {
+  role: Tables<"board_positions">; terms: Tables<"board_terms">[]; today: string; editor: boolean; candidates: Candidate[]; orgId: string;
+}) {
+  const qc = useQueryClient();
+  const holder = currentHolder(terms, role.id, today);
+  const history = terms.filter((t) => t.id !== holder?.id).sort((a, b) => b.start_date.localeCompare(a.start_date));
+  const [filling, setFilling] = useState(false);
+  const [who, setWho] = useState("");
+  const [start, setStart] = useState(today);
+  const refresh = () => { qc.invalidateQueries({ queryKey: ["terms", orgId] }); qc.invalidateQueries({ queryKey: ["positions", orgId] }); };
+
+  async function fill(e: React.FormEvent) {
+    e.preventDefault();
+    const c = candidates.find((x) => x.user_id === who);
+    if (!c) return;
+    const { error } = await attempt(db.terms.assign({
+      organization_id: orgId, position_id: role.id, position: role.title, person_name: c.name, user_id: c.user_id,
+      start_date: start, end_date: termEnd(start, role.term_years),
+    }));
+    if (error) { toast.error(errorMessage(error)); return; }
+    toast.success(`${c.name} is now ${role.title}`);
+    setFilling(false); setWho("");
+    refresh();
+  }
+  async function setYears(v: number | null) {
+    const { error } = await attempt(db.positions.update(role.id, { term_years: v }));
+    if (error) { toast.error(errorMessage(error)); return; }
+    refresh();
+  }
+  async function removeRole() {
+    if (!confirm(`Delete the role "${role.title}"? Past terms are kept.`)) return;
+    const { error } = await attempt(db.positions.remove(role.id));
+    if (error) { toast.error(errorMessage(error)); return; }
+    refresh();
+  }
+
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="text-lg">{role.title}</h3>
+          <p className="text-sm">
+            {holder ? <><span className="font-medium">{holder.person_name}</span> <span className="font-mono text-xs text-muted-foreground">{holder.start_date} → {holder.end_date ?? "present"}</span></> : <span className="text-muted-foreground">Vacant</span>}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {editor ? <TermSelect value={role.term_years} onChange={setYears} /> : <Badge variant="secondary">{role.term_years ? `${role.term_years}-year term` : "No fixed term"}</Badge>}
+          {editor && <Button size="sm" onClick={() => setFilling(!filling)}>{holder ? "Change who fills it" : "Fill role"}</Button>}
+          {editor && <Button size="icon" variant="ghost" onClick={removeRole} aria-label={`Delete ${role.title}`}><Trash2 className="h-4 w-4" /></Button>}
+        </div>
+      </div>
+      {filling && (
+        <form onSubmit={fill} className="mt-3 grid gap-2 rounded-md bg-muted p-3 md:grid-cols-[1fr_160px_auto]">
+          <Select value={who} onValueChange={setWho}>
+            <SelectTrigger aria-label="Who fills this role"><SelectValue placeholder="Choose a board member…" /></SelectTrigger>
+            <SelectContent>{candidates.map((c) => <SelectItem key={c.user_id} value={c.user_id}>{c.name}</SelectItem>)}</SelectContent>
+          </Select>
+          <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} required aria-label="Term starts" />
+          <Button type="submit" disabled={!who}>Save</Button>
+          <p className="text-xs text-muted-foreground md:col-span-3">
+            Term {start} → {termEnd(start, role.term_years) ?? "no end date"}.{holder ? ` ${holder.person_name}'s term ends the day before; it stays in the history.` : ""} Only people with app access appear here — invite them first.
+          </p>
+        </form>
+      )}
+      {!!history.length && (
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer text-muted-foreground">History ({history.length})</summary>
+          <ul className="mt-2 space-y-1">
+            {history.map((t) => <li key={t.id} className="flex justify-between"><span>{t.person_name}</span><span className="font-mono text-xs text-muted-foreground">{t.start_date} → {t.end_date ?? "present"}</span></li>)}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
+}
 
 function Members() {
   const { org, userId } = useCurrentOrg();
@@ -28,8 +121,9 @@ function Members() {
   const editor = can(org.role, "records.edit");
   const [inv, setInv] = useState({ email: "", role: "member" as OrgRole });
   const [link, setLink] = useState<string | null>(null);
-  const [term, setTerm] = useState({ person_name: "", position: "Director", start_date: "", end_date: "" });
+  const [role, setRole] = useState({ title: "", term_years: 1 as number | null });
   const today = new Date().toLocaleDateString("en-CA");
+  const titles = useTitles(org.id);
 
   const invites = useQuery({
     enabled: manager,
@@ -39,6 +133,10 @@ function Members() {
   const terms = useQuery({
     queryKey: ["terms", org.id],
     queryFn: () => db.terms.list(org.id),
+  });
+  const positions = useQuery({
+    queryKey: ["positions", org.id],
+    queryFn: () => db.positions.list(org.id),
   });
 
   async function invite(e: React.FormEvent) {
@@ -61,12 +159,12 @@ function Members() {
     if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["org-members", org.id] });
   }
-  async function addTerm(e: React.FormEvent) {
+  async function addRole(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await attempt(db.terms.add({ ...term, end_date: term.end_date || null, organization_id: org.id }));
+    const { error } = await attempt(db.positions.add({ organization_id: org.id, title: role.title.trim(), term_years: role.term_years, sort_order: positions.data?.length ?? 0 }));
     if (error) { toast.error(errorMessage(error)); return; }
-    setTerm({ person_name: "", position: "Director", start_date: "", end_date: "" });
-    qc.invalidateQueries({ queryKey: ["terms", org.id] });
+    setRole({ title: "", term_years: 1 });
+    qc.invalidateQueries({ queryKey: ["positions", org.id] });
   }
   async function deleteTerm(id: string) {
     const { error } = await attempt(db.terms.remove(id));
@@ -78,8 +176,7 @@ function Members() {
     qc.invalidateQueries({ queryKey: ["invites", org.id] });
   }
 
-  const current = (terms.data ?? []).filter((t) => !t.end_date || t.end_date >= today);
-  const former = (terms.data ?? []).filter((t) => t.end_date && t.end_date < today);
+  const unlinked = (terms.data ?? []).filter((t) => !t.position_id);
 
   return (
     <>
@@ -91,7 +188,7 @@ function Members() {
             <div className="divide-y rounded-lg border bg-card">
               {members.data?.map((m) => (
                 <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                  <div><p className="font-medium">{m.name}{m.user_id === userId && <span className="text-muted-foreground"> (you)</span>}</p><p className="text-xs text-muted-foreground">{m.email}</p></div>
+                  <div><p className="font-medium">{m.name}{m.user_id === userId && <span className="text-muted-foreground"> (you)</span>}</p><p className="text-xs text-muted-foreground">{titles.title(m.user_id, m.name) ? <span className="font-medium text-primary">{titles.title(m.user_id, m.name)} · </span> : null}{m.email}</p></div>
                   <div className="flex items-center gap-2">
                     {manager && m.role !== "owner" ? (
                       <Select value={m.role} onValueChange={(v) => changeRole(m.id, v as OrgRole)}>
@@ -138,38 +235,32 @@ function Members() {
       </div>
 
       <section className="mt-10">
-        <p className="eyebrow mb-2">Board composition & terms of service</p>
+        <p className="eyebrow mb-2">Board roles & terms</p>
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-4 lg:col-span-2">
-            {[{ label: "Current", rows: current }, { label: "Former", rows: former }].map((g) => (
-              <div key={g.label}>
-                <h3 className="mb-2 text-base">{g.label}</h3>
-                {!g.rows.length ? <EmptyState title={`No ${g.label.toLowerCase()} board terms`} /> : (
-                  <div className="divide-y rounded-lg border bg-card">
-                    {g.rows.map((t) => (
-                      <div key={t.id} className="flex items-center justify-between px-4 py-3 text-sm">
-                        <div><p className="font-medium">{t.person_name}</p><p className="text-xs text-muted-foreground">{t.position}</p></div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-muted-foreground">{t.start_date} → {t.end_date ?? "present"}</span>
-                          {editor && <Button size="icon" variant="ghost" onClick={() => deleteTerm(t.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+          <div className="space-y-3 lg:col-span-2">
+            {positions.isLoading ? <LoadingState /> : !positions.data?.length ? <EmptyState title="No board roles yet" /> : positions.data.map((p) => (
+              <RoleCard key={p.id} role={p} terms={(terms.data ?? []).filter((t) => t.position_id === p.id)} today={today} editor={editor}
+                candidates={(members.data ?? []).filter((m) => m.role !== "observer")} orgId={org.id} />
             ))}
+            {!!unlinked.length && (
+              <div className="rounded-lg border bg-card p-4 text-sm">
+                <p className="eyebrow mb-2">Older terms not tied to a role</p>
+                {unlinked.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between py-1">
+                    <span>{t.person_name} · {t.position}</span>
+                    <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground">{t.start_date} → {t.end_date ?? "present"}
+                      {editor && <Button size="icon" variant="ghost" onClick={() => deleteTerm(t.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {editor && (
-            <form onSubmit={addTerm} className="h-fit space-y-3 rounded-lg border bg-card p-5">
-              <p className="eyebrow">Record a term</p>
-              <div><Label>Name</Label><Input value={term.person_name} onChange={(e) => setTerm({ ...term, person_name: e.target.value })} required /></div>
-              <div><Label>Position</Label><Input value={term.position} onChange={(e) => setTerm({ ...term, position: e.target.value })} placeholder="President, Treasurer, Director…" required /></div>
-              <div className="grid grid-cols-2 gap-2">
-                <div><Label>Start</Label><Input type="date" value={term.start_date} onChange={(e) => setTerm({ ...term, start_date: e.target.value })} required /></div>
-                <div><Label>End</Label><Input type="date" value={term.end_date} onChange={(e) => setTerm({ ...term, end_date: e.target.value })} /></div>
-              </div>
-              <Button type="submit" className="w-full">Add term</Button>
+            <form onSubmit={addRole} className="h-fit space-y-3 rounded-lg border bg-card p-5">
+              <p className="eyebrow">Create a board role</p>
+              <div><Label>Title</Label><Input value={role.title} onChange={(e) => setRole({ ...role, title: e.target.value })} placeholder="President, Membership VP…" required /></div>
+              <div><Label>Term length</Label><TermSelect value={role.term_years} onChange={(v) => setRole({ ...role, term_years: v })} /></div>
+              <Button type="submit" className="w-full">Add role</Button>
             </form>
           )}
         </div>
