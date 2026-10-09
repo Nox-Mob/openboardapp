@@ -6,7 +6,7 @@ describe("meeting templates", () => {
     expect(STANDARD_AGENDA.map((a) => a.title)).toEqual(["Call to order", "Approval of previous minutes", "Treasurer's report", "Old business", "New business", "Adjournment"]);
   });
   it("blank and malformed agenda entries are dropped", () => {
-    expect(normalizeAgenda([{ title: "  " }, null, 5, { title: " Budget " }])).toEqual([{ title: "Budget", presenter: null, duration_minutes: null, description: null, proposed_motion: null }]);
+    expect(normalizeAgenda([{ title: "  " }, null, 5, { title: " Budget " }])).toEqual([{ title: "Budget", presenter: null, duration_minutes: null, description: null, proposed_motion: null, is_vote_item: false, decision_rule: null }]);
     expect(normalizeAgenda("nope")).toEqual([]);
   });
   it("invalid durations are cleared", () => {
@@ -18,13 +18,23 @@ describe("meeting templates", () => {
   });
   it("agenda text editor parses Title | Presenter | Minutes", () => {
     expect(parseAgendaText("Budget | Treasurer | 20\n\nAdjourn")).toEqual([
-      { title: "Budget", presenter: "Treasurer", duration_minutes: 20, description: null, proposed_motion: null },
-      { title: "Adjourn", presenter: null, duration_minutes: null, description: null, proposed_motion: null },
+      { title: "Budget", presenter: "Treasurer", duration_minutes: 20, description: null, proposed_motion: null, is_vote_item: false, decision_rule: null },
+      { title: "Adjourn", presenter: null, duration_minutes: null, description: null, proposed_motion: null, is_vote_item: false, decision_rule: null },
     ]);
   });
   it("text round-trips and totals minutes", () => {
     const items = parseAgendaText("Budget | Treasurer | 20\nReview | | 10");
     expect(parseAgendaText(agendaToText(items))).toEqual(items);
     expect(totalMinutes(items)).toBe(30);
+  });
+  it("vote items keep their own decision rule; non-vote items and unknown rules fall back to the org default", () => {
+    const [a, b, c] = normalizeAgenda([
+      { title: "Bylaws amendment", is_vote_item: true, decision_rule: "two_thirds_cast", proposed_motion: "Amend Art. 3" },
+      { title: "Report", is_vote_item: false, decision_rule: "two_thirds_cast" },
+      { title: "Budget", is_vote_item: true, decision_rule: "unanimous" },
+    ]);
+    expect(a).toMatchObject({ is_vote_item: true, decision_rule: "two_thirds_cast" });
+    expect(b).toMatchObject({ is_vote_item: false, decision_rule: null });
+    expect(c).toMatchObject({ is_vote_item: true, decision_rule: null });
   });
 });

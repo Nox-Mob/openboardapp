@@ -143,4 +143,18 @@ describe.skipIf(!hasDb)("live voting (live database)", () => {
     await a.rpc("close_vote", { _motion: id });
     expect((await m.from("member_votes").select("id").eq("motion_id", id)).data ?? []).toHaveLength(1);
   });
+  it("a vote item's own decision rule (e.g. two-thirds for bylaws) overrides the organization default", async () => {
+    await attend(a, "present", "Owner");
+    await attend(m, "present", "Member");
+    const item = (await a.from("agenda_items").insert({ organization_id: ORG_A, meeting_id: meetingId, title: "Bylaws amendment", position: 0, is_vote_item: true, decision_rule: "two_thirds_cast" }).select("id").single()).data!.id;
+    const r = await a.rpc("start_vote", { _meeting: meetingId, _agenda_item: item, _text: "Amend Article 3", _moved_by: "Owner", _seconded_by: "Member" });
+    expect(r.error).toBeNull();
+    await a.rpc("cast_vote", { _motion: r.data as string, _vote: "yes" });
+    await m.rpc("cast_vote", { _motion: r.data as string, _vote: "no" });
+    await a.rpc("close_vote", { _motion: r.data as string });
+    const { data } = await a.from("motions").select("outcome, vote_record").eq("id", r.data as string).single();
+    // 1 of 2 is a simple-majority tie (fails either way) — check the rule recorded, and that 1/2 < 2/3 fails.
+    expect((data?.vote_record as { decision_rule: string; org_default_rule: string })).toMatchObject({ decision_rule: "two_thirds_cast", org_default_rule: "majority_cast" });
+    expect(data?.outcome).toBe("failed");
+  });
 });

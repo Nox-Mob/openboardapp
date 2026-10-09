@@ -29,6 +29,13 @@
       "when": 1791570895405,
       "tag": "0003_live_voting",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791572118558,
+      "tag": "0004_agenda_vote_items",
+      "breakpoints": true
     }
   ]
 }

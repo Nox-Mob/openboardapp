@@ -8,7 +8,7 @@ import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { signedUrl } from "@/lib/meeting-data";
-import { canCloseEarly, presentAttendees, VOTE_LABEL, VOTE_PHRASE, type Vote } from "@/lib/votes";
+import { DECISION_RULES, type DecisionRule, canCloseEarly, presentAttendees, VOTE_LABEL, VOTE_PHRASE, type Vote } from "@/lib/votes";
 import { PageHeader, LoadingState, EmptyState } from "@/components/PageStates";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DispositionForm, VoteRecordView } from "@/components/meeting/VoteRecord";
@@ -74,9 +74,9 @@ function LiveMeeting() {
             <section className="rounded-lg border bg-card p-4">
               <p className="eyebrow">Open a vote</p>
               <div className="mt-2 space-y-2">
-                {(agenda.data ?? []).filter((a) => a.proposed_motion).map((a) => (
+                {(agenda.data ?? []).filter((a) => a.is_vote_item).map((a) => (
                   <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3">
-                    <div className="min-w-0"><p className="text-xs text-muted-foreground">{a.title}</p><p className="text-sm">{a.proposed_motion}</p></div>
+                    <div className="min-w-0"><p className="text-xs text-muted-foreground">{a.title} · {DECISION_RULES[(a.decision_rule ?? org.decision_rule) as DecisionRule]}</p><p className="text-sm">{a.proposed_motion || "Motion to be stated"}</p></div>
                     <Button size="sm" onClick={() => setDraft({ agenda_item_id: a.id, motion_text: a.proposed_motion ?? "" })}>Open vote</Button>
                   </div>
                 ))}
@@ -107,7 +107,7 @@ function LiveMeeting() {
                   <p className="font-display text-lg">{a.title}</p>
                   {a.presenter && <p className="text-sm text-muted-foreground">{a.presenter}</p>}
                   {a.description && <p className="mt-1 text-sm">{a.description}</p>}
-                  {a.proposed_motion && <p className="mt-2 rounded-md bg-muted/50 p-2 text-sm"><span className="eyebrow">Proposed motion </span>{a.proposed_motion}</p>}
+                  {a.is_vote_item && <p className="mt-2 rounded-md bg-muted/50 p-2 text-sm"><span className="eyebrow">Vote item · {DECISION_RULES[(a.decision_rule ?? org.decision_rule) as DecisionRule]} </span>{a.proposed_motion}</p>}
                 </li>
               ))}
             </ol>

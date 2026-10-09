@@ -71,9 +71,11 @@ export type Database = {
       agenda_items: {
         Row: {
           created_at: string
+          decision_rule: string | null
           description: string | null
           duration_minutes: number | null
           id: string
+          is_vote_item: boolean
           meeting_id: string
           notes: string
           organization_id: string
@@ -84,9 +86,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          decision_rule?: string | null
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          is_vote_item?: boolean
           meeting_id: string
           notes?: string
           organization_id: string
@@ -97,9 +101,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          decision_rule?: string | null
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          is_vote_item?: boolean
           meeting_id?: string
           notes?: string
           organization_id?: string
