@@ -61,11 +61,6 @@ function RoleCard({ role, terms, today, editor, candidates, orgId }: {
     setFilling(false); setWho("");
     refresh();
   }
-  async function vacate() {
-    if (!holder || !confirm(`End ${holder.person_name}'s term as ${role.title} today?`)) return;
-    const { error } = await attempt(db.terms.assign({ organization_id: orgId, position_id: role.id, position: role.title, person_name: "Vacant", start_date: today, end_date: today }).then(() => db.terms.remove(""), () => undefined));
-    void error; refresh();
-  }
   async function setYears(v: number | null) {
     const { error } = await attempt(db.positions.update(role.id, { term_years: v }));
     if (error) { toast.error(errorMessage(error)); return; }
