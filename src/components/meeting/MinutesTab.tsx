@@ -1,0 +1,123 @@
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
+import { can } from "@/lib/permissions";
+import { errorMessage, downloadBlob } from "@/lib/export";
+import { generateMinutes, nextVersion } from "@/lib/minutes";
+import { textToPdf } from "@/lib/packet";
+import { useAgenda, useAttendance, useMinutes, useMotions, useInvalidateMeeting } from "@/lib/meeting-data";
+import type { Tables } from "@/integrations/supabase/types";
+import { LoadingState, EmptyState } from "@/components/PageStates";
+import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
+export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
+  const { org, userId } = useCurrentOrg();
+  const minutes = useMinutes(meeting.id);
+  const agenda = useAgenda(meeting.id);
+  const att = useAttendance(meeting.id);
+  const motions = useMotions(meeting.id);
+  const members = useOrgMembers(org.id);
+  const invalidate = useInvalidateMeeting(meeting.id);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+
+  const versions = minutes.data ?? [];
+  const current = versions.find((v) => v.id === selected) ?? versions[0];
+  useEffect(() => { if (current) setDraft(current.content); }, [current?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const editor = can(org.role, "records.edit");
+  const approver = can(org.role, "minutes.approve");
+  const nameOf = (id: string | null) => members.data?.find((m) => m.user_id === id)?.name ?? "Unknown";
+
+  async function createVersion(content: string) {
+    const { data, error } = await supabase
+      .from("minutes")
+      .insert({ meeting_id: meeting.id, organization_id: org.id, version: nextVersion(versions), content, created_by: userId })
+      .select("id").single();
+    if (error) return toast.error(errorMessage(error));
+    setSelected(data.id);
+    invalidate("minutes");
+  }
+
+  function generate() {
+    const text = generateMinutes({
+      orgName: org.name,
+      meeting,
+      attendance: att.data ?? [],
+      agenda: agenda.data ?? [],
+      motions: motions.data ?? [],
+      quorum: org.quorum_count,
+    });
+    void createVersion(text);
+  }
+
+  async function setStatus(status: "draft" | "submitted" | "approved", content?: string) {
+    if (!current) return;
+    const patch: { status: typeof status; content?: string } = { status };
+    if (content !== undefined) patch.content = content;
+    const { error } = await supabase.from("minutes").update(patch).eq("id", current.id);
+    if (error) return toast.error(errorMessage(error));
+    invalidate("minutes");
+    toast.success(status === "approved" ? "Minutes approved and locked" : status === "submitted" ? "Submitted for approval" : "Saved");
+  }
+
+  async function exportPdf() {
+    if (!current) return;
+    const bytes = await textToPdf(`Minutes — ${meeting.title} (v${current.version}, ${current.status})`, current.content);
+    downloadBlob(new Blob([bytes], { type: "application/pdf" }), `minutes-${meeting.meeting_date}-v${current.version}.pdf`);
+  }
+
+  if (minutes.isLoading) return <LoadingState />;
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-4">
+      <aside className="space-y-2">
+        <p className="eyebrow">Versions</p>
+        {versions.map((v) => (
+          <button key={v.id} onClick={() => setSelected(v.id)} className={`w-full rounded-md border px-3 py-2 text-left text-sm ${current?.id === v.id ? "border-primary bg-primary/5" : "bg-card"}`}>
+            <span className="font-mono">v{v.version}</span> <StatusBadge status={v.status} />
+            {v.approved_at && <p className="mt-1 text-xs text-muted-foreground">Approved {new Date(v.approved_at).toLocaleDateString()} by {nameOf(v.approved_by)}</p>}
+          </button>
+        ))}
+        {editor && <Button variant="outline" className="w-full" onClick={generate}>Generate new draft from meeting</Button>}
+      </aside>
+      <div className="lg:col-span-3">
+        {!current ? (
+          <EmptyState title="No minutes yet">Record attendance, notes and motions, then generate a draft. It pulls everything together for you.</EmptyState>
+        ) : (
+          <div className="space-y-3">
+            {current.status === "draft" && editor ? (
+              <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="record-paper min-h-[28rem] p-6 text-sm" />
+            ) : (
+              <pre className="record-paper whitespace-pre-wrap p-8 text-sm">{current.content}</pre>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {current.status === "draft" && editor && (
+                <>
+                  <Button variant="secondary" onClick={() => setStatus("draft", draft)}>Save draft</Button>
+                  <Button onClick={() => setStatus("submitted", draft)}>Submit for approval</Button>
+                </>
+              )}
+              {current.status === "submitted" && approver && (
+                <>
+                  <Button onClick={() => setStatus("approved")}>Approve as official minutes</Button>
+                  <Button variant="outline" onClick={() => setStatus("draft")}>Return to draft</Button>
+                </>
+              )}
+              {(current.status === "approved" || current.status === "superseded") && editor && (
+                <Button variant="outline" onClick={() => createVersion(current.content)}>Amend (create new version)</Button>
+              )}
+              <Button variant="ghost" onClick={exportPdf}>Download PDF</Button>
+            </div>
+            {current.status === "approved" && (
+              <p className="text-sm text-muted-foreground">This is the official record. It can't be edited — amendments create a new version, and this one stays identifiable as v{current.version}.</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -16,6 +16,7 @@ import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AuthenticatedBoardIndexRouteImport } from './routes/_authenticated/board.index'
 import { Route as AuthenticatedBoardMeetingsIndexRouteImport } from './routes/_authenticated/board.meetings.index'
+import { Route as AuthenticatedBoardMeetingsMeetingIdRouteImport } from './routes/_authenticated/board.meetings.$meetingId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,12 @@ const AuthenticatedBoardMeetingsIndexRoute =
     path: '/meetings/',
     getParentRoute: () => AuthenticatedBoardRoute,
   } as any)
+const AuthenticatedBoardMeetingsMeetingIdRoute =
+  AuthenticatedBoardMeetingsMeetingIdRouteImport.update({
+    id: '/meetings/$meetingId',
+    path: '/meetings/$meetingId',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/board': typeof AuthenticatedBoardRouteWithChildren
   '/invite/$token': typeof InviteTokenRoute
   '/board/': typeof AuthenticatedBoardIndexRoute
+  '/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/invite/$token': typeof InviteTokenRoute
   '/board': typeof AuthenticatedBoardIndexRoute
+  '/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/board/meetings': typeof AuthenticatedBoardMeetingsIndexRoute
 }
 export interface FileRoutesById {
@@ -76,14 +85,27 @@ export interface FileRoutesById {
   '/_authenticated/board': typeof AuthenticatedBoardRouteWithChildren
   '/invite/$token': typeof InviteTokenRoute
   '/_authenticated/board/': typeof AuthenticatedBoardIndexRoute
+  '/_authenticated/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/_authenticated/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/board' | '/invite/$token' | '/board/' | '/board/meetings/'
+    | '/'
+    | '/auth'
+    | '/board'
+    | '/invite/$token'
+    | '/board/'
+    | '/board/meetings/$meetingId'
+    | '/board/meetings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/invite/$token' | '/board' | '/board/meetings'
+  to:
+    | '/'
+    | '/auth'
+    | '/invite/$token'
+    | '/board'
+    | '/board/meetings/$meetingId'
+    | '/board/meetings'
   id:
     | '__root__'
     | '/'
@@ -92,6 +114,7 @@ export interface FileRouteTypes {
     | '/_authenticated/board'
     | '/invite/$token'
     | '/_authenticated/board/'
+    | '/_authenticated/board/meetings/$meetingId'
     | '/_authenticated/board/meetings/'
   fileRoutesById: FileRoutesById
 }
@@ -153,16 +176,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoardMeetingsIndexRouteImport
       parentRoute: typeof AuthenticatedBoardRoute
     }
+    '/_authenticated/board/meetings/$meetingId': {
+      id: '/_authenticated/board/meetings/$meetingId'
+      path: '/meetings/$meetingId'
+      fullPath: '/board/meetings/$meetingId'
+      preLoaderRoute: typeof AuthenticatedBoardMeetingsMeetingIdRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
   }
 }
 
 interface AuthenticatedBoardRouteChildren {
   AuthenticatedBoardIndexRoute: typeof AuthenticatedBoardIndexRoute
+  AuthenticatedBoardMeetingsMeetingIdRoute: typeof AuthenticatedBoardMeetingsMeetingIdRoute
   AuthenticatedBoardMeetingsIndexRoute: typeof AuthenticatedBoardMeetingsIndexRoute
 }
 
 const AuthenticatedBoardRouteChildren: AuthenticatedBoardRouteChildren = {
   AuthenticatedBoardIndexRoute: AuthenticatedBoardIndexRoute,
+  AuthenticatedBoardMeetingsMeetingIdRoute:
+    AuthenticatedBoardMeetingsMeetingIdRoute,
   AuthenticatedBoardMeetingsIndexRoute: AuthenticatedBoardMeetingsIndexRoute,
 }
 
