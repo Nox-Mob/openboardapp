@@ -14,6 +14,7 @@ import { AttendanceTab } from "@/components/meeting/AttendanceTab";
 import { MotionsTab } from "@/components/meeting/MotionsTab";
 import { MinutesTab } from "@/components/meeting/MinutesTab";
 import { PacketTab } from "@/components/meeting/PacketTab";
+import { SaveAsTemplate } from "@/components/meeting/SaveAsTemplate";
 import { MeetingActionsTab } from "@/components/meeting/MeetingActionsTab";
 
 const TABS = ["agenda", "attendance", "motions", "minutes", "packet", "actions"] as const;
@@ -57,14 +58,14 @@ function MeetingPage() {
         title={m.title}
         actions={
           can(org.role, "records.edit") ? (
-            <Select value={m.status} onValueChange={setStatus}>
+            <div className="flex gap-2"><SaveAsTemplate meeting={m} /><Select value={m.status} onValueChange={setStatus}>
               <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {["draft", "scheduled", "in_progress", "completed", "archived"].map((s) => (
                   <SelectItem key={s} value={s}><StatusBadge status={s} /></SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select></div>
           ) : <StatusBadge status={m.status} />
         }
       >

@@ -16,6 +16,7 @@ describe("every page has a route", () => {
     ["/board", "/_authenticated/board/"],
     ["/board/meetings", "/_authenticated/board/meetings/"],
     ["/board/meetings/1234", "/_authenticated/board/meetings/$meetingId"],
+    ["/board/templates", "/_authenticated/board/templates"],
     ["/board/tasks", "/_authenticated/board/tasks"],
     ["/board/documents", "/_authenticated/board/documents"],
     ["/board/members", "/_authenticated/board/members"],

@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, FileText, LayoutDashboard, ListChecks, LogOut, ScrollText, Settings, Users, Network } from "lucide-react";
+import { CalendarDays, FileText, LayoutDashboard, ListChecks, LogOut, ScrollText, Settings, Users, Network, LayoutTemplate } from "lucide-react";
 import { attempt, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
 import { can, ROLE_LABELS } from "@/lib/permissions";
@@ -36,6 +36,7 @@ function BoardLayout() {
 const nav = [
   { to: "/board", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/board/meetings", label: "Meetings", icon: CalendarDays },
+  { to: "/board/templates", label: "Meeting templates", icon: LayoutTemplate },
   { to: "/board/tasks", label: "Action items", icon: ListChecks },
   { to: "/board/documents", label: "Documents", icon: FileText },
   { to: "/board/members", label: "Members & terms", icon: Users },
