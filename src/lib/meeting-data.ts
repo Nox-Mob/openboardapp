@@ -1,59 +1,28 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/data";
 
 export function useMeeting(meetingId: string) {
-  return useQuery({
-    queryKey: ["meeting", meetingId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("meetings").select("*").eq("id", meetingId).maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
+  return useQuery({ queryKey: ["meeting", meetingId], queryFn: () => db.meetings.get(meetingId) });
 }
 
 export function useAgenda(meetingId: string) {
-  return useQuery({
-    queryKey: ["agenda", meetingId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("agenda_items").select("*").eq("meeting_id", meetingId).order("position");
-      if (error) throw error;
-      return data;
-    },
-  });
+  return useQuery({ queryKey: ["agenda", meetingId], queryFn: () => db.agenda.list(meetingId) });
 }
 
 export function useAttendance(meetingId: string) {
-  return useQuery({
-    queryKey: ["attendance", meetingId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("attendance").select("*").eq("meeting_id", meetingId).order("person_name");
-      if (error) throw error;
-      return data;
-    },
-  });
+  return useQuery({ queryKey: ["attendance", meetingId], queryFn: () => db.attendance.list(meetingId) });
 }
 
 export function useMotions(meetingId: string) {
-  return useQuery({
-    queryKey: ["motions", meetingId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("motions").select("*").eq("meeting_id", meetingId).order("created_at");
-      if (error) throw error;
-      return data;
-    },
-  });
+  return useQuery({ queryKey: ["motions", meetingId], queryFn: () => db.motions.list(meetingId) });
 }
 
 export function useMinutes(meetingId: string) {
-  return useQuery({
-    queryKey: ["minutes", meetingId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("minutes").select("*").eq("meeting_id", meetingId).order("version", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
+  return useQuery({ queryKey: ["minutes", meetingId], queryFn: () => db.minutes.list(meetingId) });
+}
+
+export function useTemplates(orgId: string) {
+  return useQuery({ queryKey: ["templates", orgId], queryFn: () => db.templates.list(orgId) });
 }
 
 export function useInvalidateMeeting(meetingId: string) {
@@ -61,8 +30,6 @@ export function useInvalidateMeeting(meetingId: string) {
   return (...keys: string[]) => keys.forEach((k) => qc.invalidateQueries({ queryKey: [k, meetingId] }));
 }
 
-export async function signedUrl(path: string) {
-  const { data, error } = await supabase.storage.from("org-files").createSignedUrl(path, 60);
-  if (error) throw error;
-  return data.signedUrl;
+export function signedUrl(path: string) {
+  return db.files.signedUrl(path);
 }
