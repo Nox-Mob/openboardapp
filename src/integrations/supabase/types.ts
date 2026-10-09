@@ -223,6 +223,41 @@ export type Database = {
           },
         ]
       }
+      board_positions: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          sort_order: number
+          term_years: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          sort_order?: number
+          term_years?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          sort_order?: number
+          term_years?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_positions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       board_terms: {
         Row: {
           created_at: string
@@ -232,6 +267,7 @@ export type Database = {
           organization_id: string
           person_name: string
           position: string
+          position_id: string | null
           start_date: string
           user_id: string | null
         }
@@ -243,6 +279,7 @@ export type Database = {
           organization_id: string
           person_name: string
           position?: string
+          position_id?: string | null
           start_date: string
           user_id?: string | null
         }
@@ -254,6 +291,7 @@ export type Database = {
           organization_id?: string
           person_name?: string
           position?: string
+          position_id?: string | null
           start_date?: string
           user_id?: string | null
         }
@@ -263,6 +301,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "board_terms_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "board_positions"
             referencedColumns: ["id"]
           },
         ]
