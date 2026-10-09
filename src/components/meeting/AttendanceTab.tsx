@@ -40,7 +40,7 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
     invalidate("attendance");
   }
 
-  async function update(id: string, patch: { status?: (typeof STATUSES)[number]; is_voting?: boolean }) {
+  async function update(id: string, patch: { status?: (typeof STATUSES)[number]; is_voting?: boolean; user_id?: string }) {
     const { error } = await attempt(db.attendance.update(id, patch));
     if (error) { toast.error(errorMessage(error)); return; }
     invalidate("attendance");
@@ -67,6 +67,13 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
               <div>
                 <p className="font-medium">{a.person_name}</p>
                 {!a.is_voting && <p className="text-xs text-muted-foreground">Guest / non-voting</p>}
+                {a.is_voting && !a.user_id && (
+                  <select aria-label={`Link ${a.person_name} to an account`} className="mt-1 h-8 rounded-md border bg-background px-2 text-xs" value="" disabled={!editable}
+                    onChange={(e) => e.target.value && update(a.id, { user_id: e.target.value })}>
+                    <option value="">No account linked — can't vote live</option>
+                    {(members.data ?? []).map((mb) => <option key={mb.user_id} value={mb.user_id}>{mb.name}</option>)}
+                  </select>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Select value={a.status} onValueChange={(v) => update(a.id, { status: v as (typeof STATUSES)[number] })} disabled={!editable}>
