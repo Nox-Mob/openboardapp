@@ -22,6 +22,7 @@ const empty = { agenda_item_id: "none", motion_text: "", moved_by: "none", secon
 
 export function MotionsTab({ meetingId, editable }: { meetingId: string; editable: boolean }) {
   const { org } = useCurrentOrg();
+  const titles = useTitles(org.id);
   const agenda = useAgenda(meetingId);
   const motions = useMotions(meetingId);
   const invalidate = useInvalidateMeeting(meetingId);

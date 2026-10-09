@@ -130,6 +130,7 @@ function LiveMeeting() {
 function StartVoteForm({ meetingId, draft, attendees, seconderRequired, onDone }: {
   meetingId: string; draft: { agenda_item_id: string | null; motion_text: string }; attendees: { id: string; person_name: string; user_id: string | null }[]; seconderRequired: boolean; onDone: () => void;
 }) {
+  const titles = useTitles(useCurrentOrg().org.id);
   const [text, setText] = useState(draft.motion_text);
   const [moved, setMoved] = useState("none");
   const [second, setSecond] = useState("none");

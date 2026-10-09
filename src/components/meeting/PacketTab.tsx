@@ -7,6 +7,7 @@ import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { buildPacket } from "@/lib/packet";
 import { nextVersion } from "@/lib/minutes";
+import { currentHolder } from "@/lib/titles";
 import { useAgenda, signedUrl } from "@/lib/meeting-data";
 import type { Tables } from "@/integrations/supabase/types";
 import { LoadingState, EmptyState } from "@/components/PageStates";
@@ -26,6 +27,8 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
     queryKey: ["packet-docs", org.id],
     queryFn: () => db.documents.list(org.id),
   });
+  const roles = useQuery({ queryKey: ["positions", org.id], queryFn: () => db.positions.list(org.id) });
+  const terms = useQuery({ queryKey: ["terms", org.id], queryFn: () => db.terms.list(org.id) });
   const packets = useQuery({
     queryKey: ["packets", meeting.id],
     queryFn: () => db.packets.list(meeting.id),
@@ -44,10 +47,11 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
         return { title: d.title, fileName: `${v.file_name} v${v.version}`, bytes, ref: { document_id: d.id, version: v.version, title: d.title } };
       }));
       const agendaText = (agenda.data ?? []).map((a, i) => `${i + 1}. ${a.title}${a.presenter ? " - " + a.presenter : ""}`).join("\n");
+      const roster = (roles.data ?? []).map((r) => `${r.title}: ${currentHolder(terms.data ?? [], r.id, meeting.meeting_date)?.person_name ?? "Vacant"}`).join("\n");
       const version = nextVersion(packets.data ?? []);
       const pdf = await buildPacket({
         title: `${org.name} - ${meeting.title} - ${meeting.meeting_date} (Packet v${version})`,
-        agendaText: "Agenda\n" + agendaText,
+        agendaText: (roster ? "Board roster\n" + roster + "\n\n" : "") + "Agenda\n" + agendaText,
         attachments,
       });
       const path = `${org.id}/packets/${meeting.id}/v${version}.pdf`;
