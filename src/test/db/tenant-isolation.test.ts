@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { beforeAll, describe, expect, it } from "vitest";
 import { hasDb, signIn, ORG_A, ORG_B, DEMO_ORG, tag, type Client } from "./helpers";
 
