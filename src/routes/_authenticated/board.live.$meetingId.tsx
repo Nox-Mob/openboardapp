@@ -8,7 +8,7 @@ import { useCurrentOrg, useTitles } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { signedUrl } from "@/lib/meeting-data";
-import { DECISION_RULES, type DecisionRule, canCloseEarly, presentAttendees, VOTE_LABEL, VOTE_PHRASE, type Vote } from "@/lib/votes";
+import { DECISION_RULES, type DecisionRule, canCloseEarly, presentAttendees, VOTE_LABEL, VOTE_PHRASE, VOTES, quorumStatus, type Vote } from "@/lib/votes";
 import { PageHeader, LoadingState, EmptyState } from "@/components/PageStates";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DispositionForm, VoteRecordView } from "@/components/meeting/VoteRecord";
@@ -57,6 +57,7 @@ function LiveMeeting() {
           Voting is only available while the meeting is <strong>In progress</strong>. This meeting is {m.status.replace("_", " ")}.
         </div>
       )}
+      <QuorumBar attendance={attendance.data ?? []} required={org.quorum_count} />
       <Tabs defaultValue="vote">
         <TabsList className="mb-4 w-full justify-start">
           <TabsTrigger value="vote">Vote{openMotion ? " •" : ""}</TabsTrigger>
@@ -218,8 +219,8 @@ function OpenVote({ motion, live, onChange }: { motion: { id: string; motion_tex
       ) : !live ? null : eligible === false ? (
         <p className="mt-4 rounded-md border px-3 py-2 text-sm text-muted-foreground">You are not on the voter list for this motion. Only voting members present when it was opened can vote.</p>
       ) : eligible ? (
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {(["yes", "no", "abstain"] as const).map((v) => (
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {VOTES.map((v) => (
             <Button key={v} size="lg" variant={v === "yes" ? "default" : v === "no" ? "destructive" : "outline"} className="h-14 text-base" disabled={busy} onClick={() => setConfirm(v)}>{VOTE_LABEL[v]}</Button>
           ))}
         </div>
@@ -285,6 +286,17 @@ function PacketPanel({ meetingId, orgId }: { meetingId: string; orgId: string })
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** Live quorum indicator: refreshes with attendance while the meeting runs. */
+function QuorumBar({ attendance, required }: { attendance: { status: string; is_voting: boolean; person_name: string; id: string }[]; required: number }) {
+  const q = quorumStatus(attendance, required);
+  return (
+    <div role="status" aria-label="Quorum" className={`mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border px-4 py-3 text-sm ${q.met ? "border-success/40 bg-success/5" : "border-destructive/40 bg-destructive/5 text-destructive"}`}>
+      <span className="font-medium">{q.met ? "Quorum met" : `Quorum not met — ${q.short} more voting member${q.short === 1 ? "" : "s"} needed`}</span>
+      <span className="font-mono text-xs">{q.present} of {q.required} voting members present</span>
     </div>
   );
 }

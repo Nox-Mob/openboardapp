@@ -17,7 +17,7 @@ describe("motion voting", () => {
     expect(rollCallVoters(att).map((a) => a.person_name)).toEqual(["Ana", "Ben"]);
   });
   it("totals come from the roll call", () => {
-    expect(tally([{ attendance_id: "1", person_name: "Ana", vote: "yes" }, { attendance_id: "2", person_name: "Ben", vote: "abstain" }])).toEqual({ votes_yes: 1, votes_no: 0, votes_abstain: 1 });
+    expect(tally([{ attendance_id: "1", person_name: "Ana", vote: "yes" }, { attendance_id: "2", person_name: "Ben", vote: "abstain" }])).toEqual({ votes_yes: 1, votes_no: 0, votes_abstain: 1, votes_recused: 0 });
   });
   it("bad roll-call entries are ignored", () => {
     expect(parseRollCall([{ person_name: "A", vote: "maybe" }, null, { person_name: "B", vote: "no" }])).toHaveLength(1);
@@ -66,5 +66,23 @@ describe("live vote minutes", () => {
       vote_record: { electorate: ["Ana", "Ben", "Cy"], not_voting: ["Cy"], quorum_met: true, present_voting: 3, quorum_required: 2 } });
     expect(text).toContain("Not voting: Cy.");
     expect(text).toContain("Eligible voters: 3; quorum met");
+  });
+});
+
+import { computeDisposition as cd2, quorumStatus as qs2 } from "./votes";
+describe("recusal and quorum", () => {
+  it("recused members leave the majority-of-present denominator", () => {
+    // 3 eligible, 1 recused: 1 yes of remaining 2 is not a majority; 2 yes is
+    expect(cd2("majority_present", { yes: 1, no: 1 }, 3, true, 1)).toBe("failed");
+    expect(cd2("majority_present", { yes: 2, no: 0 }, 3, true, 1)).toBe("carried");
+  });
+  it("quorum counts present or remote voting members only", () => {
+    const q = qs2([
+      { id: "1", person_name: "A", status: "present", is_voting: true },
+      { id: "2", person_name: "B", status: "remote", is_voting: true },
+      { id: "3", person_name: "C", status: "present", is_voting: false },
+      { id: "4", person_name: "D", status: "absent", is_voting: true },
+    ], 3);
+    expect(q).toEqual({ present: 2, required: 3, met: false, short: 1 });
   });
 });

@@ -784,6 +784,7 @@ export type Database = {
           vote_record: Json | null
           votes_abstain: number
           votes_no: number
+          votes_recused: number
           votes_yes: number
           voting_status: string
         }
@@ -810,6 +811,7 @@ export type Database = {
           vote_record?: Json | null
           votes_abstain?: number
           votes_no?: number
+          votes_recused?: number
           votes_yes?: number
           voting_status?: string
         }
@@ -836,6 +838,7 @@ export type Database = {
           vote_record?: Json | null
           votes_abstain?: number
           votes_no?: number
+          votes_recused?: number
           votes_yes?: number
           voting_status?: string
         }
