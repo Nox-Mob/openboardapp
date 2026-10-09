@@ -25,7 +25,7 @@ const TERM_OPTIONS = [1, 2, 3, 4, 5];
 
 function TermSelect({ value, onChange, disabled }: { value: number | null; onChange: (v: number | null) => void; disabled?: boolean }) {
   return (
-    <Select value={value ? String(value) : "none"} onValueChange={(v) => onChange(v === "none" ? null : Number(v))} disabled={disabled}>
+    <Select value={value ? String(value) : "none"} onValueChange={(v) => onChange(v === "none" ? null : Number(v))} disabled={!!disabled}>
       <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
       <SelectContent>
         {TERM_OPTIONS.map((y) => <SelectItem key={y} value={String(y)}>{y} year{y > 1 ? "s" : ""}</SelectItem>)}

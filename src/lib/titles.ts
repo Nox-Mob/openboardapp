@@ -14,7 +14,7 @@ export function currentHolder<T extends TermLike>(terms: T[], positionId: string
 /** End date of a term that starts on `start` and lasts `years` (null = open-ended). */
 export function termEnd(start: string, years: number | null): string | null {
   if (!years) return null;
-  const [y, m, d] = start.split("-").map(Number);
+  const [y = 0, m = 1, d = 1] = start.split("-").map(Number);
   const end = new Date(Date.UTC(y + years, m - 1, d));
   end.setUTCDate(end.getUTCDate() - 1);
   return end.toISOString().slice(0, 10);
