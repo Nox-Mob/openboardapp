@@ -4,6 +4,10 @@ Using the OpenLedgerApp Project design as a framework, build a Board Management 
 
 This project was built with [Lovable](https://lovable.dev).
 
+## Architecture
+
+See [OpenBoard architecture](docs/architecture.md) for application layers, organization isolation, official voting records, document generation, exports and CI checks.
+
 ## Build with Lovable
 
 Continue developing this project in the [Lovable editor](https://lovable.dev/projects/2f575a9a-fbb1-45cb-908a-1d2f5e0ae4a0).
