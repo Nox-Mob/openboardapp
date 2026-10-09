@@ -46,7 +46,7 @@ function Documents() {
     const version = nextVersion(existing);
     const safe = f.name.replace(/[^\w.\-]+/g, "_");
     const path = `${org.id}/documents/${documentId}/v${version}-${safe}`;
-    const up = await supabase.storage.from("org-files").upload(path, f, { contentType: f.type || undefined });
+    const up = await supabase.storage.from("org-files").upload(path, f, f.type ? { contentType: f.type } : {});
     if (up.error) throw up.error;
     const { error } = await supabase.from("document_versions").insert({ document_id: documentId, organization_id: org.id, version, storage_path: path, file_name: f.name, mime_type: f.type, size_bytes: f.size, uploaded_by: userId });
     if (error) throw error;

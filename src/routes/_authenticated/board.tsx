@@ -126,7 +126,7 @@ function CreateOrg({ onSignOut }: { onSignOut: () => void }) {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const { data, error } = await supabase.rpc("create_organization", { _name: name, _timezone: tz });
     setBusy(false);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setOrgId(data as string);
     refetch();
   }

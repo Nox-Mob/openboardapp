@@ -23,7 +23,7 @@ export function AgendaTab({ meetingId, editable }: { meetingId: string; editable
     e.preventDefault();
     const position = (agenda.data?.length ?? 0) ? Math.max(...agenda.data!.map((a) => a.position)) + 1 : 0;
     const { error } = await supabase.from("agenda_items").insert({ title, presenter: presenter || null, position, meeting_id: meetingId, organization_id: org.id });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setTitle("");
     setPresenter("");
     invalidate("agenda");
@@ -42,7 +42,7 @@ export function AgendaTab({ meetingId, editable }: { meetingId: string; editable
   async function remove(item: Item) {
     if (!confirm(`Remove "${item.title}" from the agenda?`)) return;
     const { error } = await supabase.from("agenda_items").delete().eq("id", item.id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     invalidate("agenda", "motions");
   }
 

@@ -44,7 +44,7 @@ function Members() {
   async function invite(e: React.FormEvent) {
     e.preventDefault();
     const { data, error } = await supabase.rpc("create_invitation", { _org: org.id, _email: inv.email, _role: inv.role });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setLink(`${window.location.origin}/invite/${data}`);
     setInv({ email: "", role: "member" });
     qc.invalidateQueries({ queryKey: ["invites", org.id] });
@@ -52,25 +52,25 @@ function Members() {
 
   async function changeRole(id: string, role: OrgRole) {
     const { error } = await supabase.from("memberships").update({ role }).eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["org-members", org.id] });
   }
   async function removeMember(id: string) {
     if (!confirm("Remove this person from the organization?")) return;
     const { error } = await supabase.from("memberships").delete().eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["org-members", org.id] });
   }
   async function addTerm(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from("board_terms").insert({ ...term, end_date: term.end_date || null, organization_id: org.id });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setTerm({ person_name: "", position: "Director", start_date: "", end_date: "" });
     qc.invalidateQueries({ queryKey: ["terms", org.id] });
   }
   async function deleteTerm(id: string) {
     const { error } = await supabase.from("board_terms").delete().eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["terms", org.id] });
   }
   async function revoke(id: string) {

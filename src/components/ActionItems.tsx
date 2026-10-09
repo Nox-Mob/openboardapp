@@ -44,14 +44,14 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
       title: f.title, assignee_id: f.assignee_id || null, due_date: f.due_date || null,
       meeting_id: meetingId ?? null, organization_id: org.id, created_by: userId,
     });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setF({ title: "", assignee_id: "", due_date: "" });
     refresh();
   }
 
   async function setStatus(id: string, status: Status) {
     const { error } = await supabase.from("action_items").update({ status }).eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     refresh();
   }
 

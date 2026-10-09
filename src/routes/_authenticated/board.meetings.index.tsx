@@ -34,7 +34,7 @@ function Meetings() {
   async function create(e: React.FormEvent) {
     e.preventDefault();
     const { data, error } = await supabase.from("meetings").insert({ ...form, organization_id: org.id, created_by: userId, status: "scheduled" }).select("id").single();
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     // default agenda
     const defaults = ["Call to order", "Approval of previous minutes", "Treasurer's report", "Old business", "New business", "Adjournment"];
     await supabase.from("agenda_items").insert(defaults.map((title, position) => ({ title, position, meeting_id: data.id, organization_id: org.id })));

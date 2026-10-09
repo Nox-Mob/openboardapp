@@ -20,9 +20,7 @@ const TABS = ["agenda", "attendance", "motions", "minutes", "packet", "actions"]
 type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/board/meetings/$meetingId")({
-  validateSearch: (s: Record<string, unknown>): { tab?: Tab } => ({
-    tab: TABS.includes(s.tab as Tab) ? (s.tab as Tab) : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { tab?: Tab } => (TABS.includes(s["tab"] as Tab) ? { tab: s["tab"] as Tab } : {}),
   component: MeetingPage,
 });
 
@@ -47,7 +45,7 @@ function MeetingPage() {
 
   async function setStatus(status: string) {
     const { error } = await supabase.from("meetings").update({ status: status as typeof m.status }).eq("id", m.id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     invalidate("meeting");
     toast.success("Meeting status updated");
   }

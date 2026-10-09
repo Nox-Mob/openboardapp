@@ -37,7 +37,7 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
       .from("minutes")
       .insert({ meeting_id: meeting.id, organization_id: org.id, version: nextVersion(versions), content, created_by: userId })
       .select("id").single();
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setSelected(data.id);
     invalidate("minutes");
   }
@@ -59,7 +59,7 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
     const patch: { status: typeof status; content?: string } = { status };
     if (content !== undefined) patch.content = content;
     const { error } = await supabase.from("minutes").update(patch).eq("id", current.id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     invalidate("minutes");
     toast.success(status === "approved" ? "Minutes approved and locked" : status === "submitted" ? "Submitted for approval" : "Saved");
   }
@@ -67,7 +67,7 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
   async function exportPdf() {
     if (!current) return;
     const bytes = await textToPdf(`Minutes — ${meeting.title} (v${current.version}, ${current.status})`, current.content);
-    downloadBlob(new Blob([bytes], { type: "application/pdf" }), `minutes-${meeting.meeting_date}-v${current.version}.pdf`);
+    downloadBlob(new Blob([bytes as unknown as BlobPart], { type: "application/pdf" }), `minutes-${meeting.meeting_date}-v${current.version}.pdf`);
   }
 
   if (minutes.isLoading) return <LoadingState />;
