@@ -27,7 +27,17 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
   );
 }
 
-export function PageHeader({ eyebrow, title, actions, children }: { eyebrow?: string; title: string; actions?: ReactNode; children?: ReactNode }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  actions,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  actions?: ReactNode;
+  children?: ReactNode;
+}) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b pb-5">
       <div>

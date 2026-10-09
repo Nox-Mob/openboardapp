@@ -21,7 +21,9 @@ export const platform: Platform = detectPlatform(import.meta.env as unknown as P
 export const db: DataLayer = selectAdapter(platform);
 
 /** Runs a data call and returns `{ data, error }` instead of throwing, for simple form handlers. */
-export async function attempt<T>(p: Promise<T>): Promise<{ data: T; error: null } | { data: null; error: NonNullable<unknown> }> {
+export async function attempt<T>(
+  p: Promise<T>,
+): Promise<{ data: T; error: null } | { data: null; error: NonNullable<unknown> }> {
   try {
     return { data: await p, error: null };
   } catch (error) {

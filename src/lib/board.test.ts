@@ -33,13 +33,24 @@ describe("minutes", () => {
     ],
     agenda: [{ id: "a1", position: 0, title: "Budget", notes: "Reviewed." }],
     motions: [
-      { agenda_item_id: "a1", motion_text: "Approve budget", moved_by: "Ann", seconded_by: null, votes_yes: 4, votes_no: 1, votes_abstain: 0, outcome: "carried" },
+      {
+        agenda_item_id: "a1",
+        motion_text: "Approve budget",
+        moved_by: "Ann",
+        seconded_by: null,
+        votes_yes: 4,
+        votes_no: 1,
+        votes_abstain: 0,
+        outcome: "carried",
+      },
     ],
     quorum: 1,
   };
   it("includes the motion decision under its agenda item", () => {
     const text = generateMinutes(base);
-    expect(text).toContain("MOTION: Approve budget (Moved by Ann). Vote: 4 in favor, 1 opposed, 0 abstaining. CARRIED.");
+    expect(text).toContain(
+      "MOTION: Approve budget (Moved by Ann). Vote: 4 in favor, 1 opposed, 0 abstaining. CARRIED.",
+    );
     expect(text.indexOf("1. Budget")).toBeLessThan(text.indexOf("MOTION"));
   });
   it("reports missing quorum", () => {
@@ -51,7 +62,12 @@ describe("minutes", () => {
     expect(isEditable("approved")).toBe(false);
     expect(isEditable("submitted")).toBe(false);
     expect(isEditable("draft")).toBe(true);
-    expect(currentApproved([{ status: "superseded", version: 1 }, { status: "approved", version: 2 }])?.version).toBe(2);
+    expect(
+      currentApproved([
+        { status: "superseded", version: 1 },
+        { status: "approved", version: 2 },
+      ])?.version,
+    ).toBe(2);
   });
 });
 
@@ -64,12 +80,35 @@ describe("export", () => {
 
 import { currentHolder, termEnd, titleIndex, withTitle } from "./titles";
 describe("board roles and titles", () => {
-  const t = (o: Partial<{ id: string; position_id: string; position: string; person_name: string; user_id: string | null; start_date: string; end_date: string | null }>) =>
-    ({ id: "x", position_id: "vp", position: "Membership VP", person_name: "Morgan", user_id: "u1", start_date: "2025-01-01", end_date: null, ...o });
-  it("a 2-year term starting Jan 1 2026 ends Dec 31 2027", () => expect(termEnd("2026-01-01", 2)).toBe("2027-12-31"));
-  it("a role with no fixed term has no end date", () => expect(termEnd("2026-01-01", null)).toBeNull());
+  const t = (
+    o: Partial<{
+      id: string;
+      position_id: string;
+      position: string;
+      person_name: string;
+      user_id: string | null;
+      start_date: string;
+      end_date: string | null;
+    }>,
+  ) => ({
+    id: "x",
+    position_id: "vp",
+    position: "Membership VP",
+    person_name: "Morgan",
+    user_id: "u1",
+    start_date: "2025-01-01",
+    end_date: null,
+    ...o,
+  });
+  it("a 2-year term starting Jan 1 2026 ends Dec 31 2027", () =>
+    expect(termEnd("2026-01-01", 2)).toBe("2027-12-31"));
+  it("a role with no fixed term has no end date", () =>
+    expect(termEnd("2026-01-01", null)).toBeNull());
   it("the new holder fills the role; the old term is history", () => {
-    const terms = [t({ id: "old", person_name: "Pat", end_date: "2026-05-31" }), t({ id: "new", start_date: "2026-06-01" })];
+    const terms = [
+      t({ id: "old", person_name: "Pat", end_date: "2026-05-31" }),
+      t({ id: "new", start_date: "2026-06-01" }),
+    ];
     expect(currentHolder(terms, "vp", "2026-07-01")?.id).toBe("new");
     expect(currentHolder(terms, "vp", "2026-03-01")?.id).toBe("old");
   });

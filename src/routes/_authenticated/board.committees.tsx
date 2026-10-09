@@ -12,7 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/board/committees")({
-  head: () => ({ meta: [{"title": "Committees — OpenBoard"}, {"name": "description", "content": "Manage board committees and their members."}, {"property": "og:title", "content": "Committees — OpenBoard"}, {"property": "og:description", "content": "Manage board committees and their members."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
+  head: () => ({
+    meta: [
+      { title: "Committees — OpenBoard" },
+      { name: "description", content: "Manage board committees and their members." },
+      { property: "og:title", content: "Committees — OpenBoard" },
+      { property: "og:description", content: "Manage board committees and their members." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Committees,
 });
 
@@ -30,18 +39,38 @@ function Committees() {
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await attempt(db.committees.add({ name, description: desc || null, organization_id: org.id }));
-    if (error) { toast.error(errorMessage(error)); return; }
-    setName(""); setDesc(""); refresh();
+    const { error } = await attempt(
+      db.committees.add({ name, description: desc || null, organization_id: org.id }),
+    );
+    if (error) {
+      toast.error(errorMessage(error));
+      return;
+    }
+    setName("");
+    setDesc("");
+    refresh();
   }
   async function addMember(committeeId: string, person_name: string, role: string) {
-    const { error } = await attempt(db.committees.addMember({ committee_id: committeeId, person_name, role: role || "Member", organization_id: org.id }));
-    if (error) { toast.error(errorMessage(error)); return; }
+    const { error } = await attempt(
+      db.committees.addMember({
+        committee_id: committeeId,
+        person_name,
+        role: role || "Member",
+        organization_id: org.id,
+      }),
+    );
+    if (error) {
+      toast.error(errorMessage(error));
+      return;
+    }
     refresh();
   }
   async function del(table: "committees" | "committee_members", id: string) {
     const { error } = await attempt(db.committees.remove(table, id));
-    if (error) { toast.error(errorMessage(error)); return; }
+    if (error) {
+      toast.error(errorMessage(error));
+      return;
+    }
     refresh();
   }
 
@@ -50,24 +79,62 @@ function Committees() {
       <PageHeader eyebrow={org.name} title="Committees" />
       {editor && (
         <form onSubmit={add} className="mb-6 flex flex-wrap gap-2 rounded-lg border bg-card p-4">
-          <Input placeholder="Committee name" value={name} onChange={(e) => setName(e.target.value)} required className="w-60" />
-          <Input placeholder="Purpose (optional)" value={desc} onChange={(e) => setDesc(e.target.value)} className="flex-1" />
+          <Input
+            placeholder="Committee name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-60"
+          />
+          <Input
+            placeholder="Purpose (optional)"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            className="flex-1"
+          />
           <Button type="submit">Add committee</Button>
         </form>
       )}
-      {q.isLoading ? <LoadingState /> : !q.data?.length ? <EmptyState title="No committees yet" /> : (
+      {q.isLoading ? (
+        <LoadingState />
+      ) : !q.data?.length ? (
+        <EmptyState title="No committees yet" />
+      ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {q.data.map((c) => (
             <div key={c.id} className="rounded-lg border bg-card p-5">
               <div className="flex items-start justify-between">
-                <div><h3 className="text-lg">{c.name}</h3>{c.description && <p className="text-sm text-muted-foreground">{c.description}</p>}</div>
-                {editor && <Button size="icon" variant="ghost" onClick={() => del("committees", c.id)} aria-label="Delete committee"><Trash2 className="h-4 w-4" /></Button>}
+                <div>
+                  <h3 className="text-lg">{c.name}</h3>
+                  {c.description && (
+                    <p className="text-sm text-muted-foreground">{c.description}</p>
+                  )}
+                </div>
+                {editor && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => del("committees", c.id)}
+                    aria-label="Delete committee"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
               <ul className="mt-3 divide-y text-sm">
                 {c.committee_members.map((m) => (
                   <li key={m.id} className="flex items-center justify-between py-2">
-                    <span>{m.person_name} <span className="text-muted-foreground">· {m.role}</span></span>
-                    {editor && <button onClick={() => del("committee_members", m.id)} className="text-xs text-muted-foreground hover:text-destructive">Remove</button>}
+                    <span>
+                      {m.person_name} <span className="text-muted-foreground">· {m.role}</span>
+                    </span>
+                    {editor && (
+                      <button
+                        onClick={() => del("committee_members", m.id)}
+                        className="text-xs text-muted-foreground hover:text-destructive"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -84,10 +151,25 @@ function AddMember({ onAdd }: { onAdd: (name: string, role: string) => void }) {
   const [n, setN] = useState("");
   const [r, setR] = useState("");
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onAdd(n, r); setN(""); setR(""); }} className="mt-3 flex gap-2">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onAdd(n, r);
+        setN("");
+        setR("");
+      }}
+      className="mt-3 flex gap-2"
+    >
       <Input placeholder="Name" value={n} onChange={(e) => setN(e.target.value)} required />
-      <Input placeholder="Role (Chair…)" value={r} onChange={(e) => setR(e.target.value)} className="w-36" />
-      <Button type="submit" size="sm" variant="secondary">Add</Button>
+      <Input
+        placeholder="Role (Chair…)"
+        value={r}
+        onChange={(e) => setR(e.target.value)}
+        className="w-36"
+      />
+      <Button type="submit" size="sm" variant="secondary">
+        Add
+      </Button>
     </form>
   );
 }

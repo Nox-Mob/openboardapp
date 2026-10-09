@@ -85,6 +85,9 @@ export function useTitles(orgId: string) {
   const terms = useQuery({ queryKey: ["terms", orgId], queryFn: () => db.terms.list(orgId) });
   return useMemo(() => {
     const idx = titleIndex(terms.data ?? [], new Date().toLocaleDateString("en-CA"));
-    return { title: idx.title, label: (name: string, userId?: string | null) => withTitle(name, idx.title(userId, name)) };
+    return {
+      title: idx.title,
+      label: (name: string, userId?: string | null) => withTitle(name, idx.title(userId, name)),
+    };
   }, [terms.data]);
 }

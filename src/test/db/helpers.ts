@@ -13,7 +13,8 @@ export const ACCOUNTS = {
   ownerB: { email: "test-b@demo.org", password: "test-b-1234" },
 } as const;
 
-const env = (k: string) => (import.meta.env as Record<string, string | undefined>)[k] ?? process.env[k];
+const env = (k: string) =>
+  (import.meta.env as Record<string, string | undefined>)[k] ?? process.env[k];
 export const DB_URL = env("VITE_SUPABASE_URL");
 const KEY = env("VITE_SUPABASE_PUBLISHABLE_KEY");
 export const hasDb = Boolean(DB_URL && KEY) && process.env["SKIP_DB_TESTS"] !== "1";
@@ -21,7 +22,9 @@ export const hasDb = Boolean(DB_URL && KEY) && process.env["SKIP_DB_TESTS"] !== 
 export type Client = SupabaseClient<Database> & { userId: string };
 
 export async function signIn(who: keyof typeof ACCOUNTS): Promise<Client> {
-  const c = createClient<Database>(DB_URL!, KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
+  const c = createClient<Database>(DB_URL!, KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   const { data, error } = await c.auth.signInWithPassword(ACCOUNTS[who]);
   if (error || !data.user) throw new Error(`Sign-in failed for ${who}: ${error?.message}`);
   return Object.assign(c, { userId: data.user.id });

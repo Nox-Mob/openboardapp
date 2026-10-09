@@ -2,7 +2,18 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, FileText, LayoutDashboard, ListChecks, LogOut, ScrollText, Settings, Users, Network, LayoutTemplate } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  ScrollText,
+  Settings,
+  Users,
+  Network,
+  LayoutTemplate,
+} from "lucide-react";
 import { attempt, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
 import { can, ROLE_LABELS } from "@/lib/permissions";
@@ -18,9 +29,15 @@ export const Route = createFileRoute("/_authenticated/board")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { title: "Board room — OpenBoard" },
-      { name: "description", content: "Your organization's meetings, minutes, documents and tasks." },
+      {
+        name: "description",
+        content: "Your organization's meetings, minutes, documents and tasks.",
+      },
       { property: "og:title", content: "Board room — OpenBoard" },
-      { property: "og:description", content: "Your organization's meetings, minutes, documents and tasks." },
+      {
+        property: "og:description",
+        content: "Your organization's meetings, minutes, documents and tasks.",
+      },
     ],
   }),
   component: BoardLayout,
@@ -57,23 +74,38 @@ function Shell() {
     navigate({ to: "/auth", replace: true });
   }
 
-  if (loading) return <div className="p-10"><LoadingState /></div>;
+  if (loading)
+    return (
+      <div className="p-10">
+        <LoadingState />
+      </div>
+    );
   if (!org) return <CreateOrg onSignOut={signOut} />;
 
   return (
     <div className="flex min-h-screen">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-5 py-5">
-          <Link to="/" className="font-display text-lg">OpenBoard</Link>
+          <Link to="/" className="font-display text-lg">
+            OpenBoard
+          </Link>
           <select
             aria-label="Organization"
             className="mt-3 w-full rounded-md border border-sidebar-border bg-sidebar-accent px-2 py-1.5 text-sm text-sidebar-accent-foreground"
             value={org.id}
-            onChange={(e) => (e.target.value === "__new" ? setOrgId("__new") : setOrgId(e.target.value))}
+            onChange={(e) =>
+              e.target.value === "__new" ? setOrgId("__new") : setOrgId(e.target.value)
+            }
           >
-            {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+            {orgs.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
           </select>
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-sidebar-foreground/60">{ROLE_LABELS[org.role]}</p>
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-sidebar-foreground/60">
+            {ROLE_LABELS[org.role]}
+          </p>
         </div>
         <nav className="flex-1 space-y-0.5 p-3">
           {nav.map((n) => (
@@ -88,28 +120,55 @@ function Shell() {
             </Link>
           ))}
           {can(org.role, "audit.read") && (
-            <Link to="/board/audit" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent" activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}>
+            <Link
+              to="/board/audit"
+              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent"
+              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
+            >
               <ScrollText className="h-4 w-4" /> Audit log
             </Link>
           )}
-          <Link to="/board/settings" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent" activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}>
+          <Link
+            to="/board/settings"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent"
+            activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
+          >
             <Settings className="h-4 w-4" /> Settings & export
           </Link>
         </nav>
-        <button onClick={signOut} className="flex items-center gap-3 border-t border-sidebar-border px-6 py-4 text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground">
+        <button
+          onClick={signOut}
+          className="flex items-center gap-3 border-t border-sidebar-border px-6 py-4 text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground"
+        >
           <LogOut className="h-4 w-4" /> Sign out
         </button>
       </aside>
       <div className="flex-1">
         <div className="flex items-center justify-between border-b bg-sidebar px-4 py-3 text-sidebar-foreground md:hidden">
           <span className="font-display">{org.name}</span>
-          <button onClick={signOut} aria-label="Sign out"><LogOut className="h-4 w-4" /></button>
+          <button onClick={signOut} aria-label="Sign out">
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
         <nav className="flex gap-1 overflow-x-auto border-b bg-card px-2 py-2 md:hidden">
           {nav.map((n) => (
-            <Link key={n.to} to={n.to} activeOptions={{ exact: "exact" in n }} className="whitespace-nowrap rounded px-3 py-1.5 text-xs" activeProps={{ className: "bg-primary text-primary-foreground" }}>{n.label}</Link>
+            <Link
+              key={n.to}
+              to={n.to}
+              activeOptions={{ exact: "exact" in n }}
+              className="whitespace-nowrap rounded px-3 py-1.5 text-xs"
+              activeProps={{ className: "bg-primary text-primary-foreground" }}
+            >
+              {n.label}
+            </Link>
           ))}
-          <Link to="/board/settings" className="whitespace-nowrap rounded px-3 py-1.5 text-xs" activeProps={{ className: "bg-primary text-primary-foreground" }}>Settings</Link>
+          <Link
+            to="/board/settings"
+            className="whitespace-nowrap rounded px-3 py-1.5 text-xs"
+            activeProps={{ className: "bg-primary text-primary-foreground" }}
+          >
+            Settings
+          </Link>
         </nav>
         <main className="mx-auto max-w-6xl px-4 py-8 md:px-10">
           <Outlet />
@@ -129,7 +188,10 @@ function CreateOrg({ onSignOut }: { onSignOut: () => void }) {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const { data, error } = await attempt(db.orgs.create(name, tz));
     setBusy(false);
-    if (error !== null) { toast.error(errorMessage(error)); return; }
+    if (error !== null) {
+      toast.error(errorMessage(error));
+      return;
+    }
     setOrgId(data as string);
     refetch();
   }
@@ -138,11 +200,31 @@ function CreateOrg({ onSignOut }: { onSignOut: () => void }) {
       <form onSubmit={create} className="w-full max-w-md rounded-lg border bg-card p-8">
         <p className="eyebrow">Welcome</p>
         <h1 className="mt-2 text-2xl">Set up your organization</h1>
-        <p className="mt-2 text-sm text-muted-foreground">You'll be the owner. You can invite other board members next. If you were invited, open the invitation link instead.</p>
-        <Label htmlFor="org" className="mt-6 block">Organization name</Label>
-        <Input id="org" value={name} onChange={(e) => setName(e.target.value)} required maxLength={160} className="mt-1" />
-        <Button type="submit" className="mt-5 w-full" disabled={busy}>Create organization</Button>
-        <button type="button" onClick={onSignOut} className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground">Sign out</button>
+        <p className="mt-2 text-sm text-muted-foreground">
+          You'll be the owner. You can invite other board members next. If you were invited, open
+          the invitation link instead.
+        </p>
+        <Label htmlFor="org" className="mt-6 block">
+          Organization name
+        </Label>
+        <Input
+          id="org"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          maxLength={160}
+          className="mt-1"
+        />
+        <Button type="submit" className="mt-5 w-full" disabled={busy}>
+          Create organization
+        </Button>
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
+        >
+          Sign out
+        </button>
       </form>
     </div>
   );

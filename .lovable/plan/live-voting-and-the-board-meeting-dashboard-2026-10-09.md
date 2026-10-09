@@ -1,6 +1,7 @@
 # Live voting and the Board Meeting Dashboard
 
 ## What members will see
+
 - A **Board Meeting Dashboard** for each meeting, with a "Join meeting" button on the meeting page and on the board home page while a meeting is In progress. It works on phones, tablets and laptops.
 - It has three panels: **Agenda** (items, presenters, any motion prepared for each item), **Board packet** (the latest packet and its attached documents, opened through short-lived links), and **Vote** (the open motion, if there is one).
 - The Vote panel shows the motion text, who moved and seconded it, and buttons for In favor, Opposed and Abstain. A live count shows how many members have voted. Who voted which way stays hidden until the vote closes.
@@ -8,18 +9,22 @@
 - Once a vote is recorded, nobody can change or delete it — not the member, the chair or the owner. The database enforces this, not just the screen.
 
 ## Who can vote
+
 - Members vote with their own sign-in. A member can vote only if they are on the meeting's attendance list, marked present or remote, marked as a voting member, and linked to their account. The Attendance tab gets a "Linked account" picker so the secretary can connect each attendee to an organization member.
 - **The voter list is frozen when the vote opens.** The eligible voters at that moment become the vote's electorate. If the secretary marks someone present after the vote opens, that person cannot vote on it, because they were not there to hear the motion. Marking someone absent mid-vote doesn't remove them either. Anyone who doesn't vote is recorded as "did not vote".
 - Votes are accepted only while the meeting is **In progress**. In every other status (draft, scheduled, completed, archived) the voting buttons are hidden and the database rejects votes.
 
 ## Opening a vote (chair or secretary)
+
 - **Prepared motions:** each agenda item gets an optional "Proposed motion" field, which meeting templates copy too. On the dashboard, the chair or secretary sees an "Open vote" button next to any item with a proposed motion. They pick the mover and seconder from the members present, then open the vote.
 - **New business:** a "New motion" form (motion text, mover, seconder, optional agenda item) opens a vote right away.
 - **Only one vote can be open at a time** in a meeting. The database enforces this.
 - **Seconder:** a new organization setting, "Motions require a seconder" (default on). When it's on, a vote can't open without a seconder. When it's off, the seconder is optional.
 
 ## Closing a vote (organization settings)
+
 Owners and admins get these settings:
+
 - **How votes close** (pick one or more):
   - Chair closes it.
   - Closes automatically once every eligible member has voted.
@@ -32,7 +37,9 @@ Owners and admins get these settings:
   - Custom / determined by the chair: the app works out no result.
 
 ## The official voting record
+
 These facts are captured when the vote opens and closes, and stored permanently. They're viewable later on the meeting's Motions tab and in the minutes:
+
 - The eligible electorate: the frozen list of names.
 - Votes in favor, votes opposed, and abstentions, with each person's vote.
 - Members who did not vote.
@@ -46,6 +53,7 @@ These facts are captured when the vote opens and closes, and stored permanently.
 The existing "Record a motion" form on the Motions tab stays as it is, for votes taken by show of hands.
 
 ## Technical details
+
 - Migration (additive):
   - `agenda_items.proposed_motion` (text, nullable).
   - `organizations.vote_close_modes` (text[], default `{chair}`), `vote_timer_minutes` (int, nullable) and `vote_closer_roles` (org_role[], default owner/admin/chair/secretary).
