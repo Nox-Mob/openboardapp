@@ -5,6 +5,7 @@ import { db } from "@/data";
 import { attendanceCsv, folderNames, packetAsOf, rangeError, safeName, tookPlace, versionAsOf, votesCsv, yearToDate } from "@/lib/board-export";
 import { downloadBlob, errorMessage } from "@/lib/export";
 import { minutesToPdf } from "@/lib/packet";
+import { loadLetterhead } from "@/lib/load-letterhead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,13 +25,14 @@ export function BoardRecordExport({ orgId, orgName }: { orgId: string; orgName: 
       if (!held.length) { toast.error("No meetings took place in that period"); return; }
       const names = folderNames(held);
       const files: Record<string, Uint8Array> = {};
+      const letterhead = await loadLetterhead(orgId);
       const index: string[] = [`${orgName} - Board record ${range.from} to ${range.to}`, `Exported ${new Date().toISOString()}`, ""];
       for (const [i, m] of held.entries()) {
         setBusy(`Meeting ${i + 1} of ${held.length}…`);
         const dir = names[i] + "/";
         const approved = m.minutes.find((v) => v.status === "approved");
         if (approved) {
-          files[dir + `minutes-v${approved.version}.pdf`] = await minutesToPdf({ orgName, meetingTitle: m.title, meetingDate: m.meeting_date, version: approved.version, status: "approved", approvedAt: approved.approved_at, content: approved.content });
+          files[dir + `minutes-v${approved.version}.pdf`] = await minutesToPdf({ orgName, meetingTitle: m.title, meetingDate: m.meeting_date, version: approved.version, status: "approved", approvedAt: approved.approved_at, content: approved.content, letterhead });
           files[dir + `minutes-v${approved.version}.txt`] = strToU8(approved.content);
         } else files[dir + "minutes-NOT-APPROVED.txt"] = strToU8("No approved minutes exist for this meeting.");
         files[dir + "votes.csv"] = strToU8(votesCsv([...m.motions].sort((a, b) => a.created_at.localeCompare(b.created_at))));

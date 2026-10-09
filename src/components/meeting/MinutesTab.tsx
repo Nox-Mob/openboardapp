@@ -6,6 +6,7 @@ import { can } from "@/lib/permissions";
 import { errorMessage, downloadBlob } from "@/lib/export";
 import { generateMinutes, nextVersion } from "@/lib/minutes";
 import { minutesToPdf } from "@/lib/packet";
+import { loadLetterhead } from "@/lib/load-letterhead";
 import { useAgenda, useAttendance, useMinutes, useMotions, useInvalidateMeeting } from "@/lib/meeting-data";
 import type { Tables } from "@/integrations/supabase/types";
 import { LoadingState, EmptyState } from "@/components/PageStates";
@@ -63,8 +64,11 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
 
   async function exportPdf() {
     if (!current) return;
-    const bytes = await minutesToPdf({ orgName: org.name, meetingTitle: meeting.title, meetingDate: meeting.meeting_date, version: current.version, status: current.status, approvedAt: current.approved_at, approvedBy: current.approved_by ? nameOf(current.approved_by) : null, content: current.content });
-    downloadBlob(new Blob([bytes as unknown as BlobPart], { type: "application/pdf" }), `minutes-${meeting.meeting_date}-v${current.version}.pdf`);
+    try {
+      const letterhead = await loadLetterhead(org.id);
+      const bytes = await minutesToPdf({ orgName: org.name, meetingTitle: meeting.title, meetingDate: meeting.meeting_date, version: current.version, status: current.status, approvedAt: current.approved_at, approvedBy: current.approved_by ? nameOf(current.approved_by) : null, content: current.content, letterhead });
+      downloadBlob(new Blob([bytes as unknown as BlobPart], { type: "application/pdf" }), `minutes-${meeting.meeting_date}-v${current.version}.pdf`);
+    } catch (e) { toast.error(errorMessage(e)); }
   }
 
   if (minutes.isLoading) return <LoadingState />;

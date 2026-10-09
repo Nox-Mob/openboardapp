@@ -8,11 +8,20 @@ import { CLOSE_MODES, DECISION_RULES, type CloseMode } from "@/lib/votes";
 import { downloadBlob, errorMessage, toCsv } from "@/lib/export";
 import { PageHeader } from "@/components/PageStates";
 import { BoardRecordExport } from "@/components/BoardRecordExport";
+import { LetterheadSettings } from "@/components/LetterheadSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/board/settings")({
+  head: () => ({ meta: [
+    { title: "Settings & letterhead — OpenBoard" },
+    { name: "description", content: "Manage organization settings, custom letterhead and board record exports." },
+    { property: "og:title", content: "Settings & letterhead — OpenBoard" },
+    { property: "og:description", content: "Manage organization settings, custom letterhead and board record exports." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Settings,
 });
 
@@ -130,6 +139,7 @@ function Settings() {
             </>
           ) : <p className="text-sm text-muted-foreground">Only owners and administrators can export data.</p>}
         </section>
+        <LetterheadSettings key={org.id} />
         <form onSubmit={createOrg} className="space-y-3 rounded-lg border bg-card p-5">
           <p className="eyebrow">Another organization</p>
           <p className="text-sm text-muted-foreground">Serve on more than one board? Create another organization and switch between them in the sidebar.</p>
