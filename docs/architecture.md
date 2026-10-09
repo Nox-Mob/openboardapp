@@ -126,7 +126,7 @@ Invitation tokens are stored only as SHA-256 hashes and claimed once through `ac
 
 The settings screen offers table JSON/CSV exports and the full board-record ZIP in `src/components/BoardRecordExport.tsx`. CSV values are escaped to avoid spreadsheet formula execution.
 
-The ZIP defaults to Year to date and accepts at most 366 inclusive calendar days. It includes meetings marked in progress, completed or archived, with one folder per meeting: approved minutes when available, vote records, attendance, and the selected packet/supporting document versions as of the meeting day. Missing minutes or files are noted rather than silently represented as complete records.
+The ZIP defaults to Year to date and accepts at most 366 inclusive calendar days. It includes meetings marked in progress, completed or archived, with one folder per meeting: approved minutes when available, vote records, attendance, and the selected packet/supporting document versions as of the meeting day. Missing approved minutes receive an explicit note. Unreadable packet/document downloads are currently skipped without a per-file warning, so the ZIP is not proof that every attachment was successfully included.
 
 Selection rules are implemented in `src/lib/board-export.ts`: document versions must have existed by the end of the meeting date; packet selection prefers a distributed packet among packets created by that cutoff. This is date-based selection, not a full point-in-time database snapshot. Newly rendered minutes use the currently configured letterhead; saved packet PDFs retain their original rendering.
 
