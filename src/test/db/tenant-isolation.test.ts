@@ -1,4 +1,3 @@
-// @vitest-environment node
 import { beforeAll, describe, expect, it } from "vitest";
 import { hasDb, signIn, ORG_A, ORG_B, DEMO_ORG, tag, type Client } from "./helpers";
 
@@ -19,7 +18,7 @@ describe.skipIf(!hasDb)("tenant isolation (live database)", () => {
     taskId = (await a.from("action_items").insert({ organization_id: ORG_A, meeting_id: meetingId, title: "Secret task" }).select("id").single()).data!.id;
     docId = (await a.from("documents").insert({ organization_id: ORG_A, title: "Secret doc" }).select("id").single()).data!.id;
     filePath = `${ORG_A}/documents/${docId}/v1-${tag()}.txt`;
-    const up = await a.storage.from("org-files").upload(filePath, new Blob(["top secret"], { type: "text/plain" }));
+    const up = await a.storage.from("org-files").upload(filePath, new TextEncoder().encode("top secret"), { contentType: "text/plain" });
     if (up.error) throw up.error;
     await a.from("document_versions").insert({ organization_id: ORG_A, document_id: docId, version: 1, storage_path: filePath, file_name: "secret.txt" });
   });
@@ -75,7 +74,7 @@ describe.skipIf(!hasDb)("tenant isolation (live database)", () => {
     expect(signed.data?.signedUrl).toBeFalsy();
   });
   it("B cannot upload into A's folder", async () => {
-    const { error } = await b.storage.from("org-files").upload(`${ORG_A}/documents/x/${tag()}.txt`, new Blob(["x"]));
+    const { error } = await b.storage.from("org-files").upload(`${ORG_A}/documents/x/${tag()}.txt`, new TextEncoder().encode("x"), { contentType: "text/plain" });
     expect(error).not.toBeNull();
   });
   it("B cannot record a document version pointing at A's file path", async () => {
