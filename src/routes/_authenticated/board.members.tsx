@@ -138,38 +138,32 @@ function Members() {
       </div>
 
       <section className="mt-10">
-        <p className="eyebrow mb-2">Board composition & terms of service</p>
+        <p className="eyebrow mb-2">Board roles & terms</p>
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-4 lg:col-span-2">
-            {[{ label: "Current", rows: current }, { label: "Former", rows: former }].map((g) => (
-              <div key={g.label}>
-                <h3 className="mb-2 text-base">{g.label}</h3>
-                {!g.rows.length ? <EmptyState title={`No ${g.label.toLowerCase()} board terms`} /> : (
-                  <div className="divide-y rounded-lg border bg-card">
-                    {g.rows.map((t) => (
-                      <div key={t.id} className="flex items-center justify-between px-4 py-3 text-sm">
-                        <div><p className="font-medium">{t.person_name}</p><p className="text-xs text-muted-foreground">{t.position}</p></div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-muted-foreground">{t.start_date} → {t.end_date ?? "present"}</span>
-                          {editor && <Button size="icon" variant="ghost" onClick={() => deleteTerm(t.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+          <div className="space-y-3 lg:col-span-2">
+            {positions.isLoading ? <LoadingState /> : !positions.data?.length ? <EmptyState title="No board roles yet" /> : positions.data.map((p) => (
+              <RoleCard key={p.id} role={p} terms={(terms.data ?? []).filter((t) => t.position_id === p.id)} today={today} editor={editor}
+                candidates={(members.data ?? []).filter((m) => m.role !== "observer")} orgId={org.id} />
             ))}
+            {!!unlinked.length && (
+              <div className="rounded-lg border bg-card p-4 text-sm">
+                <p className="eyebrow mb-2">Older terms not tied to a role</p>
+                {unlinked.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between py-1">
+                    <span>{t.person_name} · {t.position}</span>
+                    <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground">{t.start_date} → {t.end_date ?? "present"}
+                      {editor && <Button size="icon" variant="ghost" onClick={() => deleteTerm(t.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {editor && (
-            <form onSubmit={addTerm} className="h-fit space-y-3 rounded-lg border bg-card p-5">
-              <p className="eyebrow">Record a term</p>
-              <div><Label>Name</Label><Input value={term.person_name} onChange={(e) => setTerm({ ...term, person_name: e.target.value })} required /></div>
-              <div><Label>Position</Label><Input value={term.position} onChange={(e) => setTerm({ ...term, position: e.target.value })} placeholder="President, Treasurer, Director…" required /></div>
-              <div className="grid grid-cols-2 gap-2">
-                <div><Label>Start</Label><Input type="date" value={term.start_date} onChange={(e) => setTerm({ ...term, start_date: e.target.value })} required /></div>
-                <div><Label>End</Label><Input type="date" value={term.end_date} onChange={(e) => setTerm({ ...term, end_date: e.target.value })} /></div>
-              </div>
-              <Button type="submit" className="w-full">Add term</Button>
+            <form onSubmit={addRole} className="h-fit space-y-3 rounded-lg border bg-card p-5">
+              <p className="eyebrow">Create a board role</p>
+              <div><Label>Title</Label><Input value={role.title} onChange={(e) => setRole({ ...role, title: e.target.value })} placeholder="President, Membership VP…" required /></div>
+              <div><Label>Term length</Label><TermSelect value={role.term_years} onChange={(v) => setRole({ ...role, term_years: v })} /></div>
+              <Button type="submit" className="w-full">Add role</Button>
             </form>
           )}
         </div>
