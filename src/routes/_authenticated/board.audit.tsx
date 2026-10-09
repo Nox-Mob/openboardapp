@@ -6,6 +6,7 @@ import { can } from "@/lib/permissions";
 import { PageHeader, LoadingState, EmptyState, ErrorState } from "@/components/PageStates";
 
 export const Route = createFileRoute("/_authenticated/board/audit")({
+  head: () => ({ meta: [{"title": "Audit log — OpenBoard"}, {"name": "description", "content": "Review your organization’s recorded governance activity."}, {"property": "og:title", "content": "Audit log — OpenBoard"}, {"property": "og:description", "content": "Review your organization’s recorded governance activity."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: Audit,
 });
 

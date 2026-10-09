@@ -8,6 +8,8 @@ export const Route = createFileRoute("/invite/$token")({
   ssr: false,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Board invitation — OpenBoard" },
       { name: "description", content: "Accept an invitation to join a board on OpenBoard." },
       { property: "og:title", content: "Board invitation — OpenBoard" },

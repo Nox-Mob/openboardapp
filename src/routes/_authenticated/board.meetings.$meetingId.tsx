@@ -22,6 +22,7 @@ type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/board/meetings/$meetingId")({
   validateSearch: (s: Record<string, unknown>): { tab?: Tab } => (TABS.includes(s["tab"] as Tab) ? { tab: s["tab"] as Tab } : {}),
+  head: () => ({ meta: [{"title": "Meeting record — OpenBoard"}, {"name": "description", "content": "Prepare agendas, record attendance and approve meeting minutes."}, {"property": "og:title", "content": "Meeting record — OpenBoard"}, {"property": "og:description", "content": "Prepare agendas, record attendance and approve meeting minutes."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: MeetingPage,
 });
 

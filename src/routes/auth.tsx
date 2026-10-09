@@ -11,6 +11,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { redirect?: string } => (typeof s["redirect"] === "string" ? { redirect: s["redirect"] } : {}),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Sign in — OpenBoard" },
       { name: "description", content: "Sign in to your organization's board room." },
       { property: "og:title", content: "Sign in — OpenBoard" },

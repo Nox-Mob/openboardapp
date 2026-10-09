@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { StatusBadge } from "@/components/StatusBadge";
 
 export const Route = createFileRoute("/_authenticated/board/meetings/")({
+  head: () => ({ meta: [{"title": "Meetings — OpenBoard"}, {"name": "description", "content": "Schedule and review your organization’s board meetings."}, {"property": "og:title", "content": "Meetings — OpenBoard"}, {"property": "og:description", "content": "Schedule and review your organization’s board meetings."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: Meetings,
 });
 

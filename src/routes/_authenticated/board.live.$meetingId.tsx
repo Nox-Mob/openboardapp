@@ -21,7 +21,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/board/live/$meetingId")({
-  head: () => ({ meta: [{ title: "Board Meeting Dashboard — OpenBoard" }, { name: "description", content: "Follow the agenda, read the board packet and cast your official vote during the meeting." }] }),
+  head: () => ({ meta: [{"title": "Board Meeting Dashboard — OpenBoard"}, {"name": "description", "content": "Follow the agenda, read the packet and cast official meeting votes."}, {"property": "og:title", "content": "Board Meeting Dashboard — OpenBoard"}, {"property": "og:description", "content": "Follow the agenda, read the packet and cast official meeting votes."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: LiveMeeting,
 });
 

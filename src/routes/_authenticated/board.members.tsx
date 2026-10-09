@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/board/members")({
+  head: () => ({ meta: [{"title": "Members & terms — OpenBoard"}, {"name": "description", "content": "Manage app access, board roles and terms of service."}, {"property": "og:title", "content": "Members & terms — OpenBoard"}, {"property": "og:description", "content": "Manage app access, board roles and terms of service."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: Members,
 });
 

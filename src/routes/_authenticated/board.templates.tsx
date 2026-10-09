@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/board/templates")({
-  head: () => ({ meta: [{ title: "Meeting templates · OpenBoard" }] }),
+  head: () => ({ meta: [{"title": "Meeting templates — OpenBoard"}, {"name": "description", "content": "Manage reusable agenda outlines for board meetings."}, {"property": "og:title", "content": "Meeting templates — OpenBoard"}, {"property": "og:description", "content": "Manage reusable agenda outlines for board meetings."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: Templates,
 });
 

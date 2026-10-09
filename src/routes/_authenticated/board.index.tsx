@@ -6,6 +6,7 @@ import { PageHeader, LoadingState, EmptyState } from "@/components/PageStates";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/board/")({
+  head: () => ({ meta: [{"title": "Board overview — OpenBoard"}, {"name": "description", "content": "Review upcoming meetings, minutes and assigned actions."}, {"property": "og:title", "content": "Board overview — OpenBoard"}, {"property": "og:description", "content": "Review upcoming meetings, minutes and assigned actions."}, {"property": "og:type", "content": "website"}, {"name": "twitter:card", "content": "summary"}] }),
   component: Overview,
 });
 
