@@ -8,9 +8,9 @@ type Status = Database["public"]["Enums"]["task_status"];
 type MeetingStatus = Database["public"]["Enums"]["meeting_status"];
 const BUCKET = "org-files";
 
-function must<T>(r: { data: T; error: unknown }): T {
+function must<R extends { data: unknown; error: unknown }>(r: R): NonNullable<R["data"]> {
   if (r.error) throw r.error;
-  return r.data;
+  return r.data as NonNullable<R["data"]>;
 }
 
 export const EXPORT_TABLES = ["organizations", "memberships", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
@@ -132,7 +132,9 @@ export const cloudAdapter = {
       return must(await supabase.from("meetings").select("*").eq("organization_id", orgId).order("meeting_date", { ascending: false })) ?? [];
     },
     async get(id: string) {
-      return must(await supabase.from("meetings").select("*").eq("id", id).maybeSingle());
+      const r = await supabase.from("meetings").select("*").eq("id", id).maybeSingle();
+      if (r.error) throw r.error;
+      return r.data;
     },
     /** Creates a meeting and its starting agenda (from a template, or the standard outline). */
     async create(row: TablesInsert<"meetings">, agenda: TemplateAgendaItem[]) {
@@ -233,7 +235,7 @@ export const cloudAdapter = {
   },
 
   actions: {
-    async list(orgId: string, opts: { meetingId?: string; assigneeId?: string } = {}) {
+    async list(orgId: string, opts: { meetingId?: string | undefined; assigneeId?: string | undefined } = {}) {
       let q = supabase.from("action_items").select("*, meetings(title, meeting_date)").eq("organization_id", orgId);
       if (opts.meetingId) q = q.eq("meeting_id", opts.meetingId);
       if (opts.assigneeId) q = q.eq("assignee_id", opts.assigneeId);

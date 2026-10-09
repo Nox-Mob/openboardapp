@@ -21,7 +21,7 @@ export function normalizeAgenda(raw: unknown): TemplateAgendaItem[] {
   const out: TemplateAgendaItem[] = [];
   for (const r of raw) {
     if (!r || typeof r !== "object") continue;
-    const o = r as Record<string, unknown>;
+    const o = r as { title?: unknown; presenter?: unknown; duration_minutes?: unknown; description?: unknown };
     const title = typeof o.title === "string" ? o.title.trim() : "";
     if (!title) continue;
     const presenter = typeof o.presenter === "string" && o.presenter.trim() ? o.presenter.trim() : null;
