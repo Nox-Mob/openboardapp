@@ -36,7 +36,7 @@ function Meetings() {
   function pickTemplate(id: string) {
     setTemplateId(id);
     const t = templates.data?.find((x) => x.id === id);
-    if (t) setForm((f) => ({ ...f, title: t.meeting_title, start_time: t.start_time ?? f.start_time, location: t.location ?? "" }));
+    if (t) setForm((f) => ({ ...f, title: t.meeting_title, start_time: t.start_time ?? f.start_time, location: t.location ?? "" } as typeof f));
   }
 
   async function create(e: React.FormEvent) {
