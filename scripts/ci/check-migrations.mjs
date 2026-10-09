@@ -31,9 +31,15 @@ for (const m of sql.matchAll(/foreach \w+ in array array\[([^\]]+)\] loop([\s\S]
 const problems = [];
 const prefix = (t) => `(?:public\\.)?"?${t}"?`;
 for (const t of tables) {
-  if (!loopSecured.rls.has(t) && !new RegExp(`alter table (?:only )?${prefix(t)}\\s+enable row level security`).test(sql))
+  if (
+    !loopSecured.rls.has(t) &&
+    !new RegExp(`alter table (?:only )?${prefix(t)}\\s+enable row level security`).test(sql)
+  )
     problems.push(`${t}: row level security is never enabled`);
-  if (!loopSecured.policy.has(t) && !new RegExp(`create policy [^;]*? on ${prefix(t)}[\\s;]`).test(sql))
+  if (
+    !loopSecured.policy.has(t) &&
+    !new RegExp(`create policy [^;]*? on ${prefix(t)}[\\s;]`).test(sql)
+  )
     problems.push(`${t}: has no policies (locked for everyone)`);
 }
 const protectedTables = ["audit_log", "member_votes", "vote_electorate"];
