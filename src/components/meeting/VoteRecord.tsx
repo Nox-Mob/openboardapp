@@ -21,6 +21,7 @@ interface LiveMotion {
   votes_yes: number;
   votes_no: number;
   votes_abstain: number;
+  votes_recused?: number;
 }
 
 const when = (t: string | null) => (t ? new Date(t).toLocaleString() : "—");
@@ -40,7 +41,8 @@ export function VoteRecordView({ motion }: { motion: LiveMotion }) {
       {closed && (
         <>
           <dt className="text-muted-foreground">Closed</dt><dd>{when(motion.closed_at)}{r.closed_how ? ` — ${CLOSED_HOW[r.closed_how]}` : ""}</dd>
-          <dt className="text-muted-foreground">Votes</dt><dd>{motion.votes_yes} in favor · {motion.votes_no} opposed · {motion.votes_abstain} abstaining</dd>
+          <dt className="text-muted-foreground">Votes</dt><dd>{motion.votes_yes} in favor · {motion.votes_no} opposed · {motion.votes_abstain} abstaining · {motion.votes_recused ?? 0} recused</dd>
+          <dt className="text-muted-foreground">Recused</dt><dd>{r.recused?.join(", ") || "None"}</dd>
           <dt className="text-muted-foreground">How each voted</dt><dd>{roll.map((v) => `${v.person_name}: ${VOTE_LABEL[v.vote]}`).join("; ") || "—"}</dd>
           <dt className="text-muted-foreground">Did not vote</dt><dd>{r.not_voting?.join(", ") || "None"}</dd>
           <dt className="text-muted-foreground">Result</dt>

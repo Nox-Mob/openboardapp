@@ -297,7 +297,7 @@ export const cloudAdapter = {
     async start(meetingId: string, v: { agenda_item_id: string | null; motion_text: string; moved_by: string | null; seconded_by: string | null }) {
       return must(await supabase.rpc("start_vote", { _meeting: meetingId, _agenda_item: v.agenda_item_id as string, _text: v.motion_text, _moved_by: v.moved_by as string, _seconded_by: v.seconded_by as string })) as string;
     },
-    async cast(motionId: string, vote: "yes" | "no" | "abstain") {
+    async cast(motionId: string, vote: "yes" | "no" | "abstain" | "recused") {
       return must(await supabase.rpc("cast_vote", { _motion: motionId, _vote: vote })) as "recorded" | "expired";
     },
     async close(motionId: string) {

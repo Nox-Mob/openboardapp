@@ -8,7 +8,7 @@ import { useCurrentOrg, useTitles } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { signedUrl } from "@/lib/meeting-data";
-import { DECISION_RULES, type DecisionRule, canCloseEarly, presentAttendees, VOTE_LABEL, VOTE_PHRASE, type Vote } from "@/lib/votes";
+import { DECISION_RULES, type DecisionRule, canCloseEarly, presentAttendees, VOTE_LABEL, VOTE_PHRASE, VOTES, quorumStatus, type Vote } from "@/lib/votes";
 import { PageHeader, LoadingState, EmptyState } from "@/components/PageStates";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DispositionForm, VoteRecordView } from "@/components/meeting/VoteRecord";
@@ -218,8 +218,8 @@ function OpenVote({ motion, live, onChange }: { motion: { id: string; motion_tex
       ) : !live ? null : eligible === false ? (
         <p className="mt-4 rounded-md border px-3 py-2 text-sm text-muted-foreground">You are not on the voter list for this motion. Only voting members present when it was opened can vote.</p>
       ) : eligible ? (
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {(["yes", "no", "abstain"] as const).map((v) => (
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {VOTES.map((v) => (
             <Button key={v} size="lg" variant={v === "yes" ? "default" : v === "no" ? "destructive" : "outline"} className="h-14 text-base" disabled={busy} onClick={() => setConfirm(v)}>{VOTE_LABEL[v]}</Button>
           ))}
         </div>

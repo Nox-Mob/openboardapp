@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const OUTCOMES = ["carried", "failed", "tabled", "withdrawn", "pending"] as const;
-const empty = { agenda_item_id: "none", motion_text: "", moved_by: "none", seconded_by: "none", votes_yes: 0, votes_no: 0, votes_abstain: 0, outcome: "carried" as (typeof OUTCOMES)[number] };
+const empty = { agenda_item_id: "none", motion_text: "", moved_by: "none", seconded_by: "none", votes_yes: 0, votes_no: 0, votes_abstain: 0, votes_recused: 0, outcome: "carried" as (typeof OUTCOMES)[number] };
 
 export function MotionsTab({ meetingId, editable }: { meetingId: string; editable: boolean }) {
   const { org } = useCurrentOrg();
@@ -40,7 +40,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
     const roll = useRoll ? voters.filter((v) => votes[v.id]).map((v) => ({ attendance_id: v.id, person_name: v.person_name, vote: votes[v.id]! })) : null;
     if (useRoll && roll!.length < voters.length) { toast.error("Record a vote for every voting member present"); return; }
     if (f.moved_by !== "none" && f.moved_by === f.seconded_by) { toast.error("The same person can't move and second"); return; }
-    const counts = roll ? tally(roll) : { votes_yes: f.votes_yes, votes_no: f.votes_no, votes_abstain: f.votes_abstain };
+    const counts = roll ? tally(roll) : { votes_yes: f.votes_yes, votes_no: f.votes_no, votes_abstain: f.votes_abstain, votes_recused: f.votes_recused };
     const { error } = await attempt(db.motions.add({
       ...f,
       ...counts,
@@ -133,20 +133,20 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
                 <div key={v.id} className="flex items-center justify-between gap-2">
                   <span className="text-sm">{titles.label(v.person_name, v.user_id)}</span>
                   <div className="flex gap-1" role="group" aria-label={`${v.person_name} vote`}>
-                    {(["yes", "no", "abstain"] as const).map((o) => (
+                    {VOTES.map((o) => (
                       <Button key={o} type="button" size="sm" variant={votes[v.id] === o ? "default" : "outline"} onClick={() => setVotes({ ...votes, [v.id]: o })}>
-                        {o === "yes" ? "Yes" : o === "no" ? "No" : "Abstain"}
+                        {o === "yes" ? "Yes" : o === "no" ? "No" : VOTE_LABEL[o]}
                       </Button>
                     ))}
                   </div>
                 </div>
               ))}
-              {voters.length > 0 && (() => { const t = tally(voters.filter((v) => votes[v.id]).map((v) => ({ attendance_id: v.id, person_name: v.person_name, vote: votes[v.id]! }))); return <p className="font-mono text-xs text-muted-foreground">{t.votes_yes} in favor · {t.votes_no} opposed · {t.votes_abstain} abstaining</p>; })()}
+              {voters.length > 0 && (() => { const t = tally(voters.filter((v) => votes[v.id]).map((v) => ({ attendance_id: v.id, person_name: v.person_name, vote: votes[v.id]! }))); return <p className="font-mono text-xs text-muted-foreground">{t.votes_yes} in favor · {t.votes_no} opposed · {t.votes_abstain} abstaining · {t.votes_recused} recused</p>; })()}
             </div>
           ) : (
-          <div className="grid grid-cols-3 gap-2">
-            {(["votes_yes", "votes_no", "votes_abstain"] as const).map((k) => (
-              <div key={k}><Label>{k === "votes_yes" ? "In favor" : k === "votes_no" ? "Opposed" : "Abstain"}</Label><Input type="number" min={0} value={f[k]} onChange={(e) => setF({ ...f, [k]: Math.max(0, Number(e.target.value)) })} /></div>
+          <div className="grid grid-cols-4 gap-2">
+            {(["votes_yes", "votes_no", "votes_abstain", "votes_recused"] as const).map((k) => (
+              <div key={k}><Label>{k === "votes_yes" ? "In favor" : k === "votes_no" ? "Opposed" : k === "votes_abstain" ? "Abstain" : "Recused"}</Label><Input type="number" min={0} value={f[k]} onChange={(e) => setF({ ...f, [k]: Math.max(0, Number(e.target.value)) })} /></div>
             ))}
           </div>
           )}

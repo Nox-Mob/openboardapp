@@ -16,6 +16,7 @@ export interface MinutesInput {
     votes_yes: number;
     votes_no: number;
     votes_abstain: number;
+    votes_recused?: number;
     outcome: string;
     roll_call?: unknown;
     vote_record?: unknown;
@@ -38,10 +39,11 @@ export function formatMotion(m: MinutesInput["motions"][number]): string {
     .filter(Boolean)
     .join(", ");
   const rec = parseVoteRecord(m.vote_record);
+  const rc = rec?.recused?.length ? ` Recused: ${rec.recused.join(", ")}.` : "";
   const nv = rec?.not_voting?.length ? ` Not voting: ${rec.not_voting.join(", ")}.` : "";
   const q = rec ? ` Eligible voters: ${rec.electorate?.length ?? 0}; quorum ${rec.quorum_met ? "met" : "not met"} (${rec.present_voting} of ${rec.quorum_required} required).` : "";
   const note = m.disposition_note ? ` Result recorded: ${m.disposition_note}.` : "";
-  return `MOTION: ${m.motion_text}${by ? ` (${by})` : ""}. Vote: ${m.votes_yes} in favor, ${m.votes_no} opposed, ${m.votes_abstain} abstaining.${roll ? ` Roll call — ${roll}.` : ""}${nv}${q} ${OUTCOME[m.outcome] ?? m.outcome.toUpperCase()}.${note}`;
+  return `MOTION: ${m.motion_text}${by ? ` (${by})` : ""}. Vote: ${m.votes_yes} in favor, ${m.votes_no} opposed, ${m.votes_abstain} abstaining${m.votes_recused ? `, ${m.votes_recused} recused` : ""}.${roll ? ` Roll call — ${roll}.` : ""}${rc}${nv}${q} ${OUTCOME[m.outcome] ?? m.outcome.toUpperCase()}.${note}`;
 }
 
 export function generateMinutes(input: MinutesInput): string {
