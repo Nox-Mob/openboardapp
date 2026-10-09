@@ -40,3 +40,59 @@ export function formatRollCall(roll: RollCallEntry[]): string {
     .filter(Boolean)
     .join("; ");
 }
+
+// ---- Live voting (mirrors the database functions in migration 0003_live_voting) ----
+export type DecisionRule = "majority_cast" | "majority_present" | "two_thirds_cast" | "chair";
+export type CloseMode = "chair" | "auto" | "timer";
+
+export const DECISION_RULES: Record<DecisionRule, string> = {
+  majority_cast: "Simple majority of votes cast (abstentions don't count)",
+  majority_present: "Majority of the eligible voters present",
+  two_thirds_cast: "Two-thirds of votes cast",
+  chair: "Custom — the chair records the result",
+};
+
+export const CLOSE_MODES: Record<CloseMode, string> = {
+  chair: "The chair (or another permitted role) closes it",
+  auto: "Closes automatically once every eligible member has voted",
+  timer: "Closes when a timer runs out",
+};
+
+/** Wording used in the "this is your official vote" confirmation. */
+export const VOTE_PHRASE: Record<Vote, string> = { yes: "in the affirmative", no: "in opposition", abstain: "to abstain" };
+export const VOTE_LABEL: Record<Vote, string> = { yes: "In favor", no: "Opposed", abstain: "Abstain" };
+
+/** Same rule the database applies on close; null means a person must record the result. */
+export function computeDisposition(rule: string, c: { yes: number; no: number }, electorateSize: number, quorumMet: boolean): "carried" | "failed" | null {
+  if (!quorumMet) return null;
+  if (rule === "majority_cast") return c.yes + c.no > 0 ? (c.yes > c.no ? "carried" : "failed") : null;
+  if (rule === "majority_present") return electorateSize > 0 ? (c.yes * 2 > electorateSize ? "carried" : "failed") : null;
+  if (rule === "two_thirds_cast") return c.yes + c.no > 0 ? (c.yes * 3 >= (c.yes + c.no) * 2 ? "carried" : "failed") : null;
+  return null;
+}
+
+/** Whether this role may close an open vote early under the org's settings. */
+export function canCloseEarly(role: string | null | undefined, org: { vote_close_modes: string[]; vote_closer_roles: string[] }): boolean {
+  return !!role && org.vote_close_modes.includes("chair") && org.vote_closer_roles.includes(role);
+}
+
+export interface VoteRecord {
+  decision_rule?: string;
+  quorum_required?: number;
+  present_voting?: number;
+  quorum_met?: boolean;
+  seconder_required?: boolean;
+  electorate?: string[];
+  electorate_size?: number;
+  not_voting?: string[];
+  present_not_linked?: string[];
+  closed_how?: "chair" | "all_voted" | "timer";
+  calculated?: boolean;
+  needs_disposition_reason?: string | null;
+}
+
+export function parseVoteRecord(raw: unknown): VoteRecord | null {
+  return raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as VoteRecord) : null;
+}
+
+export const CLOSED_HOW: Record<string, string> = { chair: "closed by the chair", all_voted: "closed automatically when everyone had voted", timer: "closed when the timer ran out" };
