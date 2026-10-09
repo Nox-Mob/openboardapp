@@ -1,4 +1,4 @@
-import { PDFDocument, type PDFPage } from "pdf-lib";
+import { PDFDocument, rgb, type PDFPage } from "pdf-lib";
 
 export interface Letterhead {
   bytes: ArrayBuffer | Uint8Array;
@@ -26,6 +26,9 @@ export async function inspectLetterhead(bytes: Uint8Array): Promise<Letterhead["
     if (pdf.getPageCount() !== 1) throw new Error("PDF letterhead must contain exactly one page.");
     const page = pdf.getPage(0);
     if (page.getWidth() > page.getHeight() || page.getRotation().angle !== 0) throw new Error("Use an unrotated, portrait PDF page.");
+    const embedded = await probe.embedPage(page);
+    probe.addPage([612, 792]).drawPage(embedded);
+    await probe.save();
     return "application/pdf";
   }
   throw new Error("Choose a valid PNG, JPG or single-page, unprotected PDF.");
@@ -39,7 +42,10 @@ export async function prepareLetterhead(doc: PDFDocument, value?: Letterhead | n
   if (value.mimeType === "application/pdf") {
     const source = await PDFDocument.load(value.bytes);
     if (source.getPageCount() !== 1) throw new Error("PDF letterhead must contain exactly one page.");
-    const embedded = await doc.embedPage(source.getPage(0));
+    const sourcePage = source.getPage(0);
+    // A completely blank page has no Contents stream; create a harmless one before embedding.
+    if (!sourcePage.node.Contents()) sourcePage.drawRectangle({ x: 0, y: 0, width: 1, height: 1, color: rgb(1, 1, 1), opacity: 0 });
+    const embedded = await doc.embedPage(sourcePage);
     return { top, bottom, draw: (page: PDFPage) => page.drawPage(embedded, { x: 0, y: 0, width: page.getWidth(), height: page.getHeight() }) };
   }
   const image = value.mimeType === "image/png" ? await doc.embedPng(value.bytes) : await doc.embedJpg(value.bytes);

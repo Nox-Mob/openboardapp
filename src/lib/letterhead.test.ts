@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
 import { inspectLetterhead, prepareLetterhead } from "./letterhead";
 import { textToPdf, minutesToPdf } from "./packet";
 
 async function stationery(pages = 1) {
   const doc = await PDFDocument.create();
-  for (let i = 0; i < pages; i++) doc.addPage([612, 792]);
+  for (let i = 0; i < pages; i++) doc.addPage([612, 792]).drawText("Test board", { x: 64, y: 750, color: rgb(0.1, 0.3, 0.2) });
   return doc.save();
 }
 
