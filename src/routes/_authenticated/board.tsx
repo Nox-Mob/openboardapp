@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CalendarDays, FileText, LayoutDashboard, ListChecks, LogOut, ScrollText, Settings, Users, Network } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
 import { can, ROLE_LABELS } from "@/lib/permissions";
 import { LoadingState } from "@/components/PageStates";
@@ -50,7 +50,7 @@ function Shell() {
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
-    await supabase.auth.signOut();
+    await db.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
 
@@ -124,9 +124,9 @@ function CreateOrg({ onSignOut }: { onSignOut: () => void }) {
     e.preventDefault();
     setBusy(true);
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const { data, error } = await supabase.rpc("create_organization", { _name: name, _timezone: tz });
+    const { data, error } = await attempt(db.orgs.create(name, tz));
     setBusy(false);
-    if (error) { toast.error(errorMessage(error)); return; }
+    if (error !== null) { toast.error(errorMessage(error)); return; }
     setOrgId(data as string);
     refetch();
   }

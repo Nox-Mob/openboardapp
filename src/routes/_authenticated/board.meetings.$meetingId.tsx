@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
@@ -44,7 +44,7 @@ function MeetingPage() {
   const editable = can(org.role, "records.edit") && !locked;
 
   async function setStatus(status: string) {
-    const { error } = await supabase.from("meetings").update({ status: status as typeof m.status }).eq("id", m.id);
+    const { error } = await attempt(db.meetings.setStatus(m.id, status as typeof m.status));
     if (error) { toast.error(errorMessage(error)); return; }
     invalidate("meeting");
     toast.success("Meeting status updated");

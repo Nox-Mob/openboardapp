@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/data";
 import type { OrgRole } from "./permissions";
 
 export interface OrgSummary {
@@ -31,16 +31,7 @@ export function OrgProvider({ userId, children }: { userId: string; children: Re
 
   const q = useQuery({
     queryKey: ["my-orgs", userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("memberships")
-        .select("role, organizations(id, name, timezone, quorum_count)")
-        .eq("user_id", userId);
-      if (error) throw error;
-      return (data ?? [])
-        .filter((m) => m.organizations)
-        .map((m) => ({ ...(m.organizations as Omit<OrgSummary, "role">), role: m.role as OrgRole }));
-    },
+    queryFn: (): Promise<OrgSummary[]> => db.orgs.listMine(userId),
   });
 
   const value = useMemo<OrgCtx>(() => {
@@ -78,17 +69,6 @@ export function useCurrentOrg() {
 export function useOrgMembers(orgId: string) {
   return useQuery({
     queryKey: ["org-members", orgId],
-    queryFn: async () => {
-      const { data: ms, error } = await supabase.from("memberships").select("id, user_id, role").eq("organization_id", orgId);
-      if (error) throw error;
-      const ids = (ms ?? []).map((m) => m.user_id);
-      const { data: ps } = ids.length
-        ? await supabase.from("profiles").select("id, full_name, email").in("id", ids)
-        : { data: [] as { id: string; full_name: string | null; email: string | null }[] };
-      return (ms ?? []).map((m) => {
-        const p = ps?.find((x) => x.id === m.user_id);
-        return { ...m, role: m.role as OrgRole, name: p?.full_name || p?.email || "Member", email: p?.email ?? "" };
-      });
-    },
+    queryFn: () => db.members.list(orgId),
   });
 }

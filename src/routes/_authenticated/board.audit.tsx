@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/data";
 import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { PageHeader, LoadingState, EmptyState, ErrorState } from "@/components/PageStates";
@@ -22,11 +22,7 @@ function Audit() {
   const q = useQuery({
     enabled: can(org.role, "audit.read"),
     queryKey: ["audit", org.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("audit_log").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }).limit(300);
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => db.audit.list(org.id),
   });
   const nameOf = (id: string | null) => members.data?.find((m) => m.user_id === id)?.name ?? (id ? "Former member" : "System");
 

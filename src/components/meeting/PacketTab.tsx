@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
@@ -24,19 +24,11 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
 
   const docs = useQuery({
     queryKey: ["packet-docs", org.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("documents").select("*, document_versions(*)").eq("organization_id", org.id).order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => db.documents.list(org.id),
   });
   const packets = useQuery({
     queryKey: ["packets", meeting.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("packets").select("*").eq("meeting_id", meeting.id).order("version", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => db.packets.list(meeting.id),
   });
 
   const latest = (d: NonNullable<typeof docs.data>[number]) => [...d.document_versions].sort((a, b) => b.version - a.version)[0];
@@ -59,10 +51,10 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
         attachments,
       });
       const path = `${org.id}/packets/${meeting.id}/v${version}.pdf`;
-      const up = await supabase.storage.from("org-files").upload(path, new Blob([pdf as unknown as BlobPart], { type: "application/pdf" }), { upsert: false });
-      if (up.error) throw up.error;
-      const { error } = await supabase.from("packets").insert({ organization_id: org.id, meeting_id: meeting.id, version, storage_path: path, contents: attachments.map((a) => a.ref), created_by: userId });
-      if (error) throw error;
+      await db.packets.create(
+        { organization_id: org.id, meeting_id: meeting.id, version, storage_path: path, contents: attachments.map((a) => a.ref), created_by: userId },
+        new Blob([pdf as unknown as BlobPart], { type: "application/pdf" }),
+      );
       qc.invalidateQueries({ queryKey: ["packets", meeting.id] });
       toast.success(`Packet v${version} generated`);
     } catch (e) {
@@ -73,7 +65,7 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
   }
 
   async function distribute(id: string) {
-    const { error } = await supabase.from("packets").update({ distributed_at: new Date().toISOString() }).eq("id", id);
+    const { error } = await attempt(db.packets.distribute(id));
     if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["packets", meeting.id] });
   }

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
@@ -31,25 +31,18 @@ function Documents() {
 
   const docs = useQuery({
     queryKey: ["documents", org.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("documents").select("*, document_versions(*), meetings(title, meeting_date)").eq("organization_id", org.id).order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => db.documents.list(org.id),
   });
   const meetings = useQuery({
     queryKey: ["meetings", org.id],
-    queryFn: async () => (await supabase.from("meetings").select("*").eq("organization_id", org.id).order("meeting_date", { ascending: false })).data ?? [],
+    queryFn: () => db.meetings.list(org.id),
   });
 
   async function uploadVersion(documentId: string, f: File, existing: { version: number }[]) {
     const version = nextVersion(existing);
     const safe = f.name.replace(/[^\w.\-]+/g, "_");
     const path = `${org.id}/documents/${documentId}/v${version}-${safe}`;
-    const up = await supabase.storage.from("org-files").upload(path, f, f.type ? { contentType: f.type } : {});
-    if (up.error) throw up.error;
-    const { error } = await supabase.from("document_versions").insert({ document_id: documentId, organization_id: org.id, version, storage_path: path, file_name: f.name, mime_type: f.type, size_bytes: f.size, uploaded_by: userId });
-    if (error) throw error;
+    await db.documents.addVersion({ document_id: documentId, organization_id: org.id, version, storage_path: path, file_name: f.name, mime_type: f.type, size_bytes: f.size, uploaded_by: userId }, f, f.type || undefined);
   }
 
   async function create(e: React.FormEvent) {
@@ -57,9 +50,8 @@ function Documents() {
     if (!file) return;
     setBusy(true);
     try {
-      const { data, error } = await supabase.from("documents").insert({ title: f.title, category: f.category, meeting_id: f.meeting_id === "none" ? null : f.meeting_id, organization_id: org.id, created_by: userId }).select("id").single();
-      if (error) throw error;
-      await uploadVersion(data.id, file, []);
+      const id = await db.documents.create({ title: f.title, category: f.category, meeting_id: f.meeting_id === "none" ? null : f.meeting_id, organization_id: org.id, created_by: userId });
+      await uploadVersion(id, file, []);
       setF({ title: "", category: "General", meeting_id: "none" });
       setFile(null);
       (e.target as HTMLFormElement).reset();

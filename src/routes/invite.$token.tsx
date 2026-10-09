@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { attempt, db } from "@/data";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/export";
 
@@ -26,14 +26,14 @@ function InvitePage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    void db.auth.hasSession().then(setSignedIn);
   }, []);
 
   async function accept() {
     setBusy(true);
-    const { data, error } = await supabase.rpc("accept_invitation", { _token: token });
+    const { data, error } = await attempt(db.invitations.accept(token));
     setBusy(false);
-    if (error) { setError(errorMessage(error)); return; }
+    if (error !== null) { setError(errorMessage(error)); return; }
     localStorage.setItem("board.currentOrg", data as string);
     navigate({ to: "/board" });
   }
