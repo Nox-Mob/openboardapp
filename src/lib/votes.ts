@@ -1,6 +1,7 @@
 /** Motion voting helpers: who can move/second, roll-call tallies. */
 export type VoteRecording = "totals" | "roll_call";
-export type Vote = "yes" | "no" | "abstain";
+export type Vote = "yes" | "no" | "abstain" | "recused";
+export const VOTES: Vote[] = ["yes", "no", "abstain", "recused"];
 export interface RollCallEntry { attendance_id: string; person_name: string; vote: Vote }
 
 interface Attendee { id: string; person_name: string; status: string; is_voting: boolean }
@@ -20,6 +21,7 @@ export function tally(roll: RollCallEntry[]) {
     votes_yes: roll.filter((r) => r.vote === "yes").length,
     votes_no: roll.filter((r) => r.vote === "no").length,
     votes_abstain: roll.filter((r) => r.vote === "abstain").length,
+    votes_recused: roll.filter((r) => r.vote === "recused").length,
   };
 }
 
@@ -28,14 +30,14 @@ export function parseRollCall(raw: unknown): RollCallEntry[] {
   if (!Array.isArray(raw)) return [];
   return raw.flatMap((r) => {
     const o = r as { attendance_id?: unknown; person_name?: unknown; vote?: unknown } | null;
-    if (!o || typeof o.person_name !== "string" || !["yes", "no", "abstain"].includes(o.vote as string)) return [];
+    if (!o || typeof o.person_name !== "string" || !VOTES.includes(o.vote as Vote)) return [];
     return [{ attendance_id: String(o.attendance_id ?? ""), person_name: o.person_name, vote: o.vote as Vote }];
   });
 }
 
-const LABEL: Record<Vote, string> = { yes: "in favor", no: "opposed", abstain: "abstaining" };
+const LABEL: Record<Vote, string> = { yes: "in favor", no: "opposed", abstain: "abstaining", recused: "recused" };
 export function formatRollCall(roll: RollCallEntry[]): string {
-  return (["yes", "no", "abstain"] as Vote[])
+  return VOTES
     .map((v) => { const names = roll.filter((r) => r.vote === v).map((r) => r.person_name); return names.length ? `${LABEL[v]}: ${names.join(", ")}` : ""; })
     .filter(Boolean)
     .join("; ");
@@ -59,14 +61,14 @@ export const CLOSE_MODES: Record<CloseMode, string> = {
 };
 
 /** Wording used in the "this is your official vote" confirmation. */
-export const VOTE_PHRASE: Record<Vote, string> = { yes: "in the affirmative", no: "in opposition", abstain: "to abstain" };
-export const VOTE_LABEL: Record<Vote, string> = { yes: "In favor", no: "Opposed", abstain: "Abstain" };
+export const VOTE_PHRASE: Record<Vote, string> = { yes: "in the affirmative", no: "in opposition", abstain: "to abstain", recused: "to recuse yourself (you will not take part in this decision)" };
+export const VOTE_LABEL: Record<Vote, string> = { yes: "In favor", no: "Opposed", abstain: "Abstain", recused: "Recuse" };
 
 /** Same rule the database applies on close; null means a person must record the result. */
-export function computeDisposition(rule: string, c: { yes: number; no: number }, electorateSize: number, quorumMet: boolean): "carried" | "failed" | null {
+export function computeDisposition(rule: string, c: { yes: number; no: number }, electorateSize: number, quorumMet: boolean, recused = 0): "carried" | "failed" | null {
   if (!quorumMet) return null;
   if (rule === "majority_cast") return c.yes + c.no > 0 ? (c.yes > c.no ? "carried" : "failed") : null;
-  if (rule === "majority_present") return electorateSize > 0 ? (c.yes * 2 > electorateSize ? "carried" : "failed") : null;
+  if (rule === "majority_present") return electorateSize - recused > 0 ? (c.yes * 2 > electorateSize - recused ? "carried" : "failed") : null;
   if (rule === "two_thirds_cast") return c.yes + c.no > 0 ? (c.yes * 3 >= (c.yes + c.no) * 2 ? "carried" : "failed") : null;
   return null;
 }
@@ -85,6 +87,7 @@ export interface VoteRecord {
   electorate?: string[];
   electorate_size?: number;
   not_voting?: string[];
+  recused?: string[];
   present_not_linked?: string[];
   closed_how?: "chair" | "all_voted" | "timer";
   calculated?: boolean;
@@ -96,3 +99,9 @@ export function parseVoteRecord(raw: unknown): VoteRecord | null {
 }
 
 export const CLOSED_HOW: Record<string, string> = { chair: "closed by the chair", all_voted: "closed automatically when everyone had voted", timer: "closed when the timer ran out" };
+
+/** Live quorum: present (or remote) voting members against the org's required count. */
+export function quorumStatus(list: Attendee[], required: number) {
+  const present = rollCallVoters(list).length;
+  return { present, required, met: present >= required, short: Math.max(0, required - present) };
+}
