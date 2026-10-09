@@ -258,6 +258,22 @@ export const cloudAdapter = {
     async signedUrl(path: string) {
       return must(await supabase.storage.from(BUCKET).createSignedUrl(path, 60)).signedUrl;
     },
+    /** Downloads a private file's bytes (null when it can't be read). */
+    async download(path: string): Promise<ArrayBuffer | null> {
+      const r = await supabase.storage.from(BUCKET).download(path);
+      return r.error || !r.data ? null : await r.data.arrayBuffer();
+    },
+  },
+
+  records: {
+    /** Everything the board record export needs for meetings dated in [from, to]. */
+    async forRange(orgId: string, from: string, to: string) {
+      const meetings = must(await supabase.from("meetings")
+        .select("*, attendance(*), motions(*), minutes(*), packets(*), agenda_items(*)")
+        .eq("organization_id", orgId).gte("meeting_date", from).lte("meeting_date", to).order("meeting_date")) ?? [];
+      const documents = must(await supabase.from("documents").select("*, document_versions(*)").eq("organization_id", orgId).not("meeting_id", "is", null)) ?? [];
+      return { meetings, documents };
+    },
   },
 
   actions: {
