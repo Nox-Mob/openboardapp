@@ -1,27 +1,36 @@
-# Board Management App — v0.1 MVP Plan
+# Board Management App — v0.1 MVP Plan (sister app to OpenLedgerApp)
 
-## Note on OpenLedgerApp
-OpenLedgerApp is not visible from this workspace (only Thunderbird Chapter Website/Hub, Home Hub and Resume are). Options: share its colors/fonts, move it into this workspace, or I use a calm "civic ledger" look: warm paper background, deep ink-navy, brass accent, serif headings (Fraunces) and Inter-alternative body (IBM Plex Sans), tabular, record-book feel. I will use that default unless you say otherwise.
+## Design taken from OpenLedgerApp
+- Same warm "paper ledger" palette: paper background, deep ledger-green primary, dark warm-brown sidebar, muted tan borders.
+- Same fonts: Libre Baskerville headings, IBM Plex Sans body, IBM Plex Mono for small labels, dates and record numbers.
+- Same layout: dark left sidebar with org switcher, light content area, cards with thin borders, small uppercase mono eyebrows.
+- A public website at `/` (green hero, like OpenLedgerApp's site); the signed-in app lives at `/board`.
 
-## Build order (each step usable on its own)
-1. **Foundation** — Lovable Cloud, email + Google sign-in, profiles, organizations, memberships with roles (Admin, Chair, Secretary, Treasurer, Member, Observer), org switcher, invitations by link/email, every record carries an organization and is protected by access rules.
-2. **Governance** — Board roster (current and former), officer positions, terms, committees and committee members.
-3. **Meetings** — Create/schedule meetings, statuses (draft, scheduled, in progress, completed, archived), agenda items with ordering, attendance and quorum display.
-4. **Notes, motions & minutes** — Autosaving notes per agenda item, motions (mover, seconder, yes/no/abstain counts, outcome), "Generate minutes" builds a formal draft from agenda, attendance, notes and motions; submit for approval, approve, and lock an approved version. Later edits create a new version; approved version stays identifiable.
-5. **Documents & board packet** — Private file library with versions and short-lived download links; packet assembly from agenda + attached documents, exported as PDF, each distributed packet version recorded.
-6. **Action items** — Assign person + due date from a meeting or standalone; "My tasks" page; stays visible after meeting is archived.
-7. **Audit & export** — Audit log of privileged changes (who, what, when); organization data export (JSON + CSV zip, documents list).
-8. **Acceptance checklist** — Automated tests for tenant isolation (cross-org read/write attempts fail), minutes version locking, and permission rules.
+## Patterns reused from OpenLedgerApp
+- One permission table (role → allowed actions) that every server action checks, plus database access rules as a second layer.
+- Every change saved together with its audit entry in one step; users can't edit the audit log.
+- Owner = organization creator; invite links store only a hashed token and are claimed once.
+- Official records are locked by the database: approved minutes and recorded votes can't be changed, only superseded by a new version.
+- Shared validation for dates and names on forms and server; shared Empty/Loading/Error page states.
+- Dates stored as YYYY-MM-DD in the organization's time zone.
+- Exports escape formula-looking text in spreadsheets.
 
-## Pages
-Sign in · Create/join organization · Dashboard (next meeting, my tasks, pending approvals) · Meetings list/detail (Agenda, Attendance, Notes, Motions, Minutes, Packet tabs) · Members & Committees · Documents · Tasks · Audit log · Settings/Export.
+## Build order
+1. **Foundation**: Lovable Cloud, email + Google sign-in, profiles, organizations, roles (Owner, Admin, Chair, Secretary, Treasurer, Member, Observer), org switcher, invite links.
+2. **Governance**: board roster (current and former), officer positions, terms, committees.
+3. **Meetings**: schedule, status (draft, scheduled, in progress, completed, archived), ordered agenda, attendance and quorum.
+4. **Notes, motions & minutes**: autosaving notes per agenda item; motions with mover, seconder, yes/no/abstain counts and outcome; generate minutes, submit, approve, lock; later edits create a new version.
+5. **Documents & board packet**: private library with versions and short-lived download links; packet PDF built from agenda + attachments; each distributed version recorded.
+6. **Action items**: assignee + due date, "My tasks", stays visible after archive.
+7. **Audit & export**: audit log page; organization export (JSON + CSV).
+8. **Tests**: role table pinned cell by cell, cross-organization access attempts fail, minutes version locking.
 
-## Out of scope for v0.1 (per roadmap)
-AI transcription, secret ballots, e-signatures, calendar/video integrations, accounting, billing, custom workflows, native apps.
+## Out of scope for v0.1
+AI transcription, secret ballots, e-signatures, calendar/video, accounting, billing, custom workflows, native apps.
 
 ## Technical details
-- Cloud database with org-scoped tables; access rules use a security-definer helper `is_org_member(org, roles[])`; roles in a separate memberships table.
-- Server functions with auth middleware for all writes; audit entries written by database triggers.
-- Private storage bucket, signed URLs (short expiry), paths prefixed by organization id.
-- PDF packets generated client-side (pdf-lib) to stay worker-safe.
-- Vitest tests for permission helpers and minutes versioning rules.
+- Tenant-owned tables all carry `organization_id`; access-rule helpers `is_org_member` / `org_can` are security definer.
+- `src/lib/permissions.ts` CAPABILITIES table; server functions = requireSupabaseAuth + assertCan, then services.
+- `audited_write`-style RPC for writes with audit; triggers lock approved minutes/votes.
+- Private storage bucket, paths prefixed by org id, signed URLs.
+- PDF via pdf-lib on the client.
