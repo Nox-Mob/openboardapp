@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import type { Database, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { OrgRole } from "@/lib/permissions";
+import type { OrgSummary } from "@/lib/org-context";
 import { agendaRowsFor, normalizeAgenda, type TemplateAgendaItem } from "@/lib/templates";
 
 type Status = Database["public"]["Enums"]["task_status"];
@@ -45,10 +46,10 @@ export const cloudAdapter = {
 
   orgs: {
     async listMine(userId: string) {
-      const data = must(await supabase.from("memberships").select("role, organizations(id, name, timezone, quorum_count, vote_recording)").eq("user_id", userId));
+      const data = must(await supabase.from("memberships").select("role, organizations(id, name, timezone, quorum_count, vote_recording, vote_close_modes, vote_timer_minutes, vote_closer_roles, seconder_required, decision_rule)").eq("user_id", userId));
       return (data ?? [])
         .filter((m) => m.organizations)
-        .map((m) => ({ ...(m.organizations as { id: string; name: string; timezone: string; quorum_count: number; vote_recording: string }), role: m.role as OrgRole }));
+        .map((m) => ({ ...(m.organizations as Omit<OrgSummary, "role">), role: m.role as OrgRole }));
     },
     async create(name: string, timezone: string) {
       return must(await supabase.rpc("create_organization", { _name: name, _timezone: timezone })) as string;
@@ -263,6 +264,34 @@ export const cloudAdapter = {
   audit: {
     async list(orgId: string) {
       return must(await supabase.from("audit_log").select("*").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(300)) ?? [];
+    },
+  },
+
+  voting: {
+    /** Opens a live vote (creates the motion and freezes the electorate) in one database transaction. */
+    async start(meetingId: string, v: { agenda_item_id: string | null; motion_text: string; moved_by: string | null; seconded_by: string | null }) {
+      return must(await supabase.rpc("start_vote", { _meeting: meetingId, _agenda_item: v.agenda_item_id as string, _text: v.motion_text, _moved_by: v.moved_by as string, _seconded_by: v.seconded_by as string })) as string;
+    },
+    async cast(motionId: string, vote: "yes" | "no" | "abstain") {
+      return must(await supabase.rpc("cast_vote", { _motion: motionId, _vote: vote })) as "recorded" | "expired";
+    },
+    async close(motionId: string) {
+      const r = await supabase.rpc("close_vote", { _motion: motionId });
+      if (r.error) throw r.error;
+    },
+    async recordDisposition(motionId: string, outcome: Database["public"]["Enums"]["motion_outcome"], note: string) {
+      const r = await supabase.rpc("record_disposition", { _motion: motionId, _outcome: outcome, _note: note });
+      if (r.error) throw r.error;
+    },
+    async progress(motionId: string) {
+      return must(await supabase.rpc("vote_progress", { _motion: motionId })) as { cast: number; electorate: number };
+    },
+    async electorate(motionId: string) {
+      return must(await supabase.from("vote_electorate").select("*").eq("motion_id", motionId).order("person_name")) ?? [];
+    },
+    /** Returns the caller's own vote before close (RLS), or every vote after close. */
+    async votes(motionId: string) {
+      return must(await supabase.from("member_votes").select("*").eq("motion_id", motionId).order("person_name")) ?? [];
     },
   },
 
