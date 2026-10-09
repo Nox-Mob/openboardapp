@@ -7,6 +7,7 @@ import { can, ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
 import { CLOSE_MODES, DECISION_RULES, type CloseMode } from "@/lib/votes";
 import { downloadBlob, errorMessage, toCsv } from "@/lib/export";
 import { PageHeader } from "@/components/PageStates";
+import { BoardRecordExport } from "@/components/BoardRecordExport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -125,6 +126,7 @@ function Settings() {
                   <Button key={t} size="sm" variant="outline" onClick={() => exportCsv(t)}>{t.replace("_", " ")} CSV</Button>
                 ))}
               </div>
+              <BoardRecordExport orgId={org.id} orgName={org.name} />
             </>
           ) : <p className="text-sm text-muted-foreground">Only owners and administrators can export data.</p>}
         </section>
