@@ -14,7 +14,7 @@ function must<R extends { data: unknown; error: unknown }>(r: R): NonNullable<R[
   return r.data as NonNullable<R["data"]>;
 }
 
-export const EXPORT_TABLES = ["organizations", "memberships", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
+export const EXPORT_TABLES = ["organizations", "memberships", "board_positions", "board_terms", "committees", "committee_members", "meetings", "agenda_items", "attendance", "motions", "minutes", "documents", "document_versions", "packets", "action_items", "meeting_templates", "audit_log"] as const;
 export type ExportTable = (typeof EXPORT_TABLES)[number];
 
 /** Lovable Cloud implementation of the data layer. All reads/writes run under row-level security as the signed-in user. */
