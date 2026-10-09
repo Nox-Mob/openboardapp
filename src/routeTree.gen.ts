@@ -10,33 +10,96 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as AuthenticatedBoardIndexRouteImport } from './routes/_authenticated/board.index'
+import { Route as AuthenticatedBoardMeetingsIndexRouteImport } from './routes/_authenticated/board.meetings.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedBoardRoute = AuthenticatedBoardRouteImport.update({
+  id: '/board',
+  path: '/board',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedBoardIndexRoute = AuthenticatedBoardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedBoardRoute,
+} as any)
+const AuthenticatedBoardMeetingsIndexRoute =
+  AuthenticatedBoardMeetingsIndexRouteImport.update({
+    id: '/meetings/',
+    path: '/meetings/',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/board': typeof AuthenticatedBoardRouteWithChildren
+  '/invite/$token': typeof InviteTokenRoute
+  '/board/': typeof AuthenticatedBoardIndexRoute
+  '/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/invite/$token': typeof InviteTokenRoute
+  '/board': typeof AuthenticatedBoardIndexRoute
+  '/board/meetings': typeof AuthenticatedBoardMeetingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/board': typeof AuthenticatedBoardRouteWithChildren
+  '/invite/$token': typeof InviteTokenRoute
+  '/_authenticated/board/': typeof AuthenticatedBoardIndexRoute
+  '/_authenticated/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/auth' | '/board' | '/invite/$token' | '/board/' | '/board/meetings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/auth' | '/invite/$token' | '/board' | '/board/meetings'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/board'
+    | '/invite/$token'
+    | '/_authenticated/board/'
+    | '/_authenticated/board/meetings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  InviteTokenRoute: typeof InviteTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +111,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/board': {
+      id: '/_authenticated/board'
+      path: '/board'
+      fullPath: '/board'
+      preLoaderRoute: typeof AuthenticatedBoardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/board/': {
+      id: '/_authenticated/board/'
+      path: '/'
+      fullPath: '/board/'
+      preLoaderRoute: typeof AuthenticatedBoardIndexRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
+    '/_authenticated/board/meetings/': {
+      id: '/_authenticated/board/meetings/'
+      path: '/meetings'
+      fullPath: '/board/meetings/'
+      preLoaderRoute: typeof AuthenticatedBoardMeetingsIndexRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
   }
 }
 
+interface AuthenticatedBoardRouteChildren {
+  AuthenticatedBoardIndexRoute: typeof AuthenticatedBoardIndexRoute
+  AuthenticatedBoardMeetingsIndexRoute: typeof AuthenticatedBoardMeetingsIndexRoute
+}
+
+const AuthenticatedBoardRouteChildren: AuthenticatedBoardRouteChildren = {
+  AuthenticatedBoardIndexRoute: AuthenticatedBoardIndexRoute,
+  AuthenticatedBoardMeetingsIndexRoute: AuthenticatedBoardMeetingsIndexRoute,
+}
+
+const AuthenticatedBoardRouteWithChildren =
+  AuthenticatedBoardRoute._addFileChildren(AuthenticatedBoardRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBoardRoute: typeof AuthenticatedBoardRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBoardRoute: AuthenticatedBoardRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  InviteTokenRoute: InviteTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
