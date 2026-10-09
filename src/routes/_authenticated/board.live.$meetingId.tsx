@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FileText, Vote as VoteIcon } from "lucide-react";
 import { attempt, db } from "@/data";
-import { useCurrentOrg } from "@/lib/org-context";
+import { useCurrentOrg, useTitles } from "@/lib/org-context";
 import { can } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { signedUrl } from "@/lib/meeting-data";
@@ -128,7 +128,7 @@ function LiveMeeting() {
 }
 
 function StartVoteForm({ meetingId, draft, attendees, seconderRequired, onDone }: {
-  meetingId: string; draft: { agenda_item_id: string | null; motion_text: string }; attendees: { id: string; person_name: string }[]; seconderRequired: boolean; onDone: () => void;
+  meetingId: string; draft: { agenda_item_id: string | null; motion_text: string }; attendees: { id: string; person_name: string; user_id: string | null }[]; seconderRequired: boolean; onDone: () => void;
 }) {
   const [text, setText] = useState(draft.motion_text);
   const [moved, setMoved] = useState("none");
@@ -151,7 +151,7 @@ function StartVoteForm({ meetingId, draft, attendees, seconderRequired, onDone }
         <SelectTrigger aria-label={label}><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="none">Not recorded</SelectItem>
-          {attendees.map((a) => <SelectItem key={a.id} value={a.person_name}>{a.person_name}</SelectItem>)}
+          {attendees.map((a) => <SelectItem key={a.id} value={a.person_name}>{titles.label(a.person_name, a.user_id)}</SelectItem>)}
         </SelectContent>
       </Select>
     </div>

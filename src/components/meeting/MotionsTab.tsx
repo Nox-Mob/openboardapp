@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { attempt, db } from "@/data";
-import { useCurrentOrg } from "@/lib/org-context";
+import { useCurrentOrg, useTitles } from "@/lib/org-context";
 import { errorMessage } from "@/lib/export";
 import { formatMotion } from "@/lib/minutes";
 import { useAgenda, useAttendance, useMotions, useInvalidateMeeting } from "@/lib/meeting-data";
@@ -108,7 +108,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
                   <SelectTrigger aria-label={k === "moved_by" ? "Moved by" : "Seconded by"}><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Not recorded</SelectItem>
-                    {present.map((a) => <SelectItem key={a.id} value={a.person_name}>{a.person_name}</SelectItem>)}
+                    {present.map((a) => <SelectItem key={a.id} value={a.person_name}>{titles.label(a.person_name, a.user_id)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -130,7 +130,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
               {!voters.length && <p className="flex items-center gap-2 text-sm font-medium text-destructive"><AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />No voting members are marked present.</p>}
               {voters.map((v) => (
                 <div key={v.id} className="flex items-center justify-between gap-2">
-                  <span className="text-sm">{v.person_name}</span>
+                  <span className="text-sm">{titles.label(v.person_name, v.user_id)}</span>
                   <div className="flex gap-1" role="group" aria-label={`${v.person_name} vote`}>
                     {(["yes", "no", "abstain"] as const).map((o) => (
                       <Button key={o} type="button" size="sm" variant={votes[v.id] === o ? "default" : "outline"} onClick={() => setVotes({ ...votes, [v.id]: o })}>
