@@ -8,4 +8,6 @@
 - [x] Action items
 - [x] Audit log and export
 - [x] Tests: permissions, minutes rules, export escaping
-- [ ] v0.2: automated cross-organization access tests against the live database, reminders, meeting templates
+- [x] Demo account with sample data
+- [x] Database rule tests (isolation, permissions, record locks, audit) and page tests
+- [ ] v0.2: reminders, meeting templates, backup restore drill

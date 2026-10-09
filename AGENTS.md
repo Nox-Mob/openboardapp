@@ -21,3 +21,5 @@
 - PDFs (minutes, packets) are built client-side with pdf-lib (src/lib/packet.ts) to stay worker-safe.
 - Routing: public website at /, signed-in app under /_authenticated/board; current org is kept in localStorage via OrgProvider.
 - Exports escape formula-looking text via src/lib/export.ts.
+- Demo: demo@demo.org (owner), chair@demo.org, member@demo.org share password OpenBoardDemo!2026 in "Riverside Community Association"; seeded manually, never on page load.
+- Tests: src/test/db/* run against the live backend as test-a / test-member / test-b accounts that only belong to Test Org A/B (skip with SKIP_DB_TESTS=1); src/test/pages.test.tsx pins every route; never add test accounts to real orgs.
