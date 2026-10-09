@@ -8,6 +8,7 @@ export interface OrgSummary {
   name: string;
   timezone: string;
   quorum_count: number;
+  vote_recording: string;
   role: OrgRole;
 }
 

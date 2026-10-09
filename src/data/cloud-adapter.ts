@@ -45,10 +45,10 @@ export const cloudAdapter = {
 
   orgs: {
     async listMine(userId: string) {
-      const data = must(await supabase.from("memberships").select("role, organizations(id, name, timezone, quorum_count)").eq("user_id", userId));
+      const data = must(await supabase.from("memberships").select("role, organizations(id, name, timezone, quorum_count, vote_recording)").eq("user_id", userId));
       return (data ?? [])
         .filter((m) => m.organizations)
-        .map((m) => ({ ...(m.organizations as { id: string; name: string; timezone: string; quorum_count: number }), role: m.role as OrgRole }));
+        .map((m) => ({ ...(m.organizations as { id: string; name: string; timezone: string; quorum_count: number; vote_recording: string }), role: m.role as OrgRole }));
     },
     async create(name: string, timezone: string) {
       return must(await supabase.rpc("create_organization", { _name: name, _timezone: timezone })) as string;
