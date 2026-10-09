@@ -1,3 +1,5 @@
+import { formatRollCall, parseRollCall } from "./votes";
+
 // Pure helpers for building formal minutes and handling versions.
 export type MinutesStatus = "draft" | "submitted" | "approved" | "superseded";
 
@@ -27,8 +29,6 @@ const OUTCOME: Record<string, string> = {
   withdrawn: "WITHDRAWN",
   pending: "PENDING",
 };
-
-import { formatRollCall, parseRollCall } from "./votes";
 
 export function formatMotion(m: MinutesInput["motions"][number]): string {
   const roll = formatRollCall(parseRollCall(m.roll_call));
