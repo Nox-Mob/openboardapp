@@ -26,29 +26,29 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
     const rows = (members.data ?? [])
       .filter((m) => !existing.has(m.user_id) && m.role !== "observer")
       .map((m) => ({ meeting_id: meetingId, organization_id: org.id, user_id: m.user_id, person_name: m.name, status: "absent" as const }));
-    if (!rows.length) return toast.info("Everyone is already on the list");
+    if (!rows.length) { toast.info("Everyone is already on the list"); return; }
     const { error } = await supabase.from("attendance").insert(rows);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     invalidate("attendance");
   }
 
   async function addGuest(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from("attendance").insert({ meeting_id: meetingId, organization_id: org.id, person_name: guest, status: "present", is_voting: false });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setGuest("");
     invalidate("attendance");
   }
 
   async function update(id: string, patch: { status?: (typeof STATUSES)[number]; is_voting?: boolean }) {
     const { error } = await supabase.from("attendance").update(patch).eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     invalidate("attendance");
   }
 
   async function remove(id: string) {
     const { error } = await supabase.from("attendance").delete().eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     invalidate("attendance");
   }
 

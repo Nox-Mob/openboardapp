@@ -33,7 +33,7 @@ function InvitePage() {
     setBusy(true);
     const { data, error } = await supabase.rpc("accept_invitation", { _token: token });
     setBusy(false);
-    if (error) return setError(errorMessage(error));
+    if (error) { setError(errorMessage(error)); return; }
     localStorage.setItem("board.currentOrg", data as string);
     navigate({ to: "/board" });
   }

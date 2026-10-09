@@ -26,7 +26,7 @@ function Settings() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from("organizations").update(f).eq("id", org.id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     refetch();
     toast.success("Settings saved");
   }
@@ -35,7 +35,7 @@ function Settings() {
     const out: Record<string, Record<string, unknown>[]> = {};
     for (const t of TABLES) {
       const col = t === "organizations" ? "id" : "organization_id";
-      const { data, error } = await supabase.from(t).select("*").eq(col, org.id);
+      const { data, error } = await supabase.from(t).select("*").eq(col as "id", org.id);
       if (error) throw error;
       out[t] = (data ?? []) as Record<string, unknown>[];
     }
@@ -54,14 +54,14 @@ function Settings() {
   async function exportCsv(table: (typeof TABLES)[number]) {
     try {
       const data = await fetchAll();
-      downloadBlob(new Blob([toCsv(data[table])], { type: "text/csv" }), `${table}.csv`);
+      downloadBlob(new Blob([toCsv(data[table] ?? [])], { type: "text/csv" }), `${table}.csv`);
     } catch (e) { toast.error(errorMessage(e)); }
   }
 
   async function createOrg(e: React.FormEvent) {
     e.preventDefault();
     const { data, error } = await supabase.rpc("create_organization", { _name: newOrg, _timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setOrgId(data as string);
     refetch();
     setNewOrg("");

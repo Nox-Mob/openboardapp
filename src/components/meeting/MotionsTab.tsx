@@ -34,7 +34,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
       meeting_id: meetingId,
       organization_id: org.id,
     });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setF(empty);
     invalidate("motions");
     toast.success("Motion recorded");
@@ -43,7 +43,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
   async function remove(id: string) {
     if (!confirm("Delete this motion?")) return;
     const { error } = await supabase.from("motions").delete().eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     invalidate("motions");
   }
 

@@ -59,7 +59,7 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
         attachments,
       });
       const path = `${org.id}/packets/${meeting.id}/v${version}.pdf`;
-      const up = await supabase.storage.from("org-files").upload(path, new Blob([pdf], { type: "application/pdf" }), { upsert: false });
+      const up = await supabase.storage.from("org-files").upload(path, new Blob([pdf as unknown as BlobPart], { type: "application/pdf" }), { upsert: false });
       if (up.error) throw up.error;
       const { error } = await supabase.from("packets").insert({ organization_id: org.id, meeting_id: meeting.id, version, storage_path: path, contents: attachments.map((a) => a.ref), created_by: userId });
       if (error) throw error;
@@ -74,7 +74,7 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
 
   async function distribute(id: string) {
     const { error } = await supabase.from("packets").update({ distributed_at: new Date().toISOString() }).eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["packets", meeting.id] });
   }
 

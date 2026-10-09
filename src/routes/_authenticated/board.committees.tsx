@@ -34,17 +34,17 @@ function Committees() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from("committees").insert({ name, description: desc || null, organization_id: org.id });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     setName(""); setDesc(""); refresh();
   }
   async function addMember(committeeId: string, person_name: string, role: string) {
     const { error } = await supabase.from("committee_members").insert({ committee_id: committeeId, person_name, role: role || "Member", organization_id: org.id });
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     refresh();
   }
   async function del(table: "committees" | "committee_members", id: string) {
     const { error } = await supabase.from(table).delete().eq("id", id);
-    if (error) return toast.error(errorMessage(error));
+    if (error) { toast.error(errorMessage(error)); return; }
     refresh();
   }
 
