@@ -57,6 +57,7 @@ function LiveMeeting() {
           Voting is only available while the meeting is <strong>In progress</strong>. This meeting is {m.status.replace("_", " ")}.
         </div>
       )}
+      <QuorumBar attendance={attendance.data ?? []} required={org.quorum_count} />
       <Tabs defaultValue="vote">
         <TabsList className="mb-4 w-full justify-start">
           <TabsTrigger value="vote">Vote{openMotion ? " •" : ""}</TabsTrigger>
@@ -285,6 +286,17 @@ function PacketPanel({ meetingId, orgId }: { meetingId: string; orgId: string })
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** Live quorum indicator: refreshes with attendance while the meeting runs. */
+function QuorumBar({ attendance, required }: { attendance: { status: string; is_voting: boolean; person_name: string; id: string }[]; required: number }) {
+  const q = quorumStatus(attendance, required);
+  return (
+    <div role="status" aria-label="Quorum" className={`mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border px-4 py-3 text-sm ${q.met ? "border-success/40 bg-success/5" : "border-destructive/40 bg-destructive/5 text-destructive"}`}>
+      <span className="font-medium">{q.met ? "Quorum met" : `Quorum not met — ${q.short} more voting member${q.short === 1 ? "" : "s"} needed`}</span>
+      <span className="font-mono text-xs">{q.present} of {q.required} voting members present</span>
     </div>
   );
 }

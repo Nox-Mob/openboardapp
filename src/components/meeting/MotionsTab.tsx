@@ -6,7 +6,7 @@ import { useCurrentOrg, useTitles } from "@/lib/org-context";
 import { errorMessage } from "@/lib/export";
 import { formatMotion } from "@/lib/minutes";
 import { useAgenda, useAttendance, useMotions, useInvalidateMeeting } from "@/lib/meeting-data";
-import { presentAttendees, rollCallVoters, tally, type Vote } from "@/lib/votes";
+import { presentAttendees, rollCallVoters, tally, VOTES, VOTE_LABEL, type Vote } from "@/lib/votes";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DispositionForm, VoteRecordView } from "@/components/meeting/VoteRecord";
 import { LoadingState, EmptyState } from "@/components/PageStates";
