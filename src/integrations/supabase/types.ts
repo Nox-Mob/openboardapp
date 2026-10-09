@@ -668,6 +668,7 @@ export type Database = {
           moved_by: string | null
           organization_id: string
           outcome: Database["public"]["Enums"]["motion_outcome"]
+          roll_call: Json | null
           seconded_by: string | null
           votes_abstain: number
           votes_no: number
@@ -682,6 +683,7 @@ export type Database = {
           moved_by?: string | null
           organization_id: string
           outcome?: Database["public"]["Enums"]["motion_outcome"]
+          roll_call?: Json | null
           seconded_by?: string | null
           votes_abstain?: number
           votes_no?: number
@@ -696,6 +698,7 @@ export type Database = {
           moved_by?: string | null
           organization_id?: string
           outcome?: Database["public"]["Enums"]["motion_outcome"]
+          roll_call?: Json | null
           seconded_by?: string | null
           votes_abstain?: number
           votes_no?: number
@@ -733,6 +736,7 @@ export type Database = {
           name: string
           quorum_count: number
           timezone: string
+          vote_recording: string
         }
         Insert: {
           created_at?: string
@@ -741,6 +745,7 @@ export type Database = {
           name: string
           quorum_count?: number
           timezone?: string
+          vote_recording?: string
         }
         Update: {
           created_at?: string
@@ -749,6 +754,7 @@ export type Database = {
           name?: string
           quorum_count?: number
           timezone?: string
+          vote_recording?: string
         }
         Relationships: []
       }
