@@ -1,10 +1,11 @@
 # Roadmap
-- [ ] Get plan approved (updated with OpenLedgerApp design from GitHub)
-- [ ] Foundation: sign-in, organizations, roles, invites
-- [ ] Governance: roster, officers, terms, committees
-- [ ] Meetings, agenda, attendance
-- [ ] Notes, motions, minutes approval and versioning
-- [ ] Documents and board packet PDF
-- [ ] Action items
-- [ ] Audit log and export
-- [ ] Tests: permissions, tenant isolation, minutes locking
+- [x] Plan approved (OpenLedgerApp design applied)
+- [x] Foundation: sign-in, organizations, roles, invites
+- [x] Governance: roster, officers, terms, committees
+- [x] Meetings, agenda, attendance
+- [x] Notes, motions, minutes approval and versioning
+- [x] Documents and board packet PDF
+- [x] Action items
+- [x] Audit log and export
+- [x] Tests: permissions, minutes rules, export escaping
+- [ ] v0.2: automated cross-organization access tests against the live database, reminders, meeting templates
