@@ -32,3 +32,4 @@
 - Board roles: board_positions holds each role and its term length; board_terms rows are the holder history (position_id links them), and handing a role over ends the open term the day before so history is never overwritten; current titles come from src/lib/titles.ts and show beside names via useTitles.
 - Board record export: the zip is assembled client-side with fflate (src/components/BoardRecordExport.tsx); range/packet-as-of rules live in src/lib/board-export.ts and are pinned by its test, so exports stay worker-safe and reproducible.
 - Recusal is a member_votes value ("recused"); recused members are removed from the majority-of-present denominator in finish_vote and computeDisposition, which must stay in sync.
+- CI: .github/workflows/ci.yml runs npm-only, unit, database-rule, typecheck, build, lint, format and audit jobs; scripts/ci/* hold the static checks so the same checks run locally.

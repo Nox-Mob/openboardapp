@@ -1,0 +1,163 @@
+# OpenBoard CI — validates only. It never auto-fixes, formats, commits or pushes.
+# Every failing job writes the reason to the run summary and as inline annotations.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1" # weekly run catches newly published dependency vulnerabilities
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  npm-only:
+    name: Package manager (npm only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No bun/yarn/pnpm lockfiles
+        run: |
+          bad=$(ls bun.lock bun.lockb yarn.lock pnpm-lock.yaml 2>/dev/null || true)
+          if [ -n "$bad" ] || [ ! -f package-lock.json ]; then
+            echo "### ❌ OpenBoard installs with npm only. Remove: $bad (package-lock.json must exist)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+  unit-tests:
+    name: Unit tests (permissions, votes, titles, templates, PDFs, exports, pages)
+    runs-on: ubuntu-latest
+    env:
+      SKIP_DB_TESTS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: .env holds public keys only
+        run: node scripts/ci/check-env.mjs
+      - name: Data layer (UI never talks to the database directly)
+        run: |
+          npx vitest run src/data/data-layer.test.ts --reporter=default --reporter=github-actions || {
+            echo "### ❌ A screen imports the database client directly. Route it through \`db\` in src/data." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+      - name: Run tests
+        run: npx vitest run --reporter=default --reporter=junit --outputFile.junit=test-results.xml --reporter=github-actions
+      - name: Report failures
+        if: failure()
+        run: echo "### ❌ Unit tests failed — see the annotations for which rule broke." >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: unit-test-results, path: test-results.xml }
+
+  database-rules:
+    name: Database rules (tenant isolation, roles, locks, live voting, letterhead)
+    runs-on: ubuntu-latest
+    # Runs the src/test/db suites against the backend using the dedicated
+    # Test Org A/B accounts only (publishable key from the tracked .env).
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Static migration checks (row level security + policies on every table)
+        run: node scripts/ci/check-migrations.mjs
+      - name: Live database rule tests
+        run: |
+          npx vitest run src/test/db --reporter=default --reporter=github-actions || {
+            echo "### ❌ A database rule failed (isolation, permissions, official-record locks or voting)." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+
+  typecheck:
+    name: Type check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: tsc --noEmit
+        run: |
+          npx tsc --noEmit --pretty false 2>&1 | tee tsc.log
+          code=${PIPESTATUS[0]}
+          if [ $code -ne 0 ]; then
+            echo "### ❌ Type errors" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; head -50 tsc.log >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $code
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    needs: [unit-tests, typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: vite build
+        run: |
+          npm run build 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          if [ $code -ne 0 ]; then
+            echo "### ❌ Build failed" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; grep -iE "error|failed" build.log | head -30 >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $code
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: eslint
+        run: |
+          npx eslint . --format stylish 2>&1 | tee lint.log
+          code=${PIPESTATUS[0]}
+          if [ $code -ne 0 ]; then
+            echo "### ❌ Lint errors" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; grep -E "error" lint.log | head -40 >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $code
+
+  format:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run format:check || (echo "### ⚠️ Files not formatted — run \`npm run format\` locally" >> "$GITHUB_STEP_SUMMARY"; exit 1)
+
+  dependency-audit:
+    name: Dependency vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Audit shipped packages (fails on high/critical)
+        run: |
+          npm audit --omit=dev --audit-level=high 2>&1 | tee audit.log
+          code=${PIPESTATUS[0]}
+          if [ $code -ne 0 ]; then
+            echo "### ❌ High/critical vulnerable packages found" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; head -40 audit.log >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $code
+      - name: Full audit including developer tools (report only)
+        continue-on-error: true
+        run: npm audit
