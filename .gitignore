@@ -30,3 +30,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Package manager: npm only — never commit other tools' lockfiles
+bun.lock
+bun.lockb
+yarn.lock
+pnpm-lock.yaml
