@@ -33,26 +33,26 @@ Status labels used below: **Implemented and tested**, **Implemented, partly veri
 
 ## Status by area
 
-| Area | Status |
-| --- | --- |
-| Organization isolation and same-organization parent links | Implemented and tested with live database checks |
-| Role/capability matrix and database permissions | Implemented and tested |
-| Organization creation and one-time invitation acceptance | Implemented and tested through database-rule suites |
-| Board positions, term lengths, holder history and title resolution | Implemented; pure title/term rules tested |
-| Meetings, agendas, attendance and action items | Implemented, partly verified through page tests and related database checks |
-| Meeting templates and copied agenda outlines | Implemented and tested |
-| Live member voting, frozen electorate and immutable ballots | Implemented and tested with unit and live database checks |
-| Per-agenda-item decision rules and member recusal | Implemented and tested |
-| Live quorum indicator | Implemented; related attendance/voting rules tested |
-| Approved minutes and official-record locks | Implemented and tested |
-| Standalone minutes PDF and board packet generation | Implemented and tested |
-| PNG/JPG/PDF organization letterhead | Implemented and tested, including database access rules |
-| Private document library and versioned packets | Implemented, partly verified |
-| Board-record ZIP export and CSV formula escaping | Implemented; export-selection and formatting rules tested |
-| Data-layer import boundary and platform detection | Enforced by tests in CI |
-| Reminders and backup-restore drill | Planned; open roadmap items |
-| Offline/desktop storage, cloud sync and alternate adapters | Not supported |
-| AI transcription, secret ballots, e-signatures, calendar/video integrations, accounting and billing | Outside v0.1 scope |
+| Area                                                                                                | Status                                                                      |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Organization isolation and same-organization parent links                                           | Implemented and tested with live database checks                            |
+| Role/capability matrix and database permissions                                                     | Implemented and tested                                                      |
+| Organization creation and one-time invitation acceptance                                            | Implemented and tested through database-rule suites                         |
+| Board positions, term lengths, holder history and title resolution                                  | Implemented; pure title/term rules tested                                   |
+| Meetings, agendas, attendance and action items                                                      | Implemented, partly verified through page tests and related database checks |
+| Meeting templates and copied agenda outlines                                                        | Implemented and tested                                                      |
+| Live member voting, frozen electorate and immutable ballots                                         | Implemented and tested with unit and live database checks                   |
+| Per-agenda-item decision rules and member recusal                                                   | Implemented and tested                                                      |
+| Live quorum indicator                                                                               | Implemented; related attendance/voting rules tested                         |
+| Approved minutes and official-record locks                                                          | Implemented and tested                                                      |
+| Standalone minutes PDF and board packet generation                                                  | Implemented and tested                                                      |
+| PNG/JPG/PDF organization letterhead                                                                 | Implemented and tested, including database access rules                     |
+| Private document library and versioned packets                                                      | Implemented, partly verified                                                |
+| Board-record ZIP export and CSV formula escaping                                                    | Implemented; export-selection and formatting rules tested                   |
+| Data-layer import boundary and platform detection                                                   | Enforced by tests in CI                                                     |
+| Reminders and backup-restore drill                                                                  | Planned; open roadmap items                                                 |
+| Offline/desktop storage, cloud sync and alternate adapters                                          | Not supported                                                               |
+| AI transcription, secret ballots, e-signatures, calendar/video integrations, accounting and billing | Outside v0.1 scope                                                          |
 
 ## Where rules live
 
