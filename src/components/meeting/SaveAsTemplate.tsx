@@ -28,7 +28,7 @@ export function SaveAsTemplate({ meeting }: { meeting: Tables<"meetings"> }) {
       meeting_title: meeting.title,
       start_time: meeting.start_time,
       location: meeting.location,
-      agenda: (agenda.data ?? []).map((a) => ({ title: a.title, presenter: a.presenter, duration_minutes: a.duration_minutes, description: a.description })),
+      agenda: (agenda.data ?? []).map((a) => ({ title: a.title, presenter: a.presenter, duration_minutes: a.duration_minutes, description: a.description, proposed_motion: a.proposed_motion })),
     }));
     if (error !== null) { toast.error(errorMessage(error)); return; }
     qc.invalidateQueries({ queryKey: ["templates", org.id] });

@@ -3,7 +3,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { attempt, db, EXPORT_TABLES } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+import { can, ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
+import { CLOSE_MODES, DECISION_RULES, type CloseMode } from "@/lib/votes";
 import { downloadBlob, errorMessage, toCsv } from "@/lib/export";
 import { PageHeader } from "@/components/PageStates";
 import { Button } from "@/components/ui/button";
@@ -19,12 +20,14 @@ const TABLES = EXPORT_TABLES;
 function Settings() {
   const { org, refetch, setOrgId } = useCurrentOrg();
   const manager = can(org.role, "org.manage");
-  const [f, setF] = useState({ name: org.name, timezone: org.timezone, quorum_count: org.quorum_count, vote_recording: org.vote_recording });
+  const [f, setF] = useState({ name: org.name, timezone: org.timezone, quorum_count: org.quorum_count, vote_recording: org.vote_recording, vote_close_modes: org.vote_close_modes, vote_timer_minutes: org.vote_timer_minutes, vote_closer_roles: org.vote_closer_roles, seconder_required: org.seconder_required, decision_rule: org.decision_rule });
   const [newOrg, setNewOrg] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (!f.vote_close_modes.length) { toast.error("Choose at least one way for votes to close"); return; }
+    if (f.vote_close_modes.includes("timer") && !f.vote_timer_minutes) { toast.error("Set the vote timer length"); return; }
     const { error } = await attempt(db.orgs.update(org.id, f));
     if (error) { toast.error(errorMessage(error)); return; }
     refetch();
@@ -77,6 +80,38 @@ function Settings() {
               <option value="roll_call">Record how each board member voted</option>
             </select>
           </div>
+          <div>
+            <Label htmlFor="decision-rule">Decision rule for live votes</Label>
+            <select id="decision-rule" className="mt-1 h-9 w-full rounded-md border bg-background px-3 text-sm" value={f.decision_rule} onChange={(e) => setF({ ...f, decision_rule: e.target.value })} disabled={!manager}>
+              {Object.entries(DECISION_RULES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.seconder_required} onChange={(e) => setF({ ...f, seconder_required: e.target.checked })} disabled={!manager} />Motions require a seconder</label>
+          <fieldset className="space-y-1">
+            <legend className="text-sm font-medium">How live votes close</legend>
+            {(Object.keys(CLOSE_MODES) as CloseMode[]).map((k) => (
+              <label key={k} className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={f.vote_close_modes.includes(k)} disabled={!manager}
+                  onChange={(e) => setF({ ...f, vote_close_modes: e.target.checked ? [...f.vote_close_modes, k] : f.vote_close_modes.filter((x) => x !== k) })} />
+                {CLOSE_MODES[k]}
+              </label>
+            ))}
+            {f.vote_close_modes.includes("timer") && (
+              <div className="pl-6"><Label>Timer (minutes)</Label><Input type="number" min={1} max={240} value={f.vote_timer_minutes ?? ""} onChange={(e) => setF({ ...f, vote_timer_minutes: e.target.value ? Math.min(240, Math.max(1, Number(e.target.value))) : null })} disabled={!manager} className="w-28" /></div>
+            )}
+          </fieldset>
+          <fieldset className="space-y-1">
+            <legend className="text-sm font-medium">Who can close a vote and record results</legend>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {ROLES.filter((r) => r !== "observer").map((r) => (
+                <label key={r} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={f.vote_closer_roles.includes(r)} disabled={!manager}
+                    onChange={(e) => setF({ ...f, vote_closer_roles: e.target.checked ? [...f.vote_closer_roles, r] : f.vote_closer_roles.filter((x: OrgRole) => x !== r) })} />
+                  {ROLE_LABELS[r]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           {manager && <Button type="submit">Save</Button>}
         </form>
         <section className="space-y-3 rounded-lg border bg-card p-5">

@@ -13,4 +13,5 @@
 - [x] Meeting templates (create/edit/delete, pick when scheduling, save meeting as template)
 - [x] Data layer: all screens go through src/data with platform check
 - [x] npm only
+- [x] Live member voting + Board Meeting Dashboard (frozen electorate, full vote record, org close/decision settings)
 - [ ] v0.2: reminders, backup restore drill

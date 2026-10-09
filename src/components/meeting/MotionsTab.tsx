@@ -8,6 +8,7 @@ import { formatMotion } from "@/lib/minutes";
 import { useAgenda, useAttendance, useMotions, useInvalidateMeeting } from "@/lib/meeting-data";
 import { presentAttendees, rollCallVoters, tally, type Vote } from "@/lib/votes";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DispositionForm, VoteRecordView } from "@/components/meeting/VoteRecord";
 import { LoadingState, EmptyState } from "@/components/PageStates";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -76,10 +77,12 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
               <p className="eyebrow">{titleOf(m.agenda_item_id) ?? "General"}</p>
               <div className="flex items-center gap-2">
                 <StatusBadge status={m.outcome} />
-                {editable && <Button size="icon" variant="ghost" onClick={() => remove(m.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>}
+                {editable && m.voting_status === "manual" && <Button size="icon" variant="ghost" onClick={() => remove(m.id)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>}
               </div>
             </div>
             <p className="mt-2 font-display text-sm leading-relaxed">{formatMotion(m)}</p>
+            {m.voting_status !== "manual" && <VoteRecordView motion={m} />}
+            {editable && m.voting_status === "closed" && org.vote_closer_roles.includes(org.role) && <DispositionForm motion={m} onDone={() => invalidate("motions")} />}
           </div>
         ))}
       </div>

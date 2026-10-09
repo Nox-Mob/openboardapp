@@ -1,4 +1,4 @@
-import { formatRollCall, parseRollCall } from "./votes";
+import { formatRollCall, parseRollCall, parseVoteRecord } from "./votes";
 
 // Pure helpers for building formal minutes and handling versions.
 export type MinutesStatus = "draft" | "submitted" | "approved" | "superseded";
@@ -18,6 +18,8 @@ export interface MinutesInput {
     votes_abstain: number;
     outcome: string;
     roll_call?: unknown;
+    vote_record?: unknown;
+    disposition_note?: string | null;
   }[];
   quorum: number;
 }
@@ -35,7 +37,11 @@ export function formatMotion(m: MinutesInput["motions"][number]): string {
   const by = [m.moved_by && `Moved by ${m.moved_by}`, m.seconded_by && `seconded by ${m.seconded_by}`]
     .filter(Boolean)
     .join(", ");
-  return `MOTION: ${m.motion_text}${by ? ` (${by})` : ""}. Vote: ${m.votes_yes} in favor, ${m.votes_no} opposed, ${m.votes_abstain} abstaining.${roll ? ` Roll call — ${roll}.` : ""} ${OUTCOME[m.outcome] ?? m.outcome.toUpperCase()}.`;
+  const rec = parseVoteRecord(m.vote_record);
+  const nv = rec?.not_voting?.length ? ` Not voting: ${rec.not_voting.join(", ")}.` : "";
+  const q = rec ? ` Eligible voters: ${rec.electorate?.length ?? 0}; quorum ${rec.quorum_met ? "met" : "not met"} (${rec.present_voting} of ${rec.quorum_required} required).` : "";
+  const note = m.disposition_note ? ` Result recorded: ${m.disposition_note}.` : "";
+  return `MOTION: ${m.motion_text}${by ? ` (${by})` : ""}. Vote: ${m.votes_yes} in favor, ${m.votes_no} opposed, ${m.votes_abstain} abstaining.${roll ? ` Roll call — ${roll}.` : ""}${nv}${q} ${OUTCOME[m.outcome] ?? m.outcome.toUpperCase()}.${note}`;
 }
 
 export function generateMinutes(input: MinutesInput): string {

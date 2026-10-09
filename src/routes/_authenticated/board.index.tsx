@@ -31,7 +31,11 @@ function Overview() {
                 {q.data.meetings.map((m) => (
                   <li key={m.id} className="flex items-center justify-between py-3">
                     <Link to="/board/meetings/$meetingId" params={{ meetingId: m.id }} className="font-medium hover:text-primary">{m.title}</Link>
-                    <span className="font-mono text-xs text-muted-foreground">{m.meeting_date} {m.start_time ?? ""}</span>
+                    {m.status === "in_progress" ? (
+                      <Link to="/board/live/$meetingId" params={{ meetingId: m.id }} className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">Join meeting</Link>
+                    ) : (
+                      <span className="font-mono text-xs text-muted-foreground">{m.meeting_date} {m.start_time ?? ""}</span>
+                    )}
                   </li>
                 ))}
               </ul>

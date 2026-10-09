@@ -9,6 +9,11 @@ export interface OrgSummary {
   timezone: string;
   quorum_count: number;
   vote_recording: string;
+  vote_close_modes: string[];
+  vote_timer_minutes: number | null;
+  vote_closer_roles: OrgRole[];
+  seconder_required: boolean;
+  decision_rule: string;
   role: OrgRole;
 }
 

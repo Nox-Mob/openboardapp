@@ -66,6 +66,7 @@ export function AgendaTab({ meetingId, editable }: { meetingId: string; editable
               </div>
             )}
           </div>
+          <ProposedMotion item={item} editable={editable} onSaved={() => invalidate("agenda")} />
           <NotesEditor item={item} editable={editable} />
         </div>
       ))}
@@ -113,6 +114,23 @@ function NotesEditor({ item, editable }: { item: Item; editable: boolean }) {
           {state === "saved" ? "Saved" : state === "saving" ? "Saving…" : state === "error" ? "Not saved" : "Editing…"}
         </p>
       )}
+    </div>
+  );
+}
+
+function ProposedMotion({ item, editable, onSaved }: { item: Item; editable: boolean; onSaved: () => void }) {
+  const [value, setValue] = useState(item.proposed_motion ?? "");
+  if (!editable) return item.proposed_motion ? <p className="mt-2 text-sm"><span className="eyebrow">Proposed motion </span>{item.proposed_motion}</p> : null;
+  async function save() {
+    if ((item.proposed_motion ?? "") === value.trim()) return;
+    const { error } = await attempt(db.agenda.update(item.id, { proposed_motion: value.trim() || null }));
+    if (error) { toast.error(errorMessage(error)); return; }
+    onSaved();
+  }
+  return (
+    <div className="mt-3">
+      <label className="eyebrow" htmlFor={`pm-${item.id}`}>Proposed motion (optional — ready for a live vote)</label>
+      <Input id={`pm-${item.id}`} value={value} onChange={(e) => setValue(e.target.value)} onBlur={save} placeholder="To approve…" className="mt-1 bg-background" />
     </div>
   );
 }

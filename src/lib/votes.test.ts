@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatMotion } from "./minutes";
-import { parseRollCall, presentAttendees, rollCallVoters, tally } from "./votes";
+import { canCloseEarly, computeDisposition, parseRollCall, presentAttendees, rollCallVoters, tally } from "./votes";
 
 const att = [
   { id: "1", person_name: "Ana", status: "present", is_voting: true },
@@ -30,5 +30,41 @@ describe("motion voting", () => {
   });
   it("minutes without a roll call keep totals only", () => {
     expect(formatMotion({ agenda_item_id: null, motion_text: "X", votes_yes: 3, votes_no: 0, votes_abstain: 0, outcome: "carried" })).not.toContain("Roll call");
+  });
+});
+
+
+describe("live vote results", () => {
+  it("simple majority of votes cast ignores abstentions", () => {
+    expect(computeDisposition("majority_cast", { yes: 2, no: 1 }, 5, true)).toBe("carried");
+    expect(computeDisposition("majority_cast", { yes: 1, no: 1 }, 5, true)).toBe("failed");
+  });
+  it("majority of eligible voters present counts non-voters against", () => {
+    expect(computeDisposition("majority_present", { yes: 2, no: 0 }, 5, true)).toBe("failed");
+    expect(computeDisposition("majority_present", { yes: 3, no: 0 }, 5, true)).toBe("carried");
+  });
+  it("two-thirds of votes cast", () => {
+    expect(computeDisposition("two_thirds_cast", { yes: 2, no: 1 }, 3, true)).toBe("carried");
+    expect(computeDisposition("two_thirds_cast", { yes: 3, no: 2 }, 5, true)).toBe("failed");
+  });
+  it("no result without quorum, with a custom rule, or with no votes cast", () => {
+    expect(computeDisposition("majority_cast", { yes: 3, no: 0 }, 3, false)).toBeNull();
+    expect(computeDisposition("chair", { yes: 3, no: 0 }, 3, true)).toBeNull();
+    expect(computeDisposition("majority_cast", { yes: 0, no: 0 }, 3, true)).toBeNull();
+  });
+  it("only permitted roles may close early, and only when chair-close is enabled", () => {
+    const org = { vote_close_modes: ["chair"], vote_closer_roles: ["chair", "secretary"] };
+    expect(canCloseEarly("chair", org)).toBe(true);
+    expect(canCloseEarly("member", org)).toBe(false);
+    expect(canCloseEarly("chair", { ...org, vote_close_modes: ["timer"] })).toBe(false);
+  });
+});
+
+describe("live vote minutes", () => {
+  it("minutes list members who did not vote and the quorum facts", () => {
+    const text = formatMotion({ agenda_item_id: null, motion_text: "Approve", votes_yes: 2, votes_no: 0, votes_abstain: 0, outcome: "carried",
+      vote_record: { electorate: ["Ana", "Ben", "Cy"], not_voting: ["Cy"], quorum_met: true, present_voting: 3, quorum_required: 2 } });
+    expect(text).toContain("Not voting: Cy.");
+    expect(text).toContain("Eligible voters: 3; quorum met");
   });
 });

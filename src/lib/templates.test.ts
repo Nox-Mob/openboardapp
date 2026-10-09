@@ -6,7 +6,7 @@ describe("meeting templates", () => {
     expect(STANDARD_AGENDA.map((a) => a.title)).toEqual(["Call to order", "Approval of previous minutes", "Treasurer's report", "Old business", "New business", "Adjournment"]);
   });
   it("blank and malformed agenda entries are dropped", () => {
-    expect(normalizeAgenda([{ title: "  " }, null, 5, { title: " Budget " }])).toEqual([{ title: "Budget", presenter: null, duration_minutes: null, description: null }]);
+    expect(normalizeAgenda([{ title: "  " }, null, 5, { title: " Budget " }])).toEqual([{ title: "Budget", presenter: null, duration_minutes: null, description: null, proposed_motion: null }]);
     expect(normalizeAgenda("nope")).toEqual([]);
   });
   it("invalid durations are cleared", () => {
@@ -18,8 +18,8 @@ describe("meeting templates", () => {
   });
   it("agenda text editor parses Title | Presenter | Minutes", () => {
     expect(parseAgendaText("Budget | Treasurer | 20\n\nAdjourn")).toEqual([
-      { title: "Budget", presenter: "Treasurer", duration_minutes: 20, description: null },
-      { title: "Adjourn", presenter: null, duration_minutes: null, description: null },
+      { title: "Budget", presenter: "Treasurer", duration_minutes: 20, description: null, proposed_motion: null },
+      { title: "Adjourn", presenter: null, duration_minutes: null, description: null, proposed_motion: null },
     ]);
   });
   it("text round-trips and totals minutes", () => {
