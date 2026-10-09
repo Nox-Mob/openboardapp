@@ -15,6 +15,12 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AuthenticatedBoardIndexRouteImport } from './routes/_authenticated/board.index'
+import { Route as AuthenticatedBoardAuditRouteImport } from './routes/_authenticated/board.audit'
+import { Route as AuthenticatedBoardCommitteesRouteImport } from './routes/_authenticated/board.committees'
+import { Route as AuthenticatedBoardDocumentsRouteImport } from './routes/_authenticated/board.documents'
+import { Route as AuthenticatedBoardMembersRouteImport } from './routes/_authenticated/board.members'
+import { Route as AuthenticatedBoardSettingsRouteImport } from './routes/_authenticated/board.settings'
+import { Route as AuthenticatedBoardTasksRouteImport } from './routes/_authenticated/board.tasks'
 import { Route as AuthenticatedBoardMeetingsIndexRouteImport } from './routes/_authenticated/board.meetings.index'
 import { Route as AuthenticatedBoardMeetingsMeetingIdRouteImport } from './routes/_authenticated/board.meetings.$meetingId'
 
@@ -47,6 +53,40 @@ const AuthenticatedBoardIndexRoute = AuthenticatedBoardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedBoardRoute,
 } as any)
+const AuthenticatedBoardAuditRoute = AuthenticatedBoardAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedBoardRoute,
+} as any)
+const AuthenticatedBoardCommitteesRoute =
+  AuthenticatedBoardCommitteesRouteImport.update({
+    id: '/committees',
+    path: '/committees',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
+const AuthenticatedBoardDocumentsRoute =
+  AuthenticatedBoardDocumentsRouteImport.update({
+    id: '/documents',
+    path: '/documents',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
+const AuthenticatedBoardMembersRoute =
+  AuthenticatedBoardMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
+const AuthenticatedBoardSettingsRoute =
+  AuthenticatedBoardSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
+const AuthenticatedBoardTasksRoute = AuthenticatedBoardTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AuthenticatedBoardRoute,
+} as any)
 const AuthenticatedBoardMeetingsIndexRoute =
   AuthenticatedBoardMeetingsIndexRouteImport.update({
     id: '/meetings/',
@@ -65,6 +105,12 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/board': typeof AuthenticatedBoardRouteWithChildren
   '/invite/$token': typeof InviteTokenRoute
+  '/board/audit': typeof AuthenticatedBoardAuditRoute
+  '/board/committees': typeof AuthenticatedBoardCommitteesRoute
+  '/board/documents': typeof AuthenticatedBoardDocumentsRoute
+  '/board/members': typeof AuthenticatedBoardMembersRoute
+  '/board/settings': typeof AuthenticatedBoardSettingsRoute
+  '/board/tasks': typeof AuthenticatedBoardTasksRoute
   '/board/': typeof AuthenticatedBoardIndexRoute
   '/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
@@ -73,6 +119,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/board/audit': typeof AuthenticatedBoardAuditRoute
+  '/board/committees': typeof AuthenticatedBoardCommitteesRoute
+  '/board/documents': typeof AuthenticatedBoardDocumentsRoute
+  '/board/members': typeof AuthenticatedBoardMembersRoute
+  '/board/settings': typeof AuthenticatedBoardSettingsRoute
+  '/board/tasks': typeof AuthenticatedBoardTasksRoute
   '/board': typeof AuthenticatedBoardIndexRoute
   '/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/board/meetings': typeof AuthenticatedBoardMeetingsIndexRoute
@@ -84,6 +136,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/board': typeof AuthenticatedBoardRouteWithChildren
   '/invite/$token': typeof InviteTokenRoute
+  '/_authenticated/board/audit': typeof AuthenticatedBoardAuditRoute
+  '/_authenticated/board/committees': typeof AuthenticatedBoardCommitteesRoute
+  '/_authenticated/board/documents': typeof AuthenticatedBoardDocumentsRoute
+  '/_authenticated/board/members': typeof AuthenticatedBoardMembersRoute
+  '/_authenticated/board/settings': typeof AuthenticatedBoardSettingsRoute
+  '/_authenticated/board/tasks': typeof AuthenticatedBoardTasksRoute
   '/_authenticated/board/': typeof AuthenticatedBoardIndexRoute
   '/_authenticated/board/meetings/$meetingId': typeof AuthenticatedBoardMeetingsMeetingIdRoute
   '/_authenticated/board/meetings/': typeof AuthenticatedBoardMeetingsIndexRoute
@@ -95,6 +153,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/board'
     | '/invite/$token'
+    | '/board/audit'
+    | '/board/committees'
+    | '/board/documents'
+    | '/board/members'
+    | '/board/settings'
+    | '/board/tasks'
     | '/board/'
     | '/board/meetings/$meetingId'
     | '/board/meetings/'
@@ -103,6 +167,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/invite/$token'
+    | '/board/audit'
+    | '/board/committees'
+    | '/board/documents'
+    | '/board/members'
+    | '/board/settings'
+    | '/board/tasks'
     | '/board'
     | '/board/meetings/$meetingId'
     | '/board/meetings'
@@ -113,6 +183,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/board'
     | '/invite/$token'
+    | '/_authenticated/board/audit'
+    | '/_authenticated/board/committees'
+    | '/_authenticated/board/documents'
+    | '/_authenticated/board/members'
+    | '/_authenticated/board/settings'
+    | '/_authenticated/board/tasks'
     | '/_authenticated/board/'
     | '/_authenticated/board/meetings/$meetingId'
     | '/_authenticated/board/meetings/'
@@ -169,6 +245,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoardIndexRouteImport
       parentRoute: typeof AuthenticatedBoardRoute
     }
+    '/_authenticated/board/audit': {
+      id: '/_authenticated/board/audit'
+      path: '/audit'
+      fullPath: '/board/audit'
+      preLoaderRoute: typeof AuthenticatedBoardAuditRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
+    '/_authenticated/board/committees': {
+      id: '/_authenticated/board/committees'
+      path: '/committees'
+      fullPath: '/board/committees'
+      preLoaderRoute: typeof AuthenticatedBoardCommitteesRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
+    '/_authenticated/board/documents': {
+      id: '/_authenticated/board/documents'
+      path: '/documents'
+      fullPath: '/board/documents'
+      preLoaderRoute: typeof AuthenticatedBoardDocumentsRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
+    '/_authenticated/board/members': {
+      id: '/_authenticated/board/members'
+      path: '/members'
+      fullPath: '/board/members'
+      preLoaderRoute: typeof AuthenticatedBoardMembersRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
+    '/_authenticated/board/settings': {
+      id: '/_authenticated/board/settings'
+      path: '/settings'
+      fullPath: '/board/settings'
+      preLoaderRoute: typeof AuthenticatedBoardSettingsRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
+    '/_authenticated/board/tasks': {
+      id: '/_authenticated/board/tasks'
+      path: '/tasks'
+      fullPath: '/board/tasks'
+      preLoaderRoute: typeof AuthenticatedBoardTasksRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
     '/_authenticated/board/meetings/': {
       id: '/_authenticated/board/meetings/'
       path: '/meetings'
@@ -187,12 +305,24 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedBoardRouteChildren {
+  AuthenticatedBoardAuditRoute: typeof AuthenticatedBoardAuditRoute
+  AuthenticatedBoardCommitteesRoute: typeof AuthenticatedBoardCommitteesRoute
+  AuthenticatedBoardDocumentsRoute: typeof AuthenticatedBoardDocumentsRoute
+  AuthenticatedBoardMembersRoute: typeof AuthenticatedBoardMembersRoute
+  AuthenticatedBoardSettingsRoute: typeof AuthenticatedBoardSettingsRoute
+  AuthenticatedBoardTasksRoute: typeof AuthenticatedBoardTasksRoute
   AuthenticatedBoardIndexRoute: typeof AuthenticatedBoardIndexRoute
   AuthenticatedBoardMeetingsMeetingIdRoute: typeof AuthenticatedBoardMeetingsMeetingIdRoute
   AuthenticatedBoardMeetingsIndexRoute: typeof AuthenticatedBoardMeetingsIndexRoute
 }
 
 const AuthenticatedBoardRouteChildren: AuthenticatedBoardRouteChildren = {
+  AuthenticatedBoardAuditRoute: AuthenticatedBoardAuditRoute,
+  AuthenticatedBoardCommitteesRoute: AuthenticatedBoardCommitteesRoute,
+  AuthenticatedBoardDocumentsRoute: AuthenticatedBoardDocumentsRoute,
+  AuthenticatedBoardMembersRoute: AuthenticatedBoardMembersRoute,
+  AuthenticatedBoardSettingsRoute: AuthenticatedBoardSettingsRoute,
+  AuthenticatedBoardTasksRoute: AuthenticatedBoardTasksRoute,
   AuthenticatedBoardIndexRoute: AuthenticatedBoardIndexRoute,
   AuthenticatedBoardMeetingsMeetingIdRoute:
     AuthenticatedBoardMeetingsMeetingIdRoute,
