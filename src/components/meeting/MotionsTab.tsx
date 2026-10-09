@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
 import { errorMessage } from "@/lib/export";
@@ -111,7 +111,12 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
               </div>
             ))}
           </div>
-          {!present.length && <p className="text-xs text-muted-foreground">Mark people present on the Attendance tab to pick who moved and seconded.</p>}
+          {!present.length && (
+            <p className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <span>Mark people present on the Attendance tab to pick who moved and seconded.</span>
+            </p>
+          )}
           {required ? (
             <p className="text-xs text-muted-foreground">Your organization records how each board member votes.</p>
           ) : (
@@ -119,7 +124,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
           )}
           {useRoll ? (
             <div className="space-y-2 rounded-md border p-3">
-              {!voters.length && <p className="text-xs text-muted-foreground">No voting members are marked present.</p>}
+              {!voters.length && <p className="flex items-center gap-2 text-sm font-medium text-destructive"><AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />No voting members are marked present.</p>}
               {voters.map((v) => (
                 <div key={v.id} className="flex items-center justify-between gap-2">
                   <span className="text-sm">{v.person_name}</span>
