@@ -4,10 +4,10 @@ This is the owner's checklist for setting up OpenBoard's own Supabase project. `
 
 ## Project settings (already decided)
 
-- [ ] Data API on, exposing `public` (and the default `graphql_public`) only.
-- [ ] "Automatically expose new tables" off. Every table gets its GRANTs in a migration, and `replay` checks this.
-- [ ] Automatic RLS on.
-- [ ] Postgres 17 (the version `replay` tests with: `[db] major_version = 17`).
+- [X] Data API on, exposing `public` (and the default `graphql_public`) only.
+- [X] "Automatically expose new tables" off. Every table gets its GRANTs in a migration, and `replay` checks this.
+- [X] Automatic RLS on.
+- [X] Postgres 17 (the version `replay` tests with: `[db] major_version = 17`).
 
 ## Access token for the `deploy` job
 
