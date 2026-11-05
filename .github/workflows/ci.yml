@@ -62,6 +62,12 @@ jobs:
     runs-on: ubuntu-latest
     # Runs the src/test/db suites against the backend using the dedicated
     # Test Org A/B accounts only (publishable key from the tracked .env).
+    # Every run shares that one backend and Test Org A, so only one of these jobs
+    # may run at a time across the whole repository (a push and its pull request
+    # otherwise race: one run resets Org A's voting settings mid-test in the other).
+    concurrency:
+      group: openboard-shared-test-backend
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
