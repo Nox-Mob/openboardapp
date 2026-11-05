@@ -9,6 +9,19 @@ This is the owner's checklist for setting up OpenBoard's own Supabase project. `
 - [ ] Automatic RLS on.
 - [ ] Postgres 17 (the version `replay` tests with: `[db] major_version = 17`).
 
+## Access token for the `deploy` job
+
+`SUPABASE_ACCESS_TOKEN` can be a full personal access token or a **scoped** token. A scoped token needs these scopes, taken from `supabase link --help` and `supabase db push --help` (CLI 3.0.0):
+
+| Scope                          | Why                                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `project_admin_read`           | Required by `supabase link`                                                                              |
+| `projects_read`                | Project lookup by `link` and `db push --remote`                                                          |
+| `database_pooling_config_read` | Reading the IPv4 connection pooler. Without it, deploy fails with a 403, or with "IPv6 is not supported" |
+| `branching_production_read`    | Resolving the project's main (production) branch                                                         |
+
+`database_write` and the network-ban scopes are only used when no database password is given. The job always passes `SUPABASE_DB_PASSWORD`, so they are not needed.
+
 ## Sign-in providers
 
 | Provider                           | Today                                                                                                                                                                  | New project                                                                                                                                                                                                                                                                                                                                         |

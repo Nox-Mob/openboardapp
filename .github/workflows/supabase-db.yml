@@ -182,7 +182,7 @@ jobs:
         run: |
           cfg=$(curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
             "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/config/database/pooler") || {
-            echo "::error::Could not read the project's pooler settings from the Management API"; exit 1; }
+            echo "::error::Could not read the project's pooler settings from the Management API. A 403 means SUPABASE_ACCESS_TOKEN lacks a scope: it needs project_admin_read, projects_read, database_pooling_config_read and branching_production_read (see docs/migration/settings-to-reenter.md)."; exit 1; }
           pick='[.[] | select((.db_host // "") | test("pooler\\.supabase\\.com$"))]
                 | (map(select(.database_type == "PRIMARY")) + .)[0] // empty'
           host=$(jq -r "$pick | .db_host" <<<"$cfg")
