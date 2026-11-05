@@ -6,10 +6,10 @@ Step-by-step setup for the domain, Resend SMTP and the Google OAuth client is in
 
 ## Project settings (already decided)
 
-- [X] Data API on, exposing `public` (and the default `graphql_public`) only.
-- [X] "Automatically expose new tables" off. Every table gets its GRANTs in a migration, and `replay` checks this.
-- [X] Automatic RLS on.
-- [X] Postgres 17 (the version `replay` tests with: `[db] major_version = 17`).
+- [x] Data API on, exposing `public` (and the default `graphql_public`) only.
+- [x] "Automatically expose new tables" off. Every table gets its GRANTs in a migration, and `replay` checks this.
+- [x] Automatic RLS on.
+- [x] Postgres 17 (the version `replay` tests with: `[db] major_version = 17`).
 
 ## Access token for the `deploy` job
 
