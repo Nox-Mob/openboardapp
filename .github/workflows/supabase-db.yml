@@ -7,6 +7,12 @@
 # deploy  — manual (workflow_dispatch) only, behind the `supabase-prod` environment
 #           (the owner adds a required reviewer there). Links the new project and
 #           pushes the migrations. Credentials come from that environment's secrets.
+#           "Dry run" (on by default) only lists the migrations a push would apply.
+#
+# Run deploy from Actions → Supabase database → Run workflow, choosing the branch that
+# holds supabase/migrations (supabase-migration until the Phase 1 cutover).
+# This file is also on main so that GitHub shows the Run workflow button. Branches
+# without supabase/migrations (main before cutover) skip replay and refuse deploy.
 name: Supabase database
 
 on:
@@ -14,6 +20,11 @@ on:
   push:
     branches: [supabase-migration]
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: only list the migrations that would be applied"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -27,9 +38,26 @@ env:
   SUPABASE_CLI_VERSION: 3.0.0
 
 jobs:
+  has-migrations:
+    name: Branch has supabase/migrations
+    runs-on: ubuntu-latest
+    outputs:
+      found: ${{ steps.look.outputs.found }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: look
+        run: |
+          if ls supabase/migrations/*.sql >/dev/null 2>&1; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "No supabase/migrations on this branch (main before the Phase 1 cutover): replay and deploy are skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   replay:
     name: Replay migrations on an empty database
-    if: github.event_name != 'workflow_dispatch'
+    needs: has-migrations
+    if: github.event_name != 'workflow_dispatch' && needs.has-migrations.outputs.found == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -105,6 +133,7 @@ jobs:
 
   deploy:
     name: Push migrations to the Supabase project
+    needs: has-migrations
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -113,7 +142,14 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      DRY_RUN: ${{ inputs.dry_run }}
     steps:
+      - name: The chosen branch has supabase/migrations
+        if: needs.has-migrations.outputs.found != 'true'
+        run: |
+          echo "::error::Branch ${GITHUB_REF_NAME} has no supabase/migrations. Run the workflow again and choose the supabase-migration branch."
+          exit 1
+
       - uses: actions/checkout@v4
 
       # Keep the tracked Lovable Cloud .env from supplying any project setting.
@@ -141,4 +177,14 @@ jobs:
       # CLI 3 targets the local database unless --remote is given; --yes is required
       # for hosted changes in a non-interactive job.
       - name: supabase db push
-        run: supabase db push --remote --yes
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "### Dry run on ${GITHUB_REF_NAME}: nothing was changed" >> "$GITHUB_STEP_SUMMARY"
+            supabase db push --remote --dry-run --yes 2>&1 | tee push.log
+          else
+            echo "### Pushed migrations from ${GITHUB_REF_NAME}" >> "$GITHUB_STEP_SUMMARY"
+            supabase db push --remote --yes 2>&1 | tee push.log
+          fi
+          code=${PIPESTATUS[0]}
+          echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -40 push.log >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit $code
