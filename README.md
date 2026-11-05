@@ -10,7 +10,7 @@ See [OpenBoard architecture](docs/architecture.md) for application layers, organ
 
 ## Database migrations
 
-`supabase/migrations` is the single, ordered migration history. The `Supabase database` workflow (`.github/workflows/supabase-db.yml`) rebuilds the database from it on every pull request. See [Phase 0 inventory](docs/migration/phase-0-inventory.md) and [Settings to re-enter](docs/migration/settings-to-reenter.md).
+`supabase/migrations` is the single, ordered migration history. The `Supabase database` workflow (`.github/workflows/supabase-db.yml`) rebuilds the database from it on every pull request. See [Phase 0 inventory](docs/migration/phase-0-inventory.md), [Settings to re-enter](docs/migration/settings-to-reenter.md) and [Domain, Google sign-in and email](docs/migration/google-oauth-smtp-domain.md).
 
 > **Legacy:** `drizzle/` and `drizzle.config.ts` are what Lovable Cloud applies today, through `LOVABLE_DB_MIGRATION_URL`. They are kept only until the Phase 1 cutover and then removed. Until then, add every schema change to both `drizzle/migrations` and `supabase/migrations` with identical SQL.
 

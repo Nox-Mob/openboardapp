@@ -2,6 +2,8 @@
 
 This is the owner's checklist for setting up OpenBoard's own Supabase project. `supabase db push` (the `deploy` job) brings tables, functions, policies and the `org-files` bucket. It does **not** bring the dashboard settings below. Everything here was found by reading the code, the migrations and `supabase/config.toml`. Only names are listed, never values.
 
+Step-by-step setup for the domain, Resend SMTP and the Google OAuth client is in [google-oauth-smtp-domain.md](google-oauth-smtp-domain.md).
+
 ## Project settings (already decided)
 
 - [X] Data API on, exposing `public` (and the default `graphql_public`) only.
@@ -45,6 +47,8 @@ Checklist:
 - [ ] For local development: `http://localhost:*/**`. The dev server runs on port 8080 (`@lovable.dev/vite-tanstack-config`). `config.toml` already has this for the local stack only.
 
 ## Email templates and SMTP
+
+Resend setup: see [google-oauth-smtp-domain.md § 2](google-oauth-smtp-domain.md#2-email-resend-as-supabases-smtp-server).
 
 - No custom email templates in the repo. Lovable's defaults were used for sign-up confirmation, password reset and magic link (the app uses neither of the last two).
 - Invitations are **links an administrator copies and shares**, not emails (`create_invitation` returns the token). No invitation email template is needed.
@@ -99,6 +103,8 @@ Tooling and CI:
 - None. No Stripe, payment, calendar, video, email-API or AI integrations (`ai.gateway.lovable.dev` is not used). No database webhooks and no edge functions.
 
 ## Custom domains
+
+Domain choice and DNS plan: see [google-oauth-smtp-domain.md § 1](google-oauth-smtp-domain.md#1-domain).
 
 - None is configured in the code. The app is reached at its Lovable-hosted URL today. [ ] Check the Lovable project's domain settings for a custom domain. If there is one, use it as the Site URL above and plan its DNS move in Phase 1.
 - [ ] Optional: a Supabase custom domain for the API. Remember to update the Google OAuth redirect URI if you add one.
