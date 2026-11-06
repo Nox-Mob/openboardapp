@@ -111,5 +111,5 @@ Domain choice and DNS plan: see [google-oauth-smtp-domain.md § 1](google-oauth-
 
 ## Data that is not migrated
 
-- [ ] Demo accounts and data: `demo@demo.org` (owner), `chair@demo.org`, `member@demo.org` in "Riverside Community Association". The repo has no demo seed script; seed them by hand, as before (AGENTS.md).
+- [x] Demo account and data: created by migration `20261106010000_demo_org.sql` and rebuilt every 6 hours by `pg_cron` (job `reset-demo-org`). Only `demo@demo.org` can sign in, as an administrator. To reset it on demand, run `select public.reset_demo();` in the SQL Editor.
 - [ ] `ci.yml`'s `database-rules` job runs against the new project (`.env`). Create its test accounts once by running `scripts/db/create-test-accounts.sql` in the SQL Editor, or with `psql`. It creates `test-a@demo.org`, `test-member@demo.org` and `test-b@demo.org` in Test Org A/B **only**, and refuses to touch real organizations. Each CI run adds test meetings, votes and audit rows to Test Org A. Votes and audit rows are permanent by design.
