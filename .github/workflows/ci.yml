@@ -77,8 +77,10 @@ jobs:
         run: node scripts/ci/check-migrations.mjs
       - name: Live database rule tests
         run: |
-          # One file at a time: ownership.test.ts briefly hands Test Org A to the member.
-          npx vitest run src/test/db --no-file-parallelism --reporter=default --reporter=github-actions || {
+          # scripts/ci/vitest.db.config.mjs: Node environment (jsdom's Blob stalls storage
+          # uploads) and one file at a time (ownership.test.ts briefly hands Test Org A
+          # to the member). Same config as the replay job; the project comes from .env.
+          npx vitest run --config scripts/ci/vitest.db.config.mjs --reporter=default --reporter=github-actions || {
             echo "### ❌ A database rule failed (isolation, permissions, official-record locks or voting)." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           }
