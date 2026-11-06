@@ -9,6 +9,7 @@ import { downloadBlob, errorMessage, toCsv } from "@/lib/export";
 import { PageHeader } from "@/components/PageStates";
 import { BoardRecordExport } from "@/components/BoardRecordExport";
 import { LetterheadSettings } from "@/components/LetterheadSettings";
+import { TransferOwnership } from "@/components/TransferOwnership";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -311,6 +312,7 @@ function Settings() {
             Create organization
           </Button>
         </form>
+        <TransferOwnership key={`transfer-${org.id}`} />
       </div>
     </>
   );

@@ -21,6 +21,7 @@
 - Audit: the audit_row trigger writes audit_log for every tenant table; users have no write access to audit_log.
 - Official records: DB triggers lock approved/superseded minutes, motions and attendance of approved or archived meetings, and distributed packets; amendments create a new minutes version.
 - Invites store only a SHA-256 hash of the token and are claimed once via accept_invitation.
+- Ownership: each organization has exactly one owner (partial unique index memberships_one_owner). The creator starts as owner, and ownership moves only through the SECURITY DEFINER RPC transfer_ownership. It checks the caller is the owner, the target is another active member, and the typed name matches, then demotes the old owner to admin in the same transaction. The two-step Settings UI (src/components/TransferOwnership.tsx) is not the security boundary.
 - Files: private bucket org-files, paths start with the organization id; downloads use 60-second signed URLs.
 - PDFs (minutes, packets) are built client-side with pdf-lib (src/lib/packet.ts) to stay worker-safe.
 - Letterhead: organization_letterheads stores the active private org-files reference; upload paths are unique, managers alone change stationery, and shared prepareLetterhead paints only generated pages with reserved header/footer space, never existing packet attachments.

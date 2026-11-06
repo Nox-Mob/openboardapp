@@ -98,6 +98,22 @@ export const cloudAdapter = {
     async update(orgId: string, patch: TablesUpdate<"organizations">) {
       must(await supabase.from("organizations").update(patch).eq("id", orgId));
     },
+    /** Active members the owner may hand ownership to, each with the exact text to type. Owner only. */
+    async transferCandidates(orgId: string) {
+      return (must(await supabase.rpc("ownership_transfer_candidates", { _org: orgId })) ?? []).map(
+        (c) => ({ ...c, role: c.role as OrgRole }),
+      );
+    },
+    /** Makes newOwnerId the owner and the caller an administrator. The database re-checks everything. */
+    async transferOwnership(orgId: string, newOwnerId: string, confirmation: string) {
+      must(
+        await supabase.rpc("transfer_ownership", {
+          _org: orgId,
+          _new_owner: newOwnerId,
+          _confirmation: confirmation,
+        }),
+      );
+    },
     async exportAll(orgId: string) {
       const out: Record<string, Record<string, unknown>[]> = {};
       for (const t of EXPORT_TABLES) {

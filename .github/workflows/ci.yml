@@ -77,7 +77,8 @@ jobs:
         run: node scripts/ci/check-migrations.mjs
       - name: Live database rule tests
         run: |
-          npx vitest run src/test/db --reporter=default --reporter=github-actions || {
+          # One file at a time: ownership.test.ts briefly hands Test Org A to the member.
+          npx vitest run src/test/db --no-file-parallelism --reporter=default --reporter=github-actions || {
             echo "### ❌ A database rule failed (isolation, permissions, official-record locks or voting)." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           }
