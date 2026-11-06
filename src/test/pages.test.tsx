@@ -12,6 +12,8 @@ describe("every page has a route", () => {
   const pages: [string, string][] = [
     ["/", "/"],
     ["/auth", "/auth"],
+    ["/terms", "/terms"],
+    ["/privacy", "/privacy"],
     ["/invite/abc123", "/invite/$token"],
     ["/board", "/_authenticated/board/"],
     ["/board/meetings", "/_authenticated/board/meetings/"],

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import hero from "@/assets/hero-board.jpg";
 import { Button } from "@/components/ui/button";
+import { LegalFooter } from "@/components/LegalDocument";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -119,9 +120,7 @@ function Home() {
           ))}
         </div>
       </section>
-      <footer className="border-t py-8 text-center text-xs text-muted-foreground">
-        Open-source board management · Accounting stays in OpenLedgerApp
-      </footer>
+      <LegalFooter />
     </div>
   );
 }
