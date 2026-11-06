@@ -1,6 +1,6 @@
 # Supabase database: rebuild from supabase/migrations and (on approval) deploy.
 #
-# replay  — every pull request and every push to supabase-migration. Starts a local
+# replay  — every pull request and every push to main or supabase-migration. Starts a local
 #           Supabase stack, rebuilds the database from an empty state, lints it, runs
 #           the live database-rule suites against it and checks RLS + GRANTs on every
 #           public table. Touches no cloud project.
@@ -18,7 +18,7 @@ name: Supabase database
 on:
   pull_request:
   push:
-    branches: [supabase-migration]
+    branches: [main, supabase-migration]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -44,7 +44,7 @@ jobs:
     outputs:
       found: ${{ steps.look.outputs.found }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: look
         run: |
           if ls supabase/migrations/*.sql >/dev/null 2>&1; then
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # The tracked .env points at the Lovable Cloud backend (and the CLI reads
       # SUPABASE_PROJECT_ID from it). Move it aside so nothing in this job can
@@ -103,7 +103,7 @@ jobs:
       - name: Static migration checks
         run: node scripts/ci/check-migrations.mjs
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
 
@@ -150,7 +150,7 @@ jobs:
           echo "::error::Branch ${GITHUB_REF_NAME} has no supabase/migrations. Run the workflow again and choose the supabase-migration branch."
           exit 1
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Keep the tracked Lovable Cloud .env from supplying any project setting.
       - name: Detach the Lovable Cloud .env
