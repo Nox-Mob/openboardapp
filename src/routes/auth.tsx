@@ -161,6 +161,17 @@ function AuthPage() {
             </>
           )}
         </div>
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          By continuing you agree to the{" "}
+          <Link to="/terms" className="underline underline-offset-4 hover:text-foreground">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="underline underline-offset-4 hover:text-foreground">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );
