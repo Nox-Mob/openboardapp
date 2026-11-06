@@ -6,9 +6,11 @@
 # It holds no secrets. Anything secret is read with env(...) and supplied by the
 # environment (GitHub secrets in CI), never written here.
 #
-# Before Phase 0 this file held only the Lovable Cloud project ref
-# (project_id = "mgfijwkqnvmhuzykpfcz"); see docs/migration/phase-0-inventory.md.
-project_id = "openboardapp"
+# project_id is the ref of OpenBoard's own Supabase project (Phase 1). Locally it
+# only names the Docker containers; the CLI reaches the cloud project only through
+# `supabase link` / `--remote` in the deploy job. Before Phase 0 this held the
+# Lovable Cloud ref (mgfijwkqnvmhuzykpfcz); see docs/migration/phase-0-inventory.md.
+project_id = "dnsqxiiexkdokgebysrt"
 
 [api]
 enabled = true

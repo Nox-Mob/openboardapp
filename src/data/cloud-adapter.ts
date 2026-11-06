@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import type { Database, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { OrgRole } from "@/lib/permissions";
 import type { OrgSummary } from "@/lib/org-context";
@@ -61,8 +60,13 @@ export const cloudAdapter = {
       );
       return { needsConfirmation: !data.session };
     },
+    /** Redirects the browser to Google; Supabase returns to `redirectUri`, where the session is picked up from the URL. */
     async signInWithGoogle(redirectUri: string) {
-      return lovable.auth.signInWithOAuth("google", { redirect_uri: redirectUri });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: redirectUri },
+      });
+      return { error };
     },
     async signOut() {
       await supabase.auth.signOut();
