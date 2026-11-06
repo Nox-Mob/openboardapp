@@ -1,6 +1,6 @@
 # Supabase database: rebuild from supabase/migrations and (on approval) deploy.
 #
-# replay  — every pull request and every push to supabase-migration. Starts a local
+# replay  — every pull request and every push to main or supabase-migration. Starts a local
 #           Supabase stack, rebuilds the database from an empty state, lints it, runs
 #           the live database-rule suites against it and checks RLS + GRANTs on every
 #           public table. Touches no cloud project.
@@ -18,7 +18,7 @@ name: Supabase database
 on:
   pull_request:
   push:
-    branches: [supabase-migration]
+    branches: [main, supabase-migration]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -44,7 +44,7 @@ jobs:
     outputs:
       found: ${{ steps.look.outputs.found }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: look
         run: |
           if ls supabase/migrations/*.sql >/dev/null 2>&1; then
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # The tracked .env points at the Lovable Cloud backend (and the CLI reads
       # SUPABASE_PROJECT_ID from it). Move it aside so nothing in this job can
@@ -103,7 +103,7 @@ jobs:
       - name: Static migration checks
         run: node scripts/ci/check-migrations.mjs
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
 
@@ -150,7 +150,7 @@ jobs:
           echo "::error::Branch ${GITHUB_REF_NAME} has no supabase/migrations. Run the workflow again and choose the supabase-migration branch."
           exit 1
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Keep the tracked Lovable Cloud .env from supplying any project setting.
       - name: Detach the Lovable Cloud .env
@@ -174,17 +174,45 @@ jobs:
       - name: supabase link
         run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
 
+      # GitHub runners have no IPv6, and the project's direct database host is
+      # IPv6-only. Connect through the IPv4 shared pooler (session mode, port 5432)
+      # instead, as the CLI itself suggests ("--remote=<pooler db-url>"). The URL is
+      # built from the Management API and masked; it is never printed or stored.
+      - name: Resolve the IPv4 connection pooler
+        run: |
+          cfg=$(curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_ID/config/database/pooler") || {
+            echo "::error::Could not read the project's pooler settings from the Management API. A 403 means SUPABASE_ACCESS_TOKEN lacks a scope: it needs project_admin_read, projects_read, database_pooling_config_read and branching_production_read (see docs/migration/settings-to-reenter.md)."; exit 1; }
+          pick='[.[] | select((.db_host // "") | test("pooler\\.supabase\\.com$"))]
+                | (map(select(.database_type == "PRIMARY")) + .)[0] // empty'
+          host=$(jq -r "$pick | .db_host" <<<"$cfg")
+          user=$(jq -r "$pick | .db_user" <<<"$cfg")
+          name=$(jq -r "$pick | (.db_name // \"postgres\")" <<<"$cfg")
+          if [ -z "$host" ] || [ -z "$user" ]; then
+            echo "::error::No IPv4 shared pooler (*.pooler.supabase.com) found for this project. Check Database → Connection pooling in the dashboard."
+            exit 1
+          fi
+          pass=$(jq -rn --arg p "$SUPABASE_DB_PASSWORD" '$p | @uri')
+          echo "::add-mask::$pass"
+          url="postgresql://${user}:${pass}@${host}:5432/${name}"
+          echo "::add-mask::$url"
+          echo "POOLER_DB_URL=$url" >> "$GITHUB_ENV"
+          echo "Using the shared pooler at $host:5432 (session mode)."
+
       # CLI 3 targets the local database unless --remote is given; --yes is required
       # for hosted changes in a non-interactive job.
       - name: supabase db push
         run: |
           if [ "$DRY_RUN" = "true" ]; then
             echo "### Dry run on ${GITHUB_REF_NAME}: nothing was changed" >> "$GITHUB_STEP_SUMMARY"
-            supabase db push --remote --dry-run --yes 2>&1 | tee push.log
+            supabase db push --remote="$POOLER_DB_URL" --dry-run --yes 2>&1 | tee push.log
           else
             echo "### Pushed migrations from ${GITHUB_REF_NAME}" >> "$GITHUB_STEP_SUMMARY"
-            supabase db push --remote --yes 2>&1 | tee push.log
+            supabase db push --remote="$POOLER_DB_URL" --yes 2>&1 | tee push.log
           fi
           code=${PIPESTATUS[0]}
-          echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -40 push.log >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+          # Log lines are masked by GitHub; strip the connection URL from the summary too.
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -40 push.log | sed -E 's#postgres(ql)?://[^[:space:]]+#postgresql://<redacted>#g' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
           exit $code

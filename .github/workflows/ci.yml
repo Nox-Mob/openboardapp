@@ -21,7 +21,7 @@ jobs:
     name: Package manager (npm only)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: No bun/yarn/pnpm lockfiles
         run: |
           bad=$(ls bun.lock bun.lockb yarn.lock pnpm-lock.yaml 2>/dev/null || true)
@@ -36,8 +36,8 @@ jobs:
     env:
       SKIP_DB_TESTS: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - name: .env holds public keys only
@@ -62,16 +62,25 @@ jobs:
     runs-on: ubuntu-latest
     # Runs the src/test/db suites against the backend using the dedicated
     # Test Org A/B accounts only (publishable key from the tracked .env).
+    # Every run shares that one backend and Test Org A, so only one of these jobs
+    # may run at a time across the whole repository (a push and its pull request
+    # otherwise race: one run resets Org A's voting settings mid-test in the other).
+    concurrency:
+      group: openboard-shared-test-backend
+      cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - name: Static migration checks (row level security + policies on every table)
         run: node scripts/ci/check-migrations.mjs
       - name: Live database rule tests
         run: |
-          npx vitest run src/test/db --reporter=default --reporter=github-actions || {
+          # scripts/ci/vitest.db.config.mjs: Node environment (jsdom's Blob stalls storage
+          # uploads) and one file at a time (ownership.test.ts briefly hands Test Org A
+          # to the member). Same config as the replay job; the project comes from .env.
+          npx vitest run --config scripts/ci/vitest.db.config.mjs --reporter=default --reporter=github-actions || {
             echo "### ❌ A database rule failed (isolation, permissions, official-record locks or voting)." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           }
@@ -80,8 +89,8 @@ jobs:
     name: Type check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - name: tsc --noEmit
@@ -99,8 +108,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [unit-tests, typecheck]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - name: vite build
@@ -117,8 +126,8 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - name: eslint
@@ -135,8 +144,8 @@ jobs:
     name: Formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run format:check || (echo "### ⚠️ Files not formatted — run \`npm run format\` locally" >> "$GITHUB_STEP_SUMMARY"; exit 1)
@@ -145,8 +154,8 @@ jobs:
     name: Dependency vulnerabilities
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - name: Audit shipped packages (fails on high/critical)

@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import type { Database, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { OrgRole } from "@/lib/permissions";
 import type { OrgSummary } from "@/lib/org-context";
@@ -61,8 +60,13 @@ export const cloudAdapter = {
       );
       return { needsConfirmation: !data.session };
     },
+    /** Redirects the browser to Google; Supabase returns to `redirectUri`, where the session is picked up from the URL. */
     async signInWithGoogle(redirectUri: string) {
-      return lovable.auth.signInWithOAuth("google", { redirect_uri: redirectUri });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: redirectUri },
+      });
+      return { error };
     },
     async signOut() {
       await supabase.auth.signOut();
@@ -93,6 +97,22 @@ export const cloudAdapter = {
     },
     async update(orgId: string, patch: TablesUpdate<"organizations">) {
       must(await supabase.from("organizations").update(patch).eq("id", orgId));
+    },
+    /** Active members the owner may hand ownership to, each with the exact text to type. Owner only. */
+    async transferCandidates(orgId: string) {
+      return (must(await supabase.rpc("ownership_transfer_candidates", { _org: orgId })) ?? []).map(
+        (c) => ({ ...c, role: c.role as OrgRole }),
+      );
+    },
+    /** Makes newOwnerId the owner and the caller an administrator. The database re-checks everything. */
+    async transferOwnership(orgId: string, newOwnerId: string, confirmation: string) {
+      must(
+        await supabase.rpc("transfer_ownership", {
+          _org: orgId,
+          _new_owner: newOwnerId,
+          _confirmation: confirmation,
+        }),
+      );
     },
     async exportAll(orgId: string) {
       const out: Record<string, Record<string, unknown>[]> = {};

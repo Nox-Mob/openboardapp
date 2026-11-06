@@ -1103,6 +1103,16 @@ export type Database = {
         Returns: boolean
       }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      ownership_transfer_candidates: {
+        Args: { _org: string }
+        Returns: {
+          confirm_text: string
+          email: string
+          full_name: string | null
+          role: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }[]
+      }
       record_disposition: {
         Args: {
           _motion: string
@@ -1121,6 +1131,10 @@ export type Database = {
           _text: string
         }
         Returns: string
+      }
+      transfer_ownership: {
+        Args: { _confirmation: string; _new_owner: string; _org: string }
+        Returns: undefined
       }
       vote_is_closed: { Args: { _motion: string }; Returns: boolean }
       vote_progress: { Args: { _motion: string }; Returns: Json }

@@ -1,9 +1,9 @@
-// Static migration checks: every public table created in drizzle/migrations must
+// Static migration checks: every public table created in supabase/migrations must
 // enable row level security and get at least one policy, so no table ships unlocked
 // or unreachable. Also flags destructive statements on official-record tables.
 import { readFileSync, readdirSync } from "node:fs";
 
-const dir = "drizzle/migrations";
+const dir = "supabase/migrations";
 const files = readdirSync(dir)
   .filter((f) => f.endsWith(".sql"))
   .sort();
@@ -47,9 +47,13 @@ for (const t of protectedTables) {
   if (new RegExp(`drop table (?:if exists )?${prefix(t)}`).test(sql))
     problems.push(`${t}: an official-record table is dropped`);
 }
-// Every migration file name must be numbered and unique.
-const nums = files.map((f) => f.slice(0, 4));
-if (new Set(nums).size !== nums.length) problems.push("two migrations share the same number");
+// Every migration file name must be <14-digit timestamp>_<name>.sql, with unique timestamps.
+const stamps = files.map((f) => /^(\d{14})_[a-z0-9_]+\.sql$/.exec(f)?.[1]);
+files.forEach((f, i) => {
+  if (!stamps[i]) problems.push(`${f}: name must be <14-digit timestamp>_<name>.sql`);
+});
+if (new Set(stamps).size !== stamps.length)
+  problems.push("two migrations share the same timestamp");
 
 if (problems.length) {
   for (const p of problems) console.log(`::error file=${dir}::${p}`);

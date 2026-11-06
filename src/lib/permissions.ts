@@ -10,6 +10,7 @@ export type Capability =
   | "minutes.approve"
   | "audit.read"
   | "export.run"
+  | "ownership.transfer"
   | "records.read";
 
 export const ROLES: OrgRole[] = [
@@ -39,6 +40,8 @@ export const CAPABILITIES: Record<Capability, OrgRole[]> = {
   "minutes.approve": ["owner", "admin", "chair", "secretary"],
   "audit.read": ["owner", "admin", "chair", "secretary"],
   "export.run": ["owner", "admin"],
+  // The database's transfer_ownership() function also checks the caller is the owner.
+  "ownership.transfer": ["owner"],
   "records.read": ["owner", "admin", "chair", "secretary", "treasurer", "member", "observer"],
 };
 

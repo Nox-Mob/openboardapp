@@ -12,6 +12,7 @@ describe("permissions table", () => {
       "minutes.approve": ["owner", "admin", "chair", "secretary"],
       "audit.read": ["owner", "admin", "chair", "secretary"],
       "export.run": ["owner", "admin"],
+      "ownership.transfer": ["owner"],
       "records.read": ["owner", "admin", "chair", "secretary", "treasurer", "member", "observer"],
     });
   });
@@ -20,6 +21,11 @@ describe("permissions table", () => {
     expect(can("observer", "records.edit")).toBe(false);
     expect(can("secretary", "records.edit")).toBe(true);
     expect(can(null, "records.read")).toBe(false);
+  });
+  it("only the owner can transfer ownership", () => {
+    expect(can("owner", "ownership.transfer")).toBe(true);
+    expect(can("admin", "ownership.transfer")).toBe(false);
+    expect(can("member", "ownership.transfer")).toBe(false);
   });
 });
 
