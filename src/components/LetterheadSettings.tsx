@@ -96,7 +96,7 @@ export function LetterheadSettings() {
       await qc.invalidateQueries({ queryKey: ["letterhead", org.id] });
       setHeader(null);
       setFooter(null);
-      toast.success("Default OpenBoard letterhead restored");
+      toast.success("Default OpenBoardApp letterhead restored");
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {
@@ -118,7 +118,7 @@ export function LetterheadSettings() {
             <p className="text-sm text-destructive">Letterhead could not be loaded.</p>
           ) : (
             <p className="break-all text-sm font-medium">
-              {saved.data?.file_name ?? "OpenBoard default letterhead"}
+              {saved.data?.file_name ?? "OpenBoardApp default letterhead"}
             </p>
           )}
           <input

@@ -25,9 +25,9 @@ import {
 export const Route = createFileRoute("/_authenticated/board/members")({
   head: () => ({
     meta: [
-      { title: "Members & terms — OpenBoard" },
+      { title: "Members & terms — OpenBoardApp" },
       { name: "description", content: "Manage app access, board roles and terms of service." },
-      { property: "og:title", content: "Members & terms — OpenBoard" },
+      { property: "og:title", content: "Members & terms — OpenBoardApp" },
       {
         property: "og:description",
         content: "Manage app access, board roles and terms of service.",

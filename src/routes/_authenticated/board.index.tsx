@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/_authenticated/board/")({
   head: () => ({
     meta: [
-      { title: "Board overview — OpenBoard" },
+      { title: "Board overview — OpenBoardApp" },
       { name: "description", content: "Review upcoming meetings, minutes and assigned actions." },
-      { property: "og:title", content: "Board overview — OpenBoard" },
+      { property: "og:title", content: "Board overview — OpenBoardApp" },
       {
         property: "og:description",
         content: "Review upcoming meetings, minutes and assigned actions.",

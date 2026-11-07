@@ -17,12 +17,12 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/_authenticated/board/settings")({
   head: () => ({
     meta: [
-      { title: "Settings & letterhead — OpenBoard" },
+      { title: "Settings & letterhead — OpenBoardApp" },
       {
         name: "description",
         content: "Manage organization settings, custom letterhead and board record exports.",
       },
-      { property: "og:title", content: "Settings & letterhead — OpenBoard" },
+      { property: "og:title", content: "Settings & letterhead — OpenBoardApp" },
       {
         property: "og:description",
         content: "Manage organization settings, custom letterhead and board record exports.",

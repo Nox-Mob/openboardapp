@@ -28,12 +28,12 @@ export const Route = createFileRoute("/_authenticated/board")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { title: "Board room — OpenBoard" },
+      { title: "Board room — OpenBoardApp" },
       {
         name: "description",
         content: "Your organization's meetings, minutes, documents and tasks.",
       },
-      { property: "og:title", content: "Board room — OpenBoard" },
+      { property: "og:title", content: "Board room — OpenBoardApp" },
       {
         property: "og:description",
         content: "Your organization's meetings, minutes, documents and tasks.",
@@ -87,7 +87,7 @@ function Shell() {
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="border-b border-sidebar-border px-5 py-5">
           <Link to="/" className="font-display text-lg">
-            OpenBoard
+            OpenBoardApp
           </Link>
           <select
             aria-label="Organization"
