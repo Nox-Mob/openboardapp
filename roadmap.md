@@ -1,6 +1,6 @@
 # Roadmap
 
-- [x] Plan approved (OpenLedgerApp design applied)
+- [x] Plan approved
 - [x] Foundation: sign-in, organizations, roles, invites
 - [x] Governance: roster, officers, terms, committees
 - [x] Meetings, agenda, attendance

@@ -11,7 +11,7 @@
 
 <!-- LOVABLE:END -->
 
-# AGENTS.md — OpenBoard (board management, sister to OpenLedgerApp)
+# AGENTS.md — OpenBoard (board management)
 
 - Tenancy: every tenant table carries organization_id; RLS uses security-definer helpers is_org_member / can_edit_records / can_manage_org, and same-org triggers reject cross-org parent links, so isolation never depends on the UI.
 - Permissions: CAPABILITIES in src/lib/permissions.ts is the only role table and must mirror the DB helpers; src/lib/board.test.ts pins every cell.

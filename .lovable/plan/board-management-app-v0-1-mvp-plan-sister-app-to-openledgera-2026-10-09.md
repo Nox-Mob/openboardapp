@@ -1,13 +1,13 @@
-# Board Management App — v0.1 MVP Plan (sister app to OpenLedgerApp)
+# Board Management App — v0.1 MVP Plan
 
-## Design taken from OpenLedgerApp
+## Design
 
-- Same warm "paper ledger" palette: paper background, deep ledger-green primary, dark warm-brown sidebar, muted tan borders.
-- Same fonts: Libre Baskerville headings, IBM Plex Sans body, IBM Plex Mono for small labels, dates and record numbers.
-- Same layout: dark left sidebar with org switcher, light content area, cards with thin borders, small uppercase mono eyebrows.
-- A public website at `/` (green hero, like OpenLedgerApp's site); the signed-in app lives at `/board`.
+- Warm "paper ledger" palette: paper background, deep ledger-green primary, dark warm-brown sidebar, muted tan borders.
+- Fonts: Libre Baskerville headings, IBM Plex Sans body, IBM Plex Mono for small labels, dates and record numbers.
+- Layout: dark left sidebar with org switcher, light content area, cards with thin borders, small uppercase mono eyebrows.
+- A public website at `/` (green hero); the signed-in app lives at `/board`.
 
-## Patterns reused from OpenLedgerApp
+## Core patterns
 
 - One permission table (role → allowed actions) that every server action checks, plus database access rules as a second layer.
 - Every change saved together with its audit entry in one step; users can't edit the audit log.
