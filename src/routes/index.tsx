@@ -86,7 +86,7 @@ function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-hero via-hero/85 to-transparent" />
         <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-36 md:pt-44">
           <p className="font-mono text-xs uppercase tracking-widest text-hero-accent">
-            A sister project to OpenLedgerApp
+            Open-source board management
           </p>
           <h1 className="mt-4 max-w-2xl text-4xl leading-tight text-hero-foreground md:text-5xl">
             Good governance, without becoming a governance expert.

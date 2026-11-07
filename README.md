@@ -1,6 +1,6 @@
 # OpenBoardApp
 
-Using the OpenLedgerApp Project design as a framework, build a Board Management App using the following as a roadmap.
+A board management app for small nonprofits; see roadmap.md for the plan.
 
 This project was built with [Lovable](https://lovable.dev).
 

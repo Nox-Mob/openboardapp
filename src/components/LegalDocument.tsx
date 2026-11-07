@@ -8,13 +8,35 @@ import {
   type LegalDoc,
 } from "@/lib/legal";
 
+const EMAIL = /([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/;
+
+// Turns any email address in a sentence into a mailto link.
+function Text({ children }: { children: string }) {
+  return children.split(EMAIL).map((part, i) =>
+    i % 2 ? (
+      <a key={i} href={`mailto:${part}`} className="text-primary underline underline-offset-4">
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
 function Block({ block }: { block: LegalBlock }) {
-  if (typeof block === "string") return <p className="mt-3">{block}</p>;
+  if (typeof block === "string")
+    return (
+      <p className="mt-3">
+        <Text>{block}</Text>
+      </p>
+    );
   if (Array.isArray(block))
     return (
       <ul className="mt-3 list-disc space-y-1.5 pl-6">
         {block.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item}>
+            <Text>{item}</Text>
+          </li>
         ))}
       </ul>
     );
@@ -71,7 +93,7 @@ export function LegalDocument({ doc }: { doc: LegalDoc }) {
 export function LegalFooter() {
   return (
     <footer className="border-t py-8 text-center text-xs text-muted-foreground">
-      <p>Open-source board management · Accounting stays in OpenLedgerApp</p>
+      <p>Open-source board management</p>
       <p className="mt-2 flex justify-center gap-4">
         <Link to="/terms" className="hover:text-foreground">
           Terms of Service

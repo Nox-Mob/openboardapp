@@ -11,7 +11,7 @@
 
 <!-- LOVABLE:END -->
 
-# AGENTS.md — OpenBoard (board management, sister to OpenLedgerApp)
+# AGENTS.md — OpenBoard (board management)
 
 - Tenancy: every tenant table carries organization_id; RLS uses security-definer helpers is_org_member / can_edit_records / can_manage_org, and same-org triggers reject cross-org parent links, so isolation never depends on the UI.
 - Permissions: CAPABILITIES in src/lib/permissions.ts is the only role table and must mirror the DB helpers; src/lib/board.test.ts pins every cell.
@@ -34,4 +34,5 @@
 - Board record export: the zip is assembled client-side with fflate (src/components/BoardRecordExport.tsx); range/packet-as-of rules live in src/lib/board-export.ts and are pinned by its test, so exports stay worker-safe and reproducible.
 - Recusal is a member_votes value ("recused"); recused members are removed from the majority-of-present denominator in finish_vote and computeDisposition, which must stay in sync.
 - CI: .github/workflows/ci.yml runs npm-only, unit, database-rule, typecheck, build, lint, format and audit jobs; scripts/ci/* hold the static checks so the same checks run locally.
-- Attribution: pull request descriptions and commit messages never include a "Generated with Claude Code" footer or a link to a Claude Code session. Commits may keep a Co-Authored-By line.
+- Cloudflare: wrangler.jsonc holds only overrides (Worker name, the `previews` block that per-PR `wrangler preview` builds require); Nitro merges it into the generated .output/server/wrangler.json.
+- Attribution: never add a "Generated with Claude Code" footer or a Claude Code session link (claude.ai/code/session_…) to commit messages, pull request descriptions, GitHub comments, code, comments or docs. Commits may keep a Co-Authored-By line.

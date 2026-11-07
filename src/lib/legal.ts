@@ -6,8 +6,8 @@ export const LEGAL_ORG = "OpenAppHub";
 export const LEGAL_APP = "OpenBoard";
 export const LEGAL_EFFECTIVE = "November 6, 2026";
 export const LEGAL_UPDATED = "November 6, 2026";
-export const LEGAL_CONTACT = "[LEGAL OR PRIVACY CONTACT EMAIL]";
-export const SUPPORT_CONTACT = "[SUPPORT EMAIL]";
+export const LEGAL_CONTACT = "legal@openapphub.org";
+export const SUPPORT_CONTACT = "support@openapphub.org";
 
 export type LegalBlock = string | string[] | { h: string };
 export type LegalSection = { title: string; body: LegalBlock[] };

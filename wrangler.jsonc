@@ -1,0 +1,7 @@
+// Cloudflare Workers config. Nitro merges this into the generated
+// .output/server/wrangler.json at build time (entry, assets, compat flags).
+// `previews` is required for the per-PR `wrangler preview` builds.
+{
+  "name": "openboardapp",
+  "previews": {},
+}

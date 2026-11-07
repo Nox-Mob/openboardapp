@@ -1,6 +1,6 @@
 # OpenBoard architecture
 
-Current as of October 9, 2026. One board-management application backed by Lovable Cloud: PostgreSQL, authentication and private file storage. OpenBoard reuses OpenLedgerApp's design language, but its storage boundary and governance workflows are its own. No microservices, queues, offline database or synchronization engine.
+Current as of October 9, 2026. One board-management application backed by Lovable Cloud: PostgreSQL, authentication and private file storage. No microservices, queues, offline database or synchronization engine.
 
 ```text
 React screens (src/routes, src/components)
@@ -25,7 +25,7 @@ Status labels used below: **Implemented and tested**, **Implemented, partly veri
 - **Data facade** (`src/data/index.ts`) selects the configured adapter and exports its `DataLayer` type. `attempt()` converts a rejected data call into a `{ data, error }` result for form handlers.
 - **Platform detection** (`src/data/platform.ts`) recognizes Lovable Cloud when both public connection settings exist. An unconfigured platform fails explicitly. There is currently only one adapter; the abstraction does not imply SQLite, self-hosting or offline support.
 - **Cloud adapter** (`src/data/cloud-adapter.ts`) owns authentication, table queries, private file operations and governance RPC calls. Ordinary requests run as the signed-in user under row-level security. `DataLayer` is currently inferred from this adapter rather than defined as an independent ports package.
-- **Shared rules** (`src/lib`) contain browser-safe permission, voting, title, template, minutes and export helpers. There is no separate services/domain/ports hierarchy like OpenLedgerApp's accounting implementation.
+- **Shared rules** (`src/lib`) contain browser-safe permission, voting, title, template, minutes and export helpers. There is no separate services/domain/ports hierarchy.
 - **Database guards** enforce organization isolation, permissions, parent-link consistency, audit history, official-record locks and atomic live voting. Client-side checks improve the experience but are not the security boundary.
 - **Document generation** uses `pdf-lib` for PDFs and `fflate` for ZIP archives in the browser. This avoids Node-only document processing in the deployed worker runtime.
 
@@ -162,4 +162,4 @@ npm run build
 
 ## Maintaining this document
 
-Keep architecture claims aligned with implemented code, migrations and test coverage. Record structural decisions in `AGENTS.md`, pending work in `roadmap.md`, and update this document when boundaries, security guarantees, export semantics or CI deployment assumptions change. Do not copy OpenLedgerApp's accounting layers or deployment promises into OpenBoard unless they are actually implemented here.
+Keep architecture claims aligned with implemented code, migrations and test coverage. Record structural decisions in `AGENTS.md`, pending work in `roadmap.md`, and update this document when boundaries, security guarantees, export semantics or CI deployment assumptions change. Do not describe layers or deployment promises unless they are actually implemented here.
