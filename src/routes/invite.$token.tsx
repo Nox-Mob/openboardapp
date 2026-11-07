@@ -10,10 +10,13 @@ export const Route = createFileRoute("/invite/$token")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { title: "Board invitation — OpenBoard" },
-      { name: "description", content: "Accept an invitation to join a board on OpenBoard." },
-      { property: "og:title", content: "Board invitation — OpenBoard" },
-      { property: "og:description", content: "Accept an invitation to join a board on OpenBoard." },
+      { title: "Board invitation — OpenBoardApp" },
+      { name: "description", content: "Accept an invitation to join a board on OpenBoardApp." },
+      { property: "og:title", content: "Board invitation — OpenBoardApp" },
+      {
+        property: "og:description",
+        content: "Accept an invitation to join a board on OpenBoardApp.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),

@@ -31,12 +31,12 @@ export const Route = createFileRoute("/_authenticated/board/meetings/$meetingId"
     TABS.includes(s["tab"] as Tab) ? { tab: s["tab"] as Tab } : {},
   head: () => ({
     meta: [
-      { title: "Meeting record — OpenBoard" },
+      { title: "Meeting record — OpenBoardApp" },
       {
         name: "description",
         content: "Prepare agendas, record attendance and approve meeting minutes.",
       },
-      { property: "og:title", content: "Meeting record — OpenBoard" },
+      { property: "og:title", content: "Meeting record — OpenBoardApp" },
       {
         property: "og:description",
         content: "Prepare agendas, record attendance and approve meeting minutes.",

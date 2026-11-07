@@ -8,9 +8,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/_authenticated/board/tasks")({
   head: () => ({
     meta: [
-      { title: "Action items — OpenBoard" },
+      { title: "Action items — OpenBoardApp" },
       { name: "description", content: "Track board assignments and follow-up tasks." },
-      { property: "og:title", content: "Action items — OpenBoard" },
+      { property: "og:title", content: "Action items — OpenBoardApp" },
       { property: "og:description", content: "Track board assignments and follow-up tasks." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

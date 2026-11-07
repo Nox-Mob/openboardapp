@@ -3,7 +3,7 @@
 // list, and { h } is a sub-heading.
 
 export const LEGAL_ORG = "OpenAppHub";
-export const LEGAL_APP = "OpenBoard";
+export const LEGAL_APP = "OpenBoardApp";
 export const LEGAL_EFFECTIVE = "November 6, 2026";
 export const LEGAL_UPDATED = "November 6, 2026";
 export const LEGAL_CONTACT = "legal@openapphub.org";

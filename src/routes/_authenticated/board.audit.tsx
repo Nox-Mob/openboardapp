@@ -8,9 +8,9 @@ import { PageHeader, LoadingState, EmptyState, ErrorState } from "@/components/P
 export const Route = createFileRoute("/_authenticated/board/audit")({
   head: () => ({
     meta: [
-      { title: "Audit log — OpenBoard" },
+      { title: "Audit log — OpenBoardApp" },
       { name: "description", content: "Review your organization’s recorded governance activity." },
-      { property: "og:title", content: "Audit log — OpenBoard" },
+      { property: "og:title", content: "Audit log — OpenBoardApp" },
       {
         property: "og:description",
         content: "Review your organization’s recorded governance activity.",

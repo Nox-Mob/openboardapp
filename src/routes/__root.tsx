@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "OpenBoard — Board management for small nonprofits" },
+      { title: "OpenBoardApp — Board management for small nonprofits" },
       {
         name: "description",
         content:

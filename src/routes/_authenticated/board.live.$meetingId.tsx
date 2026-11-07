@@ -48,12 +48,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export const Route = createFileRoute("/_authenticated/board/live/$meetingId")({
   head: () => ({
     meta: [
-      { title: "Board Meeting Dashboard — OpenBoard" },
+      { title: "Board Meeting Dashboard — OpenBoardApp" },
       {
         name: "description",
         content: "Follow the agenda, read the packet and cast official meeting votes.",
       },
-      { property: "og:title", content: "Board Meeting Dashboard — OpenBoard" },
+      { property: "og:title", content: "Board Meeting Dashboard — OpenBoardApp" },
       {
         property: "og:description",
         content: "Follow the agenda, read the packet and cast official meeting votes.",

@@ -14,9 +14,9 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { title: "Sign in — OpenBoard" },
+      { title: "Sign in — OpenBoardApp" },
       { name: "description", content: "Sign in to your organization's board room." },
-      { property: "og:title", content: "Sign in — OpenBoard" },
+      { property: "og:title", content: "Sign in — OpenBoardApp" },
       { property: "og:description", content: "Sign in to your organization's board room." },
     ],
   }),
@@ -83,7 +83,7 @@ function AuthPage() {
     <div className="grid min-h-screen place-items-center bg-background px-4">
       <div className="w-full max-w-sm">
         <Link to="/" className="font-display text-xl">
-          OpenBoard
+          OpenBoardApp
         </Link>
         <div className="mt-6 rounded-lg border bg-card p-6">
           {sent ? (

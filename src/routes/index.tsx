@@ -16,13 +16,13 @@ export const Route = createFileRoute("/")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { title: "OpenBoard — Board management for small nonprofits" },
+      { title: "OpenBoardApp — Board management for small nonprofits" },
       {
         name: "description",
         content:
           "Open-source board management: agendas, minutes, motions, board packets and action items for volunteer-led organizations.",
       },
-      { property: "og:title", content: "OpenBoard — Board management for small nonprofits" },
+      { property: "og:title", content: "OpenBoardApp — Board management for small nonprofits" },
       {
         property: "og:description",
         content:
@@ -71,7 +71,7 @@ function Home() {
     <div className="min-h-screen bg-background">
       <header className="absolute inset-x-0 top-0 z-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <span className="font-display text-lg text-hero-foreground">OpenBoard</span>
+          <span className="font-display text-lg text-hero-foreground">OpenBoardApp</span>
           <Button asChild variant="secondary" size="sm">
             <Link to="/board">Open the board room</Link>
           </Button>
@@ -92,7 +92,7 @@ function Home() {
             Good governance, without becoming a governance expert.
           </h1>
           <p className="mt-5 max-w-xl text-lg text-hero-muted">
-            OpenBoard guides your volunteer secretary through preparing meetings, taking notes,
+            OpenBoardApp guides your volunteer secretary through preparing meetings, taking notes,
             approving minutes and following up — while keeping an accurate record of what the board
             decided.
           </p>

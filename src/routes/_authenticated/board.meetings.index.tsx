@@ -31,9 +31,9 @@ import { StatusBadge } from "@/components/StatusBadge";
 export const Route = createFileRoute("/_authenticated/board/meetings/")({
   head: () => ({
     meta: [
-      { title: "Meetings — OpenBoard" },
+      { title: "Meetings — OpenBoardApp" },
       { name: "description", content: "Schedule and review your organization’s board meetings." },
-      { property: "og:title", content: "Meetings — OpenBoard" },
+      { property: "og:title", content: "Meetings — OpenBoardApp" },
       {
         property: "og:description",
         content: "Schedule and review your organization’s board meetings.",

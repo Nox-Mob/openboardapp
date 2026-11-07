@@ -32,9 +32,9 @@ const CATEGORIES = [
 export const Route = createFileRoute("/_authenticated/board/documents")({
   head: () => ({
     meta: [
-      { title: "Governance documents — OpenBoard" },
+      { title: "Governance documents — OpenBoardApp" },
       { name: "description", content: "Manage private policies, reports and meeting documents." },
-      { property: "og:title", content: "Governance documents — OpenBoard" },
+      { property: "og:title", content: "Governance documents — OpenBoardApp" },
       {
         property: "og:description",
         content: "Manage private policies, reports and meeting documents.",

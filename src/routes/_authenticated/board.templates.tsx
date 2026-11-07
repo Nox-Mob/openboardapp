@@ -18,9 +18,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export const Route = createFileRoute("/_authenticated/board/templates")({
   head: () => ({
     meta: [
-      { title: "Meeting templates — OpenBoard" },
+      { title: "Meeting templates — OpenBoardApp" },
       { name: "description", content: "Manage reusable agenda outlines for board meetings." },
-      { property: "og:title", content: "Meeting templates — OpenBoard" },
+      { property: "og:title", content: "Meeting templates — OpenBoardApp" },
       {
         property: "og:description",
         content: "Manage reusable agenda outlines for board meetings.",
