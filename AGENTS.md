@@ -13,64 +13,54 @@
 
 # AGENTS.md — OpenBoardApp (Nox-Mob/OpenBoardApp)
 
-**Read `docs/SHARED-SPEC.md` first. It is the contract for the whole suite.**
+## Suite migration (v2)
 
-App ID: `board` · Schema: `board` · Hosted URL: `board.<apex-domain>`
+**Read `docs/SHARED-SPEC.md` (v2) first.** Your step plan is the **Progress** table in `docs/MIGRATION-NOTES.md`; this file gives the owner's answers and the changes v2 makes to it.
 
-OpenBoardApp becomes one of three sub-apps of OpenAppHub. In hosted mode, it shares one Supabase database, one login and one organization ID with the other apps, and the hub handles sign-up and payments. Self-hosted, it must still work entirely on its own. All existing data is demo/test data.
+App ID `board` · schema `board` · hosted at `board.openapphub.org` (staging `board-staging.openapphub.org`) · package manager **npm**.
 
-**Special situation:** Board currently runs on its **own** free Supabase project. It moves into the shared production project (the one OpenCharterApp used) under schema `board`. Afterwards, the owner wipes Board's old project and reuses it as the suite's **staging** database. So nothing in the old project needs to be preserved in place; only useful demo content gets carried over as seed data.
-
----
-
-## Work order (one PR per step)
-
-### Phase 1 — Inventory and hygiene
-
-1. **Inventory PR.** Write `docs/MIGRATION-NOTES.md` covering:
-   - every table, view, function, trigger, enum, storage bucket and Edge Function in Board's current project (from `supabase/migrations/` and `types.ts`; ask the owner for a schema dump if incomplete);
-   - which concepts map onto core (`organizations`, `memberships`, `profiles`, roles) and which are Board-specific;
-   - every place in the code that calls Supabase;
-   - **any data Board reads from or writes about the other apps** (for example, members, charters or budgets), so it can be redesigned as cross-app links (§3.5).
-2. **Secret scan** of files and git history (§7). Report findings to the owner.
-3. **Hygiene:** `.env.example`, `.gitignore`, `public/_redirects` and `_headers`, CI. Remove Lovable leftovers.
-
-### Phase 2 — Database
-
-4. **Vendor shared code** from OpenAppHub (`shared/`, `db/core/`, `scripts/migrate.mjs`) plus `migrate.yml` and the `db` CI job.
-5. **Board baseline** in `db/migrations/0001_board_baseline.sql`: Board's tables in schema `board` per the §3.4 template.
-   - Every org-scoped table gets `org_id → public.organizations`.
-   - Replace Board-local org/member/profile tables with core ones.
-   - Board seats, officers and committee members should reference `auth.users`/`public.memberships` where the person is a user. Keep a separate `board.people` table only for non-users, such as external directors.
-   - Fold the old `supabase/migrations/` into this one baseline; delete the old folder in the same PR.
-   - Storage buckets use org-id path prefixes with `is_member` policies.
-6. **Seed:** `db/seed/0001_board_demo.sql` with idempotent demo data (meetings, agendas, minutes, motions/votes, whatever Board has). Rewrite it from the old demo data if useful.
-7. **Export helper (one-off, optional):** if the owner wants the old demo rows, add a `workflow_dispatch` workflow that dumps the selected old tables from `OLD_BOARD_DATABASE_URL` to an artifact for converting into seed SQL. The owner has no Linux machine, so everything runs in GitHub Actions.
-8. **DB tests** for all board tables (isolation, viewer, read-only on expiry).
-
-### Phase 3 — App code
-
-9. **Supabase client:** use `shared/supabase/client.ts` (`VITE_APP_SCHEMA=board`). Use `.schema('public')` for core. Regenerate types.
-10. **Org scoping** on every query and insert via `shared/supabase/org.ts`.
-11. **Hosted vs self-hosted** per SHARED-SPEC §1.1: hosted → no landing/sign-up, login redirects to hub, org/members link to hub; self-hosted → keep everything.
-12. **Billing state:** `BillingBanner`, write controls disabled when read-only, link to the hub's billing page.
-13. **Export** of all Board data for the org (JSON/CSV), available when read-only.
-14. **Integrations:**
-    - Publish `board.api_*` views (meetings, decisions/resolutions with id, title, date, status) with `security_invoker = true`.
-    - Where Board refers to Charter documents or Ledger items, store the foreign id and read titles through `charter.api_*` / `ledger.api_*`, feature-detected (§3.5).
-    - Document everything in `docs/INTEGRATION.md`.
-
-### Phase 4 — Design
-
-15. Adopt `shared/design` tokens and `AppShell`. Reference app: near-invisible token swap. Outlier: restyle to match in separate PRs with before/after screenshots, without changing behaviour.
+Board's own project (`dnsqxiiexkdokgebysrt`) is wiped after Board moves and becomes the suite's **staging** project. Nothing in it is copied; demo content becomes seed SQL.
 
 ---
 
-### Phase 5 — Documentation
+### Owner answers to your notes (§8)
 
-Docs for this app live in the docs repo under `src/content/docs/board/` (SHARED-SPEC §12).
+| Your item       | Answer                                                                                                                                                                                                                                                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1 roles        | **Keep today's rule** with `board.officers` (spec §3.5): only owner/admin/chair/secretary edit records. Treasurer and Board member = core `member`, Observer = core `viewer`. `vote_closer_roles` holds offices plus core roles.                                                                                                 |
+| D2 ownership    | **Core, transferred in the hub** (spec §3.2, §4.4). One owner per org and `transfer_ownership` are in `db/core`. Hosted: Board's Settings links to the hub. Self-hosted: Board's transfer screen calls the core function. Don't recreate `memberships_one_owner` or Board's transfer RPCs.                                       |
+| D3 profiles     | Core adds `public.org_member_directory(p_org)` (name, email, role) and `handle_new_user` reads `full_name`/`name`. Use it for the members list and transfer candidates.                                                                                                                                                          |
+| D4 invitations  | **Core, handled by the hub** (spec §4.3). Don't create `board.invitations`. Board keeps an `/invite/<token>` page built on `shared/ui/InvitationPage`, and adds `board.on_invitation_accepted(p_invitation_id)` to apply an office from `app_payload` (for example `{ "office": "secretary" }`).                                 |
+| D5 demo         | **Demo runs on staging only** (spec §11). Rewrite `reset_demo()` as `db/seed/0001_board_demo.sql`; the six-hourly reset becomes a scheduled `staging.yml` run, not `pg_cron`. Demo addresses on `@demo.openapphub.org` (not `demo@demo.org`); the password is shown only on staging's sign-in page and removed from `AGENTS.md`. |
+| D6 integrations | As recommended: publish `board.api_meetings` and `board.api_decisions`; consume Charter bylaw documents later, when Charter has them (feature-detected).                                                                                                                                                                         |
+| D7 hosting      | **Workers** (spec §10). Headers in `src/server.ts`.                                                                                                                                                                                                                                                                              |
+| D8 inputs       | Spec §0.1 is filled in. **Design is a full refresh** for every app (spec §9).                                                                                                                                                                                                                                                    |
+| C4 audit        | Audit `board.*` only; core table history is the hub's (`hub.audit_log`).                                                                                                                                                                                                                                                         |
+| C8 Google       | Plain `supabase.auth.signInWithOAuth` for self-hosted; hosted sign-in is the hub.                                                                                                                                                                                                                                                |
+| C9 Lovable      | **Owner disconnects Lovable before Phase 2 reaches `main`.** List it as an owner step in the step-3 PR.                                                                                                                                                                                                                          |
+| Step 7          | Skip the export helper, as you proposed.                                                                                                                                                                                                                                                                                         |
 
-16. **Help links.** Add the app's help map (`src/config/help.ts`, using `shared/docs.ts`) and link these screens to their pages:
+### Changes to your plan
+
+- **Step 3 (hygiene):** also add `staging.yml` and `release.yml` (spec §10.2), switch off any build that deploys production straight from `main`, and remove the unused `client.server.ts` (Board needs no service-role key in hosted mode).
+- **Step 4 (vendor):** retire `supabase-db.yml`'s push job in the same PR (spec §3.3).
+- **Step 5 (baseline):**
+  - `board.org_settings` for timezone, quorum and vote settings (missing row = defaults).
+  - `board.officers` and `board.can_edit_records(org)` = `public.can_write(org,'board')` and (owner/admin or chair/secretary).
+  - Live-voting RPCs (`start_vote`, `cast_vote`, `close_vote`, `record_disposition`, `finish_vote`) also require `public.can_write(org,'board')`, so voting stops when read-only.
+  - `board.people` for people without accounts; holder tables use `user_id` **or** `person_id`, keeping `person_name` as a snapshot.
+  - Bucket **`board-files`**.
+  - `board.on_invitation_accepted` (above).
+  - UI name limit 120 characters (core).
+- **Step 10 (org scoping):** members screen addresses memberships by `(org_id, user_id)`.
+- **Step 11 (hosted vs self-hosted):** hosted links out to the hub for sign-in, org creation, rename and deletion, core roles, invitations and ownership. Officers stay in Board.
+- **Step 15 (design):** adopt the new shared design. Separate PRs, before/after screenshots, behaviour and visible text unchanged unless the owner approves.
+
+### Phase 5 — Documentation (steps 16–17)
+
+Docs live in `Nox-Mob/OpenAppHub-docs` under `src/content/docs/board/` (spec §12).
+
+16. **Help links** (`src/config/help.ts`):
 
     | Screen                              | Docs path                              |
     | ----------------------------------- | -------------------------------------- |
@@ -84,35 +74,26 @@ Docs for this app live in the docs repo under `src/content/docs/board/` (SHARED-
     | Settings → Data export              | `board/records/exports/`               |
     | Members → Board roles & terms       | `board/people/board-roles-and-terms/`  |
 
-17. **Docs PR for this migration.** Update the `board/` tab for what Phases 2–4 changed:
-    - `board/start/getting-started.md`, `board/start/settings.md` and `board/people/inviting.md`: in hosted mode, sign-in, organization creation, invitations and ownership transfer happen in the hub; describe both hosted and self-hosted where they differ.
-    - `board/people/roles.md`: if Board's roles are mapped onto the shared core roles, update the permissions table to match exactly.
-    - `board/help/known-limits.md` and `board/help/faq.md`: the read-only state when a hosted plan lapses, and the new data export.
-    - `board/help/self-hosting.md`: new setup steps.
-    - Any screen renamed or moved by the design work in Phase 4.
+17. **Docs PR:**
+    - `board/people/roles.md`: the new table (core role + office). This page changes the most.
+    - `board/start/getting-started.md` (the demo is on staging, and its sign-in changes), `board/start/settings.md` (ownership transfer in the hub when hosted), `board/people/inviting.md`.
+    - `board/help/known-limits.md`, `faq.md`, `self-hosting.md` (no `pg_cron` demo; new setup steps).
+    - Any screen renamed or moved by the restyle.
 
-From then on, every PR with a user-facing change has a matching docs PR (SHARED-SPEC §12.2). When the planned reminders or backup restore ship, move them out of `board/help/known-limits.md` and document them.
+### Rules for this repo
 
-## Rules specific to this repo
+- Never write to `public`, `billing`, `hub`, `ops` or another app's schema.
+- In your final Phase 2 PR, list the owner steps to retire the old project as production and reuse it as staging: update Worker vars, wipe its schemas and auth users, set `STAGING_DATABASE_URL` and `STAGING_REF`, then run `staging.yml` for every repo.
 
-- After the owner confirms Board works on the shared project, list in your final PR the owner steps to retire the old project:
-  1. Update Cloudflare env vars.
-  2. Wipe the old project's `public` schema and auth users.
-  3. Rename it to staging.
-  4. Set `STAGING_DATABASE_URL`.
-- Never write to `public`, `billing`, `ops` or another app's schema.
+### Done when
 
-## Done when
-
-SHARED-SPEC §11 is satisfied, Board runs on the shared project, and a hub login carries over to `board.<apex-domain>` in the same org. The `board/` docs tab matches the app, and every Help link opens a real page.
-
-Progress and decisions for each step are tracked in `docs/MIGRATION-NOTES.md`.
+SHARED-SPEC §13 is satisfied; Board runs on the shared project; a hub sign-in carries over to `board.openapphub.org` in the same org; a live vote stops being possible when the org is read-only; and a self-hosted build runs on an empty database with only Board's migrations and `db/core`.
 
 ---
 
 ## Current architecture rules (before the suite migration)
 
-These describe the code as it is today. Each migration step that changes one of them updates it here in the same PR. Where they conflict with the suite work order above or with `docs/SHARED-SPEC.md`, the spec wins (see `docs/MIGRATION-NOTES.md` §7 for the known conflicts).
+These describe the code as it is today. Each migration step that changes one of them updates it here in the same PR. Where they conflict with the suite migration section above or with `docs/SHARED-SPEC.md`, the spec wins. `docs/MIGRATION-NOTES.md` §7 lists which rule is replaced in which step.
 
 - Tenancy: every tenant table carries organization_id; RLS uses security-definer helpers is_org_member / can_edit_records / can_manage_org, and same-org triggers reject cross-org parent links, so isolation never depends on the UI.
 - Permissions: CAPABILITIES in src/lib/permissions.ts is the only role table and must mirror the DB helpers; src/lib/board.test.ts pins every cell.
@@ -128,7 +109,7 @@ These describe the code as it is today. Each migration step that changes one of 
 - Letterhead: organization_letterheads stores the active private org-files reference; upload paths are unique, managers alone change stationery, and shared prepareLetterhead paints only generated pages with reserved header/footer space, never existing packet attachments.
 - Routing: public website at /, signed-in app under /\_authenticated/board; current org is kept in localStorage via OrgProvider.
 - Exports escape formula-looking text via src/lib/export.ts.
-- Demo: "Riverside Community Association" (d0000000-0000-0000-0000-000000000001) is built by public.reset_demo() (supabase/migrations/20261106010000_demo_org.sql), which pg_cron reruns every 6 hours. Five people hold the five board positions, but only demo@demo.org / OpenBoardDemo!2026 (Alex Morgan, Vice President, admin, not owner) can sign in. The others use @riverside.example.org addresses with no password and are banned. Change demo content in that function, never on page load.
+- Demo: "Riverside Community Association" (d0000000-0000-0000-0000-000000000001) is built by public.reset_demo() (supabase/migrations/20261106010000_demo_org.sql), which pg_cron reruns every 6 hours. Five people hold the five board positions; only one demo account (Alex Morgan, Vice President, admin, not owner) can sign in, and its credentials are shown on the sign-in page, not here. The others use @riverside.example.org addresses with no password and are banned. Change demo content in that function, never on page load. Step 6 replaces this with staging-only seed SQL on @demo.openapphub.org addresses.
 - Tests: src/test/db/\* run against the live backend as test-a / test-member / test-b accounts that only belong to Test Org A/B (skip with SKIP_DB_TESTS=1); src/test/pages.test.tsx pins every route; never add test accounts to real orgs.
 - Live voting: member votes are written only through SECURITY DEFINER RPCs (start_vote, cast_vote, close_vote, record_disposition) that lock the motion row, freeze the electorate at open, and snapshot the record into motions.vote_record; member_votes/vote_electorate are immutable and protect_live_motion blocks direct edits, so official votes never depend on the UI. Vote items on the agenda may override the org decision rule (agenda_items.decision_rule, null = org default); start_vote snapshots the effective rule into vote_record.
 - Board roles: board_positions holds each role and its term length; board_terms rows are the holder history (position_id links them), and handing a role over ends the open term the day before so history is never overwritten; current titles come from src/lib/titles.ts and show beside names via useTitles.
