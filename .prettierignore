@@ -8,3 +8,9 @@ bun.lock
 routeTree.gen.ts
 src/integrations/supabase
 tsconfig.tsbuildinfo
+# Vendored from Nox-Mob/OpenAppHub (checked by scripts/check-shared.mjs)
+shared/
+db/core/
+scripts/migrate.mjs
+scripts/check-shared.mjs
+docs/SHARED-SPEC.md
