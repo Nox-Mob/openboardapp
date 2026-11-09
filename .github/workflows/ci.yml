@@ -40,6 +40,8 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
+      - name: Vendored shared code matches OpenAppHub
+        run: node scripts/check-shared.mjs
       - name: .env holds public keys only
         run: node scripts/ci/check-env.mjs
       - name: Data layer (UI never talks to the database directly)
