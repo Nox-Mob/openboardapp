@@ -40,9 +40,20 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
 
 ### 0.2 Next steps
 
-1. **Step 3, hygiene** for v2.2: `.env.example`, untrack `.env`, remove Lovable, top-level `wrangler.jsonc` = production with `env.staging` / `env.development`, security headers in the server entry; no `release.yml`.
+1. Step 3, hygiene: **first part done** (§0.3). Still to do: replace Lovable's Vite wrapper, error reporting and `previewAuthStorage` (with the client, step 9).
 2. **Step 4, rest of vendoring:** `migrate.yml`, a CI `db` job running `scripts/migrate.mjs` then `db/tests/*.sql`, retire `supabase-db.yml`'s push job, point `check-migrations.mjs` at `db/`.
 3. **Step 5, `db/migrations/0001_board_baseline.sql`**.
+
+### 0.3 Step 3 (hygiene), first part, as done for v2.2
+
+- `package-lock.json` resolves every package from registry.npmjs.org (83 were on Lovable's private cache); CI fails if a private registry comes back.
+- `.env` is untracked (CI fails on a tracked env file); `.env.example` lists every variable. Unit tests in CI use placeholder values.
+- `wrangler.jsonc`: top level = production (`board.openapphub.org`, `openapphub-prod`), `env.staging` (`board-staging.openapphub.org`, `openapphub-staging`). `npm run build:hosted` / `build:hosted:staging` write its public `VITE_*` values before building (`scripts/deploy/build-env.mjs`).
+- Security headers on every response (`src/lib/security-headers.ts`, `src/server.ts`); the CSP allows the Supabase project for connections, images and file previews.
+- Unused `client.server.ts` (service role) and `cron-auth.ts` removed: Board uses no service-role key.
+- The old shared test backend is gone, so the live `database-rules` suites skip themselves; the same suites still run against a local database in `supabase-db.yml`.
+- **Self-hosting:** `npm run build` with your own `.env`; README has a section.
+- **Owner:** the `openboardapp` Worker's build command must be `npm run build:hosted` and its deploy command `npx wrangler deploy --config wrangler.jsonc`. The hosted app can't work until the baseline (step 5) and client (step 9) are in.
 
 ## 1. What Board's database contains today
 

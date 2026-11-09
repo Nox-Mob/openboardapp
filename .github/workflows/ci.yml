@@ -29,12 +29,28 @@ jobs:
             echo "### ❌ OpenBoard installs with npm only. Remove: $bad (package-lock.json must exist)" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
+      - name: Lockfile resolves from the public registry only
+        run: |
+          if grep '"resolved"' package-lock.json | grep -v 'https://registry.npmjs.org/' ; then
+            echo "### ❌ package-lock.json has packages from a private registry (self-hosters can't install)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: No environment files tracked (SHARED-SPEC §7.1)
+        run: |
+          tracked=$(git ls-files '.env*' '**/.env*' | grep -v '^\.env\.example$' || true)
+          if [ -n "$tracked" ]; then
+            echo "### ❌ Only .env.example may be committed: $tracked" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
   unit-tests:
     name: Unit tests (permissions, votes, titles, templates, PDFs, exports, pages)
     runs-on: ubuntu-latest
     env:
       SKIP_DB_TESTS: "1"
+      # No .env is tracked: placeholders so the app's data layer loads. Nothing connects.
+      VITE_SUPABASE_URL: https://test.invalid
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_test
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -42,8 +58,6 @@ jobs:
       - run: npm ci
       - name: Vendored shared code matches OpenAppHub
         run: node scripts/check-shared.mjs
-      - name: .env holds public keys only
-        run: node scripts/ci/check-env.mjs
       - name: Data layer (UI never talks to the database directly)
         run: |
           npx vitest run src/data/data-layer.test.ts --reporter=default --reporter=github-actions || {
@@ -63,7 +77,10 @@ jobs:
     name: Database rules (tenant isolation, roles, locks, live voting, letterhead)
     runs-on: ubuntu-latest
     # Runs the src/test/db suites against the backend using the dedicated
-    # Test Org A/B accounts only (publishable key from the tracked .env).
+    # Test Org A/B accounts only. No .env is tracked any more (SHARED-SPEC §7.1), and the old
+    # shared test backend is gone: without VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY
+    # these suites skip themselves (src/test/db/helpers.ts). The same suites run against a
+    # local database in supabase-db.yml, and move to the suite's `db` job in migration step 4.
     # Every run shares that one backend and Test Org A, so only one of these jobs
     # may run at a time across the whole repository (a push and its pull request
     # otherwise race: one run resets Org A's voting settings mid-test in the other).
@@ -81,7 +98,7 @@ jobs:
         run: |
           # scripts/ci/vitest.db.config.mjs: Node environment (jsdom's Blob stalls storage
           # uploads) and one file at a time (ownership.test.ts briefly hands Test Org A
-          # to the member). Same config as the replay job; the project comes from .env.
+          # to the member). Same config as the replay job.
           npx vitest run --config scripts/ci/vitest.db.config.mjs --reporter=default --reporter=github-actions || {
             echo "### ❌ A database rule failed (isolation, permissions, official-record locks or voting)." >> "$GITHUB_STEP_SUMMARY"
             exit 1

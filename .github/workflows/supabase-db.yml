@@ -67,7 +67,7 @@ jobs:
       # SUPABASE_PROJECT_ID from it). Move it aside so nothing in this job can
       # reach Lovable: the tests below must run against the local stack only.
       - name: Detach the Lovable Cloud .env
-        run: mv .env .env.lovable-cloud
+        run: if [ -f .env ]; then mv .env .env.lovable-cloud; fi
 
       - uses: supabase/setup-cli@v1
         with:
@@ -154,7 +154,7 @@ jobs:
 
       # Keep the tracked Lovable Cloud .env from supplying any project setting.
       - name: Detach the Lovable Cloud .env
-        run: mv .env .env.lovable-cloud
+        run: if [ -f .env ]; then mv .env .env.lovable-cloud; fi
 
       - name: Required secrets are set
         run: |
