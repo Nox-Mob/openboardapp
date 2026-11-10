@@ -1,4 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { isHosted, loginRedirect, suiteUrls } from "@shared/supabase/hosted";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
@@ -28,6 +29,14 @@ export const Route = createFileRoute("/auth")({
       { property: "og:description", content: "Sign in to your organization's board room." },
     ],
   }),
+  // Hosted: sign-in, sign-up and password reset are OpenAppHub's (SHARED-SPEC §1.1).
+  beforeLoad: () => {
+    if (isHosted()) {
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : (suiteUrls().board ?? "");
+      throw redirect({ href: loginRedirect(`${origin}/board`) });
+    }
+  },
   component: AuthPage,
 });
 

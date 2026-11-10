@@ -43,7 +43,15 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
 1. Step 3, hygiene: **first part done** (§0.3). Still to do: replace Lovable's Vite wrapper, error reporting and `previewAuthStorage`.
 2. ~~Steps 4, 5 and 8~~ **done** (§0.4): runner, `migrate.yml`, baseline, DB tests, performance test.
 3. ~~Step 9, the client on `board`~~, the staging seed (step 6) and org scoping (step 10) **done** (§0.5).
-4. **Next: step 11**, hosted vs self-hosted (sign-in, invitations and billing through the hub when hosted, the billing banner), then the AppShell restyle.
+4. ~~Step 11, hosted vs self-hosted, and the AppShell restyle~~ **done** (§0.6).
+5. Next: integration views for the hub dashboard, help links, replacing Lovable's Vite wrapper.
+
+### 0.6 Step 11 and the restyle: hosted vs self-hosted, suite design (2026-11-10)
+
+- **Hosted** (`VITE_HOSTED=true`): the browser session is a cookie on `.openapphub.org` (`@supabase/ssr`), shared with the hub and the other apps. `/auth` and signed-out pages go to the hub's sign-in and come back. New organizations, invitations and ownership transfer are in the hub (Board shows links); Board keeps roles and offices, removal, settings, letterhead and export. Signing out returns to the hub.
+- **Self-hosted:** unchanged (Board's own sign-in, organizations, invitations and transfer).
+- **Restyle** (behaviour and wording unchanged): `styles.css` uses the suite tokens and Inter; every board page is in the shared `AppShell` (same nav, suite and organization switchers, Help, the user menu with the suite theme toggle, the billing banner from `get_org_billing` via the data layer); `<html data-app="board">` with the suite theme script; cookie consent and a `/cookies` page.
+- **Shared 1.3.0** vendored.
 
 ### 0.5 Steps 6, 9 and 10: the app on schema `board`, staging seed, org scoping (2026-11-10)
 

@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getOrgBilling } from "@shared/supabase/billing";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { OrgRole } from "@/lib/permissions";
@@ -117,6 +119,22 @@ export const cloudAdapter = {
     },
     async signOut() {
       await supabase.auth.signOut();
+    },
+    /** The signed-in person's name and email, for the user menu. */
+    async currentUser() {
+      const { data } = await supabase.auth.getUser();
+      const meta = (data.user?.user_metadata ?? {}) as Record<string, unknown>;
+      return {
+        name: (meta["full_name"] as string | undefined) ?? null,
+        email: data.user?.email ?? null,
+      };
+    },
+  },
+
+  /** The hub's billing state for the banner (core get_org_billing); null when billing is off. */
+  billing: {
+    async get(orgId: string) {
+      return getOrgBilling(core() as unknown as SupabaseClient, orgId);
     },
   },
 

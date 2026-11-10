@@ -1,3 +1,4 @@
+import { hubUrl, isHosted } from "@shared/supabase/hosted";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -289,23 +290,49 @@ function Settings() {
           )}
         </section>
         <LetterheadSettings key={org.id} />
-        <form onSubmit={createOrg} className="space-y-3 rounded-lg border bg-card p-5">
-          <p className="eyebrow">Another organization</p>
+        {isHosted() ? (
+          <div className="space-y-2 rounded-lg border bg-card p-5">
+            <p className="eyebrow">Another organization</p>
+            <p className="text-sm text-muted-foreground">
+              Serve on more than one board? Create another organization in OpenAppHub and switch
+              between them at the top of the page.
+            </p>
+            <a
+              href={hubUrl("/orgs/new")}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              Create organization
+            </a>
+          </div>
+        ) : (
+          <form onSubmit={createOrg} className="space-y-3 rounded-lg border bg-card p-5">
+            <p className="eyebrow">Another organization</p>
+            <p className="text-sm text-muted-foreground">
+              Serve on more than one board? Create another organization and switch between them in
+              the sidebar.
+            </p>
+            <Input
+              placeholder="Organization name"
+              value={newOrg}
+              onChange={(e) => setNewOrg(e.target.value)}
+              required
+            />
+            <Button type="submit" variant="secondary">
+              Create organization
+            </Button>
+          </form>
+        )}
+        {isHosted() ? (
           <p className="text-sm text-muted-foreground">
-            Serve on more than one board? Create another organization and switch between them in the
-            sidebar.
+            Ownership is transferred in{" "}
+            <a href={hubUrl("/settings")} className="font-medium text-primary hover:underline">
+              OpenAppHub's organization settings
+            </a>
+            .
           </p>
-          <Input
-            placeholder="Organization name"
-            value={newOrg}
-            onChange={(e) => setNewOrg(e.target.value)}
-            required
-          />
-          <Button type="submit" variant="secondary">
-            Create organization
-          </Button>
-        </form>
-        <TransferOwnership key={`transfer-${org.id}`} />
+        ) : (
+          <TransferOwnership key={`transfer-${org.id}`} />
+        )}
       </div>
     </>
   );
