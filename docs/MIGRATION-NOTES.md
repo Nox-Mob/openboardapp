@@ -5,7 +5,7 @@ This is Board's inventory and step plan for joining the OpenAppHub suite (`docs/
 - First written November 8, 2026, from `main` at `361780b` (step 1). Sources: `supabase/migrations/` (11 files), `src/integrations/supabase/types.ts`, `src/data/cloud-adapter.ts`, `docs/migration/phase-0-inventory.md`. Phase 0 already proved the migrations rebuild the live schema with identical columns (`replay` job), so no schema dump was needed.
 - Updated the same day for spec v2: the owner's answers to §8 are filled in, and the plan includes v2's changes.
 
-Target: Board's tables move to schema **`board`** in the shared production project `nxungwtxnctcqolfshcr` (today's OpenCharterApp project). Board's own project `dnsqxiiexkdokgebysrt` is then wiped and becomes the suite's staging project. Nothing in it is copied; demo content becomes seed SQL. Hosted at `board.openapphub.org`, staging at `board-staging.openapphub.org`.
+Target: Board's tables move to schema **`board`** in the shared production project `nxungwtxnctcqolfshcr` (today's OpenCharterApp project). Board's own project `dnsqxiiexkdokgebysrt` is then wiped and becomes the suite's staging project. Nothing in it is copied; demo content becomes seed SQL. Hosted at `board.openapphub.org`, staging at `staging.board.staging.openapphub.org`.
 
 ## 0. Spec v2.2 changes (2026-11-09): read first
 
@@ -86,7 +86,7 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
 
 - `package-lock.json` resolves every package from registry.npmjs.org (83 were on Lovable's private cache); CI fails if a private registry comes back.
 - `.env` is untracked (CI fails on a tracked env file); `.env.example` lists every variable. Unit tests in CI use placeholder values.
-- `wrangler.jsonc`: top level = production (`board.openapphub.org`, `openapphub-prod`), `env.staging` (`board-staging.openapphub.org`, `openapphub-staging`). `npm run build:hosted` / `build:hosted:staging` write its public `VITE_*` values before building (`scripts/deploy/build-env.mjs`).
+- `wrangler.jsonc`: top level = production (`board.openapphub.org`, `openapphub-prod`), `env.staging` (`staging.board.staging.openapphub.org`, `openapphub-staging`). `npm run build:hosted` / `build:hosted:staging` write its public `VITE_*` values before building (`scripts/deploy/build-env.mjs`).
 - Security headers on every response (`src/lib/security-headers.ts`, `src/server.ts`); the CSP allows the Supabase project for connections, images and file previews.
 - Unused `client.server.ts` (service role) and `cron-auth.ts` removed: Board uses no service-role key.
 - The old shared test backend is gone, so the live `database-rules` suites skip themselves; the same suites still run against a local database in `supabase-db.yml`.

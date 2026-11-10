@@ -17,7 +17,7 @@
 
 **Read `docs/SHARED-SPEC.md` (v2) first.** Your step plan is the **Progress** table in `docs/MIGRATION-NOTES.md`; this file gives the owner's answers and the changes v2 makes to it.
 
-App ID `board` · schema `board` · hosted at `board.openapphub.org` (staging `board-staging.openapphub.org`) · package manager **npm**.
+App ID `board` · schema `board` · hosted at `board.openapphub.org` (staging `staging.board.staging.openapphub.org`) · package manager **npm**.
 
 Board's own project (`dnsqxiiexkdokgebysrt`) is wiped after Board moves and becomes the suite's **staging** project. Nothing in it is copied; demo content becomes seed SQL.
 
