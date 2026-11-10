@@ -30,7 +30,7 @@ for f in $(ls "$ROOT"/db/tests/[0-9]*.sql | sort); do
 done
 # The staging demo seed loads on top of the migrations.
 if (cd "$ROOT" && DATABASE_URL="$URL" node scripts/migrate.mjs --seed >/dev/null) &&
-  [ "$(run -tAc "select (select count(*) from board.meetings) = 2 and (select count(*) from board.officers) = 2")" = "t" ]; then
+  [ "$(run -tAc "select (select count(*) from board.meetings) = 4 and (select count(*) from board.minutes where status = 'approved') = 2")" = "t" ]; then
   echo "ok   staging seed (db/seed)"
 else
   echo "FAIL staging seed (db/seed)"; fail=1

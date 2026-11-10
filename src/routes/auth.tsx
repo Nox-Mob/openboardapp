@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { errorMessage } from "@/lib/export";
 
-// The demo board exists on staging only (db/seed/0001_board_demo.sql), so its sign-in
-// is offered only there (VITE_ALLOW_DEMO_LOGIN, set in wrangler.jsonc's staging env)
-// and on development servers.
+// The suite demo (demo@demo.openapphub.org, Riverside Community Association) exists on staging
+// and development databases only (db/seed), so its sign-in is offered only there. Hosted,
+// sign-in is OpenAppHub's, which offers the same demo.
 const DEMO_LOGIN =
   import.meta.env.DEV || import.meta.env["VITE_ALLOW_DEMO_LOGIN"] === "true"
-    ? { email: "board.demo@demo.openapphub.org", password: "OpenBoardDemo!2026" }
+    ? { email: "demo@demo.openapphub.org", password: "OpenAppHubDemo2026" }
     : null;
 
 export const Route = createFileRoute("/auth")({
