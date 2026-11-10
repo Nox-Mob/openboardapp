@@ -58,7 +58,7 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
   - The old `memberships_one_owner`, `create_organization`, invitations and ownership functions aren't recreated: core has them.
   - Not ported: the `reset_demo` pg_cron job (staging seed, step 6), API views (step 14).
 - **Package name** is now `openboardapp`: the runner records migrations under the package name, and Board and Ledger were both `tanstack_start_ts`.
-- **Retired** in the same PR (spec §3.3): `supabase/migrations/`, `supabase/config.toml`, `drizzle/`, `drizzle.config.ts`, the `drizzle-*` packages, `supabase-db.yml` (replay and push), and the live-backend suites in `src/test/db` (replaced by `db/tests/*.sql`). `check-migrations.mjs` now checks `db/migrations`.
+- **Retired** in the same PR (spec §3.3): `drizzle/`, `drizzle.config.ts`, the `drizzle-*` packages, `supabase-db.yml` (replay and push), and the live-backend suites in `src/test/db` (replaced by `db/tests/*.sql`). `check-migrations.mjs` now checks `db/migrations`. **Kept, frozen:** `supabase/migrations` and `supabase/config.toml`, the old schema today's app still runs on, for self-hosters until step 9 (`supabase/README.md`). No workflow applies them to the shared database.
 - **CI:** `database-rules` (runner, then `db/tests`, on Postgres 17 with a stub of Supabase auth and storage) and `performance` (250, 500, 1,000 meetings; 3 s budget on CI, 1 s locally), as in Charter.
 
 ### 0.3 Step 3 (hygiene), first part, as done for v2.2

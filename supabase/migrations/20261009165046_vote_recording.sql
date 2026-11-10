@@ -1,0 +1,3 @@
+alter table public.organizations add column vote_recording text not null default 'totals' check (vote_recording in ('totals','roll_call'));
+alter table public.motions add column roll_call jsonb check (roll_call is null or jsonb_typeof(roll_call) = 'array');
+comment on column public.motions.roll_call is 'Optional per-member votes: [{person_name, attendance_id, vote: yes|no|abstain}]. Totals columns stay authoritative counts.';

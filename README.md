@@ -31,7 +31,7 @@ Checks: `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run te
 
 ## Self-hosting
 
-Board runs on its own server and its own Supabase project. `npm run build` builds from your own `.env` / `.env.local` (see [`.env.example`](.env.example)); it needs no secrets. With `VITE_HOSTED=false` (the default) Board keeps its own sign-in, organizations and invitations and doesn't link to openapphub.org. `wrangler.jsonc` isn't used.
+Board runs on its own server and its own Supabase project. `npm run build` builds from your own `.env` / `.env.local` (see [`.env.example`](.env.example)); it needs no secrets. Today's app still uses the tables in `supabase/migrations/` (apply them in filename order); it moves to the `board` schema in `db/migrations/` with the next client change (see `supabase/README.md`). With `VITE_HOSTED=false` (the default) Board keeps its own sign-in, organizations and invitations and doesn't link to openapphub.org. `wrangler.jsonc` isn't used.
 
 ## Hosted edition (OpenAppHub)
 
