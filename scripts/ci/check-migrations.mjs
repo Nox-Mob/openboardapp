@@ -1,22 +1,37 @@
-// Static migration checks: every public table created in supabase/migrations must
-// enable row level security and get at least one policy, so no table ships unlocked
-// or unreachable. Also flags destructive statements on official-record tables.
+// Static migration checks (spec §3.3, §3.4) on db/migrations, the only migration path:
+// - file names are NNNN_name.sql, numbered without gaps or duplicates;
+// - every table a migration creates enables row level security and gets a policy;
+// - official-record tables are never dropped;
+// - migrations only create objects in schemas Board owns (board, and storage policies).
+// The migration runner (scripts/migrate.mjs) refuses edited files at apply time.
 import { readFileSync, readdirSync } from "node:fs";
 
-const dir = "supabase/migrations";
+const dir = "db/migrations";
 const files = readdirSync(dir)
   .filter((f) => f.endsWith(".sql"))
   .sort();
+const problems = [];
+
+files.forEach((f, i) => {
+  const m = /^(\d{4})_[a-z0-9_]+\.sql$/.exec(f);
+  if (!m) problems.push(`${f}: name must be NNNN_<name>.sql`);
+  else if (Number(m[1]) !== i + 1)
+    problems.push(`${f}: expected number ${String(i + 1).padStart(4, "0")}`);
+});
+
 const sql = files
   .map((f) => readFileSync(`${dir}/${f}`, "utf8"))
   .join("\n")
+  .replace(/--[^\n]*/g, "")
   .toLowerCase();
 
 const tables = new Set();
 for (const m of sql.matchAll(
-  /create table (?:if not exists )?(?:public\.)?"?([a-z_][a-z0-9_]*)"?\s*\(/g,
-))
-  tables.add(m[1]);
+  /create table (?:if not exists )?([a-z_]+)\.([a-z_][a-z0-9_]*)\s*\(/g,
+)) {
+  if (m[1] !== "board") problems.push(`${m[1]}.${m[2]}: tables must be in schema board`);
+  tables.add(m[2]);
+}
 
 // Tables secured in a `foreach t in array array[...] loop ... execute format(...)` block.
 const loopSecured = { rls: new Set(), policy: new Set() };
@@ -27,36 +42,31 @@ for (const m of sql.matchAll(/foreach \w+ in array array\[([^\]]+)\] loop([\s\S]
     if (/create policy/.test(m[2])) loopSecured.policy.add(n);
   }
 }
-
-const problems = [];
-const prefix = (t) => `(?:public\\.)?"?${t}"?`;
 for (const t of tables) {
+  const q = `board\\.${t}`;
   if (
     !loopSecured.rls.has(t) &&
-    !new RegExp(`alter table (?:only )?${prefix(t)}\\s+enable row level security`).test(sql)
+    !new RegExp(`alter table (?:only )?${q}\\s+enable row level security`).test(sql)
   )
-    problems.push(`${t}: row level security is never enabled`);
-  if (
-    !loopSecured.policy.has(t) &&
-    !new RegExp(`create policy [^;]*? on ${prefix(t)}[\\s;]`).test(sql)
-  )
-    problems.push(`${t}: has no policies (locked for everyone)`);
+    problems.push(`board.${t}: row level security is never enabled`);
+  if (!loopSecured.policy.has(t) && !new RegExp(`create policy [^;]*? on ${q}[\\s;]`).test(sql))
+    problems.push(`board.${t}: has no policies (locked for everyone)`);
 }
-const protectedTables = ["audit_log", "member_votes", "vote_electorate"];
-for (const t of protectedTables) {
-  if (new RegExp(`drop table (?:if exists )?${prefix(t)}`).test(sql))
-    problems.push(`${t}: an official-record table is dropped`);
+for (const t of ["audit_log", "member_votes", "vote_electorate", "minutes"]) {
+  if (new RegExp(`drop table (?:if exists )?board\\.${t}\\b`).test(sql))
+    problems.push(`board.${t}: an official-record table is dropped`);
 }
-// Every migration file name must be <14-digit timestamp>_<name>.sql, with unique timestamps.
-const stamps = files.map((f) => /^(\d{14})_[a-z0-9_]+\.sql$/.exec(f)?.[1]);
-files.forEach((f, i) => {
-  if (!stamps[i]) problems.push(`${f}: name must be <14-digit timestamp>_<name>.sql`);
-});
-if (new Set(stamps).size !== stamps.length)
-  problems.push("two migrations share the same timestamp");
+for (const m of sql.matchAll(
+  /create (?:or replace )?(?:function|view|type|trigger \w+ \w+ \w+ (?:or \w+ )*on) ([a-z_]+)\./g,
+)) {
+  if (!["board", "storage"].includes(m[1]))
+    problems.push(`objects in schema ${m[1]}: Board only writes to board`);
+}
 
 if (problems.length) {
   for (const p of problems) console.log(`::error file=${dir}::${p}`);
   process.exit(1);
 }
-console.log(`Checked ${files.length} migrations, ${tables.size} tables: RLS and policies present.`);
+console.log(
+  `Checked ${files.length} migrations, ${tables.size} tables in board: RLS and policies present.`,
+);

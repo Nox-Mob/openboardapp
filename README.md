@@ -6,11 +6,14 @@ A board management app for small nonprofits; see roadmap.md for the plan.
 
 See [OpenBoard architecture](docs/architecture.md) for application layers, organization isolation, official voting records, document generation, exports and CI checks.
 
-## Database migrations
+## Database
 
-`supabase/migrations` is the single, ordered migration history. The `Supabase database` workflow (`.github/workflows/supabase-db.yml`) rebuilds the database from it on every pull request. See [Phase 0 inventory](docs/migration/phase-0-inventory.md), [Settings to re-enter](docs/migration/settings-to-reenter.md) and [Domain, Google sign-in and email](docs/migration/google-oauth-smtp-domain.md).
+Board's tables live in the `board` schema, on top of the OpenAppHub core (`db/core`: organizations, members, roles, invitations, ownership), on the shared OpenAppHub database or on your own (self-hosted).
 
-> **Legacy:** `drizzle/` and `drizzle.config.ts` are what Lovable Cloud applied. They are frozen as of the move to OpenBoard's own Supabase project: new migrations go only in `supabase/migrations`, which the `deploy` job pushes. The `drizzle/` files are removed after the cutover merge.
+- **Migrations:** `db/migrations/*.sql`, applied in order by `scripts/migrate.mjs` (vendored from OpenAppHub): `DATABASE_URL=postgres://… npm run db:migrate`. It applies `db/core` first, records every file in `ops.schema_migrations` and refuses a file that changed after it was applied. Never edit an applied migration; add a new one.
+- **Rule tests:** `TEST_DATABASE_URL=postgres://… npm run db:test` builds a throwaway database the same way and runs `db/tests/*.sql` (isolation, roles, record locks, live voting, read-only when a plan lapses).
+- **Performance:** `npm run db:perf` grows one board to 1,000 meetings next to 40 others and fails if a heavy read is slow.
+- **Production and staging:** the owner runs Actions → **Migrate** (`migrate.yml`).
 
 ## Development
 
