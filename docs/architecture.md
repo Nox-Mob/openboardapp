@@ -137,12 +137,12 @@ These are readable record exports, not a signed backup format or a tested restor
 - npm only: `package-lock.json` and `npm ci`. Alternate package-manager lockfiles are ignored and rejected by CI if present in the checkout.
 - React 19, TanStack Start/Router, React Query, Vite and Tailwind CSS v4 form the application stack. Shared visual tokens live in `src/styles.css`; UI controls live in `src/components/ui`.
 - TanStack routes live in `src/routes`; `src/routeTree.gen.ts` is generated. Preserve worker-compatible server boundaries; Node-based CI utilities are not application runtime modules.
-- Schema changes live in `drizzle/migrations`. The current workflow does not load these into a disposable database or maintain a mirrored `supabase/migrations` tree.
+- Schema changes live in `db/migrations` (schema `board`, on the suite core `db/core`, vendored from OpenAppHub). `scripts/migrate.mjs` applies them; the owner runs the Migrate workflow for staging and production. `supabase/migrations` is the old public schema, frozen for self-hosters until the client switch (step 9).
 - `.github/workflows/ci.yml` runs on pushes, pull requests, manual dispatch and a weekly schedule, using Node 22.
-- Jobs cover npm-only enforcement, public-environment checks, data-layer boundary checks, unit/page tests, migration-policy checks, live database-rule tests, type checking, production build, lint, formatting and dependency audit.
-- `scripts/ci/check-env.mjs` checks for private credentials in tracked environment configuration; `scripts/ci/check-migrations.mjs` checks migration security declarations. Static checks supplement, not replace, live rule tests.
+- Jobs cover npm-only enforcement, public-environment checks, data-layer boundary checks, unit/page tests, migration-policy checks, database-rule tests (`db/tests` on Postgres 17 with the runner), a performance check (one board through 5,000, 20,000 and 50,000 meetings), type checking, production build, lint, formatting and dependency audit.
+- `scripts/ci/check-env.mjs` checks for private credentials in tracked environment configuration; `scripts/ci/check-migrations.mjs` checks migration security declarations. Static checks supplement, not replace, the database-rule tests.
 - Production dependency audit blocks high/critical findings; the full audit including development tools is report-only.
-- `src/test/db/*` runs against the live backend using dedicated Test Org A/B accounts. Never add those accounts to real organizations. `SKIP_DB_TESTS=1` skips these suites for unit-only runs; it is not evidence that database rules passed.
+- `db/tests/*.sql` (`npm run db:test`, needs `TEST_DATABASE_URL`) build a throwaway database with the runner and check isolation, permissions, record locks, live voting and invitations. `npm run db:perf` times the heavy reads at scale. Never point either at a real database.
 - Page tests in `src/test/pages.test.tsx` and `src/test/app-routing.test.tsx` check rendering/routing with test fixtures. They are not comprehensive browser end-to-end coverage.
 
 Useful local checks:
@@ -150,7 +150,7 @@ Useful local checks:
 ```sh
 npm ci
 npm run test:unit
-npm test -- src/test/db
+TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres npm run db:test
 node scripts/ci/check-env.mjs
 node scripts/ci/check-migrations.mjs
 npm run typecheck

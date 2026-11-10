@@ -1,5 +1,5 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "openboardapp",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -16,6 +16,10 @@
     "test:watch": "vitest",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:test": "bash scripts/db/test.sh",
+    "db:perf": "bash scripts/db/perf.sh",
+    "check:migrations": "node scripts/ci/check-migrations.mjs",
     "test:unit": "SKIP_DB_TESTS=1 VITE_SUPABASE_URL=https://test.invalid VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_test vitest run"
   },
   "overrides": {
@@ -87,8 +91,6 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",
-    "drizzle-kit": "0.x",
-    "drizzle-orm": "0.x",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",
@@ -97,6 +99,7 @@
     "globals": "^15.15.0",
     "jsdom": "^20.0.3",
     "nitro": "3.0.260603-beta",
+    "pg": "^8.23.1",
     "postgres": "^3.4.9",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",

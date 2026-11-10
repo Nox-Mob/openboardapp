@@ -74,33 +74,67 @@ jobs:
         with: { name: unit-test-results, path: test-results.xml }
 
   database-rules:
-    name: Database rules (tenant isolation, roles, locks, live voting, letterhead)
+    name: Database rules (isolation, roles, locks, live voting, read-only)
     runs-on: ubuntu-latest
-    # Runs the src/test/db suites against the backend using the dedicated
-    # Test Org A/B accounts only. No .env is tracked any more (SHARED-SPEC §7.1), and the old
-    # shared test backend is gone: without VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY
-    # these suites skip themselves (src/test/db/helpers.ts). The same suites run against a
-    # local database in supabase-db.yml, and move to the suite's `db` job in migration step 4.
-    # Every run shares that one backend and Test Org A, so only one of these jobs
-    # may run at a time across the whole repository (a push and its pull request
-    # otherwise race: one run resets Org A's voting settings mid-test in the other).
-    concurrency:
-      group: openboard-shared-test-backend
-      cancel-in-progress: false
+    # Builds a throwaway database the way production is built (scripts/migrate.mjs: the
+    # OpenAppHub core, then db/migrations) on Postgres with a stub of Supabase's auth and
+    # storage, then runs db/tests/*.sql. Mirrors OpenCharterApp's "Database rules" job.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
+      - name: Install psql
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Static migration checks (row level security + policies on every table)
         run: node scripts/ci/check-migrations.mjs
-      - name: Live database rule tests
+      - name: Apply migrations and run the rule tests
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
         run: |
-          # scripts/ci/vitest.db.config.mjs: Node environment (jsdom's Blob stalls storage
-          # uploads) and one file at a time (ownership.test.ts briefly hands Test Org A
-          # to the member). Same config as the replay job.
-          npx vitest run --config scripts/ci/vitest.db.config.mjs --reporter=default --reporter=github-actions || {
-            echo "### ❌ A database rule failed (isolation, permissions, official-record locks or voting)." >> "$GITHUB_STEP_SUMMARY"
+          bash scripts/db/test.sh || {
+            echo "### ❌ A database rule failed (isolation, permissions, official-record locks, voting or read-only)." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+
+  performance:
+    # One board grown to 5,000, 20,000 and 50,000 meetings next to 40 other boards; fails if a
+    # heavy read is over budget at any size. The budget is looser than the 1 second target
+    # because shared runners are slower and vary. Mirrors OpenCharterApp's Performance job.
+    name: Performance (5,000 to 50,000 meetings)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Install psql
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Seed a large board history and time the heavy reads
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+          PERF_BUDGET_MS: "3000"
+        run: |
+          bash scripts/db/perf.sh || {
+            echo "### ❌ A heavy read went over budget, or the security catalogue check failed." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           }
 
