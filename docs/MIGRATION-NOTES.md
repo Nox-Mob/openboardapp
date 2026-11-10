@@ -59,7 +59,9 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
   - Not ported: the `reset_demo` pg_cron job (staging seed, step 6), API views (step 14).
 - **Package name** is now `openboardapp`: the runner records migrations under the package name, and Board and Ledger were both `tanstack_start_ts`.
 - **Retired** in the same PR (spec §3.3): `drizzle/`, `drizzle.config.ts`, the `drizzle-*` packages, `supabase-db.yml` (replay and push), and the live-backend suites in `src/test/db` (replaced by `db/tests/*.sql`). `check-migrations.mjs` now checks `db/migrations`. **Kept, frozen:** `supabase/migrations` and `supabase/config.toml`, the old schema today's app still runs on, for self-hosters until step 9 (`supabase/README.md`). No workflow applies them to the shared database.
-- **CI:** `database-rules` (runner, then `db/tests`, on Postgres 17 with a stub of Supabase auth and storage) and `performance` (250, 500, 1,000 meetings; 3 s budget on CI, 1 s locally), as in Charter.
+- **Row rules are set-based** (as in Charter and Ledger): `org_id in (select board.readable_org_ids())`, and `editable_org_ids` / `managed_org_ids` / `audit_org_ids` for writes and the audit log, so Postgres checks access once per query, not once per row. With the per-row `public.is_member(org_id)` checks, exporting 20,000 meetings took 2.4 s; now 148 ms. The `can_*` helpers stay for functions and the app.
+- **CI:** `database-rules` (runner, then `db/tests`, on Postgres 17 with a stub of Supabase auth and storage) and `performance` (one board grown through 5,000, 20,000 and 50,000 meetings, the other 40 boards up to 500 each; 3 s budget on CI, 1 s locally), as in Charter.
+- **Performance at 50,000 meetings** (locally): meetings list 1 ms, one meeting 1 ms, decisions 96 ms, my action items 44 ms, export 359 ms, audit log 1 ms.
 
 ### 0.3 Step 3 (hygiene), first part, as done for v2.2
 

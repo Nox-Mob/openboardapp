@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Performance check (mirrors OpenCharterApp's scripts/db-perf.sh): builds a throwaway
 # database with the migration runner, seeds 41 boards, then grows one board through
-# PERF_SIZES meetings (default 250, 500 and 1,000; each with agenda, attendance,
+# PERF_SIZES meetings (default 5,000, 20,000 and 50,000; each with agenda, attendance,
 # motions, minutes, documents, tasks and audit rows; db/perf/grow.sql). At each size
 # it prints how long the heavy reads take and fails if one is over PERF_BUDGET_MS
 # (default 1000 ms). Finally checks the security catalogue (db/perf/catalogue.sql).
@@ -10,7 +10,7 @@ set -euo pipefail
 : "${TEST_DATABASE_URL:?Set TEST_DATABASE_URL, e.g. postgres://postgres:postgres@localhost:5432/postgres}"
 DB="${PERF_DB_NAME:-board_perf_test}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-SIZES="${PERF_SIZES:-250 500 1000}"
+SIZES="${PERF_SIZES:-5000 20000 50000}"
 URL="${TEST_DATABASE_URL%/*}/$DB"
 admin() { psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -q -X "$@"; }
 run() { psql "$URL" -v ON_ERROR_STOP=1 -q -X "$@"; }

@@ -12,7 +12,7 @@ Board's tables live in the `board` schema, on top of the OpenAppHub core (`db/co
 
 - **Migrations:** `db/migrations/*.sql`, applied in order by `scripts/migrate.mjs` (vendored from OpenAppHub): `DATABASE_URL=postgres://… npm run db:migrate`. It applies `db/core` first, records every file in `ops.schema_migrations` and refuses a file that changed after it was applied. Never edit an applied migration; add a new one.
 - **Rule tests:** `TEST_DATABASE_URL=postgres://… npm run db:test` builds a throwaway database the same way and runs `db/tests/*.sql` (isolation, roles, record locks, live voting, read-only when a plan lapses).
-- **Performance:** `npm run db:perf` grows one board to 1,000 meetings next to 40 others and fails if a heavy read is slow.
+- **Performance:** `npm run db:perf` grows one board through 5,000, 20,000 and 50,000 meetings next to 40 others and fails if a heavy read is slow.
 - **Production and staging:** the owner runs Actions → **Migrate** (`migrate.yml`).
 
 ## Development

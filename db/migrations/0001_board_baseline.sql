@@ -134,6 +134,57 @@ as $$
       or coalesce(board.my_office(p_org) in ('chair', 'secretary'), false);
 $$;
 
+-- Set-based versions for row rules: Postgres works each out once per query instead of
+-- once per row, so reads stay fast on large histories (db/perf).
+create or replace function board.readable_org_ids()
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select m.org_id from public.memberships m where m.user_id = auth.uid();
+$$;
+
+create or replace function board.editable_org_ids()
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select m.org_id from public.memberships m
+  where m.user_id = auth.uid() and public.can_write(m.org_id, 'board')
+    and (m.role in ('owner', 'admin')
+         or (m.role = 'member' and exists (select 1 from board.officers o
+               where o.org_id = m.org_id and o.user_id = m.user_id and o.office in ('chair', 'secretary'))));
+$$;
+
+create or replace function board.managed_org_ids()
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select m.org_id from public.memberships m
+  where m.user_id = auth.uid() and m.role in ('owner', 'admin') and public.can_write(m.org_id, 'board');
+$$;
+
+create or replace function board.audit_org_ids()
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select m.org_id from public.memberships m
+  where m.user_id = auth.uid()
+    and (m.role in ('owner', 'admin')
+         or (m.role = 'member' and exists (select 1 from board.officers o
+               where o.org_id = m.org_id and o.user_id = m.user_id and o.office in ('chair', 'secretary'))));
+$$;
+
 -- True when the caller holds one of the given core roles or offices.
 create or replace function board.holds_any(p_org uuid, p_roles text[])
 returns boolean
@@ -698,10 +749,10 @@ begin
     'action_items', 'meeting_templates'] loop
     execute format('alter table board.%I enable row level security', t);
     execute format('grant select, insert, update, delete on board.%I to authenticated', t);
-    execute format('create policy "members read" on board.%I for select to authenticated using (public.is_member(org_id))', t);
-    execute format('create policy "editors insert" on board.%I for insert to authenticated with check (board.can_edit_records(org_id))', t);
-    execute format('create policy "editors update" on board.%I for update to authenticated using (board.can_edit_records(org_id)) with check (board.can_edit_records(org_id))', t);
-    execute format('create policy "editors delete" on board.%I for delete to authenticated using (board.can_edit_records(org_id))', t);
+    execute format('create policy "members read" on board.%I for select to authenticated using (org_id in (select board.readable_org_ids()))', t);
+    execute format('create policy "editors insert" on board.%I for insert to authenticated with check (org_id in (select board.editable_org_ids()))', t);
+    execute format('create policy "editors update" on board.%I for update to authenticated using (org_id in (select board.editable_org_ids())) with check (org_id in (select board.editable_org_ids()))', t);
+    execute format('create policy "editors delete" on board.%I for delete to authenticated using (org_id in (select board.editable_org_ids()))', t);
   end loop;
 end $$;
 
@@ -718,10 +769,10 @@ begin
   foreach t in array array['org_settings', 'officers', 'letterheads'] loop
     execute format('alter table board.%I enable row level security', t);
     execute format('grant select, insert, update, delete on board.%I to authenticated', t);
-    execute format('create policy "members read" on board.%I for select to authenticated using (public.is_member(org_id))', t);
-    execute format('create policy "managers insert" on board.%I for insert to authenticated with check (board.can_manage(org_id))', t);
-    execute format('create policy "managers update" on board.%I for update to authenticated using (board.can_manage(org_id)) with check (board.can_manage(org_id))', t);
-    execute format('create policy "managers delete" on board.%I for delete to authenticated using (board.can_manage(org_id))', t);
+    execute format('create policy "members read" on board.%I for select to authenticated using (org_id in (select board.readable_org_ids()))', t);
+    execute format('create policy "managers insert" on board.%I for insert to authenticated with check (org_id in (select board.managed_org_ids()))', t);
+    execute format('create policy "managers update" on board.%I for update to authenticated using (org_id in (select board.managed_org_ids())) with check (org_id in (select board.managed_org_ids()))', t);
+    execute format('create policy "managers delete" on board.%I for delete to authenticated using (org_id in (select board.managed_org_ids()))', t);
   end loop;
 end $$;
 
@@ -730,15 +781,15 @@ alter table board.vote_electorate enable row level security;
 alter table board.member_votes enable row level security;
 grant select on board.vote_electorate, board.member_votes to authenticated;
 create policy "members read the electorate" on board.vote_electorate for select to authenticated
-  using (public.is_member(org_id));
+  using (org_id in (select board.readable_org_ids()));
 create policy "own vote, or all votes once closed" on board.member_votes for select to authenticated
-  using (public.is_member(org_id) and (user_id = auth.uid() or board.vote_is_closed(motion_id)));
+  using (org_id in (select board.readable_org_ids()) and (user_id = auth.uid() or board.vote_is_closed(motion_id)));
 
 -- Audit: read-only, chair/secretary/owner/admin.
 alter table board.audit_log enable row level security;
 grant select on board.audit_log to authenticated;
 create policy "officers read audit" on board.audit_log for select to authenticated
-  using (board.can_read_audit(org_id));
+  using (org_id in (select board.audit_org_ids()));
 
 grant all on all tables in schema board to service_role;
 grant usage on all sequences in schema board to service_role;
@@ -1030,6 +1081,10 @@ revoke all on all functions in schema board from public, anon;
 revoke execute on function board.finish_vote(uuid, text) from authenticated;
 grant execute on function
   board.org_gone(uuid),
+  board.readable_org_ids(),
+  board.editable_org_ids(),
+  board.managed_org_ids(),
+  board.audit_org_ids(),
   board.settings(uuid),
   board.my_office(uuid),
   board.can_manage(uuid),

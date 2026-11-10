@@ -1,7 +1,7 @@
 -- Performance check (mirrors OpenCharterApp's db/perf/large-roster.sql): grows the
 -- measured board to :meetings meetings, each with 10 agenda items, 12 attendees, 3
 -- motions, minutes, a document and 2 action items; every other organization gets
--- a tenth as many. Then times the heavy reads as a board member, under row-level
+-- a tenth as many, up to 500 each (so 40 other boards add at most 20,000 meetings). Then times the heavy reads as a board member, under row-level
 -- security, and fails if one is over :budget_ms. Run after setup.sql, once per size
 -- in increasing order; each run adds only what's missing.
 \set ON_ERROR_STOP on
@@ -15,7 +15,7 @@
 \endif
 select set_config('perf.meetings', :'meetings', false);
 \echo
-\echo '=== Board with' :meetings 'meetings (other orgs:' :meetings '/ 10 each)'
+\echo '=== Board with' :meetings 'meetings (other orgs: a tenth each, at most 500)'
 
 -- Seeding goes straight in as the database owner; audit rows are skipped for speed.
 alter table board.meetings disable trigger t_audit;
@@ -32,7 +32,7 @@ select ('33333333-' || lpad(o::text, 4, '0') || '-4000-8000-' || lpad(i::text, 1
   'Meeting ' || i, date '2000-01-01' + i * 7,
   (case when i % 50 = 0 then 'scheduled' else 'completed' end)::board.meeting_status
 from generate_series(1, 41) o
-cross join lateral generate_series(1, case when o = 1 then :meetings else greatest(1, :meetings / 10) end) i
+cross join lateral generate_series(1, case when o = 1 then :meetings else least(500, greatest(1, :meetings / 10)) end) i
 on conflict (id) do nothing;
 
 insert into board.agenda_items (org_id, meeting_id, position, title, notes)

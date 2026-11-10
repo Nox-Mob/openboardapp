@@ -107,10 +107,10 @@ jobs:
           }
 
   performance:
-    # One board grown to 250, 500 and 1,000 meetings next to 40 other boards; fails if a
+    # One board grown to 5,000, 20,000 and 50,000 meetings next to 40 other boards; fails if a
     # heavy read is over budget at any size. The budget is looser than the 1 second target
     # because shared runners are slower and vary. Mirrors OpenCharterApp's Performance job.
-    name: Performance (250 to 1,000 meetings)
+    name: Performance (5,000 to 50,000 meetings)
     runs-on: ubuntu-latest
     services:
       postgres:
