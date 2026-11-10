@@ -31,7 +31,7 @@ Checks: `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run te
 
 ## Self-hosting
 
-Board runs on its own server and its own Supabase project. `npm run build` builds from your own `.env` / `.env.local` (see [`.env.example`](.env.example)); it needs no secrets. Today's app still uses the tables in `supabase/migrations/` (apply them in filename order); it moves to the `board` schema in `db/migrations/` with the next client change (see `supabase/README.md`). With `VITE_HOSTED=false` (the default) Board keeps its own sign-in, organizations and invitations and doesn't link to openapphub.org. `wrangler.jsonc` isn't used.
+Board runs on its own server and its own Supabase project. `npm run build` builds from your own `.env` / `.env.local` (see [`.env.example`](.env.example)); it needs no secrets. The database is the OpenAppHub core plus Board's schema `board`: run `DATABASE_URL=postgres://… npm run db:migrate` (it applies `db/core` then `db/migrations`, and only what's new on later runs), then add `board` to the exposed schemas (Supabase: Project Settings → Data API; Docker: `PGRST_DB_SCHEMAS` in the stack's `.env`). Demo data for development or staging: `npm run db:migrate -- --seed` (it refuses a database with real organizations). With `VITE_HOSTED=false` (the default) Board keeps its own sign-in, organizations and invitations and doesn't link to openapphub.org. `wrangler.jsonc` isn't used.
 
 ## Hosted edition (OpenAppHub)
 

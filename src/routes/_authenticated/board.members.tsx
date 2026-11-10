@@ -82,8 +82,8 @@ function RoleCard({
   candidates,
   orgId,
 }: {
-  role: Tables<"board_positions">;
-  terms: Tables<"board_terms">[];
+  role: Tables<"positions">;
+  terms: Tables<"terms">[];
   today: string;
   editor: boolean;
   candidates: Candidate[];
@@ -108,7 +108,7 @@ function RoleCard({
     if (!c) return;
     const { error } = await attempt(
       db.terms.assign({
-        organization_id: orgId,
+        org_id: orgId,
         position_id: role.id,
         position: role.title,
         person_name: c.name,
@@ -283,7 +283,7 @@ function Members() {
   }
 
   async function changeRole(id: string, role: OrgRole) {
-    const { error } = await attempt(db.members.setRole(id, role));
+    const { error } = await attempt(db.members.setRole(org.id, id, role));
     if (error) {
       toast.error(errorMessage(error));
       return;
@@ -292,7 +292,7 @@ function Members() {
   }
   async function removeMember(id: string) {
     if (!confirm("Remove this person from the organization?")) return;
-    const { error } = await attempt(db.members.remove(id));
+    const { error } = await attempt(db.members.remove(org.id, id));
     if (error) {
       toast.error(errorMessage(error));
       return;
@@ -303,7 +303,7 @@ function Members() {
     e.preventDefault();
     const { error } = await attempt(
       db.positions.add({
-        organization_id: org.id,
+        org_id: org.id,
         title: role.title.trim(),
         term_years: role.term_years,
         sort_order: positions.data?.length ?? 0,

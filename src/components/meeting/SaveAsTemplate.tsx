@@ -29,7 +29,7 @@ export function SaveAsTemplate({ meeting }: { meeting: Tables<"meetings"> }) {
     e.preventDefault();
     const { error } = await attempt(
       db.templates.save({
-        organization_id: org.id,
+        org_id: org.id,
         created_by: userId,
         name,
         meeting_title: meeting.title,

@@ -75,7 +75,7 @@ export function agendaRowsFor(
     ...a,
     position,
     meeting_id: meetingId,
-    organization_id: organizationId,
+    org_id: organizationId,
   }));
 }
 

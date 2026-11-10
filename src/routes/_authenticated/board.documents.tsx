@@ -71,7 +71,7 @@ function Documents() {
     await db.documents.addVersion(
       {
         document_id: documentId,
-        organization_id: org.id,
+        org_id: org.id,
         version,
         storage_path: path,
         file_name: f.name,
@@ -93,7 +93,7 @@ function Documents() {
         title: f.title,
         category: f.category,
         meeting_id: f.meeting_id === "none" ? null : f.meeting_id,
-        organization_id: org.id,
+        org_id: org.id,
         created_by: userId,
       });
       await uploadVersion(id, file, []);

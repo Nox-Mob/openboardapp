@@ -83,7 +83,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
         moved_by: f.moved_by === "none" ? null : f.moved_by,
         seconded_by: f.seconded_by === "none" ? null : f.seconded_by,
         meeting_id: meetingId,
-        organization_id: org.id,
+        org_id: org.id,
       }),
     );
     if (error) {

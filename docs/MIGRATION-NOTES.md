@@ -40,9 +40,20 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
 
 ### 0.2 Next steps
 
-1. Step 3, hygiene: **first part done** (§0.3). Still to do: replace Lovable's Vite wrapper, error reporting and `previewAuthStorage` (with the client, step 9).
+1. Step 3, hygiene: **first part done** (§0.3). Still to do: replace Lovable's Vite wrapper, error reporting and `previewAuthStorage`.
 2. ~~Steps 4, 5 and 8~~ **done** (§0.4): runner, `migrate.yml`, baseline, DB tests, performance test.
-3. **Next: step 9**, the client on the `board` schema (`VITE_APP_SCHEMA=board`, `.schema('public')` for core), then org scoping (10) and hosted vs self-hosted (11). Until step 9, the app still calls the old public tables, which don't exist on the new database.
+3. ~~Step 9, the client on `board`~~, the staging seed (step 6) and org scoping (step 10) **done** (§0.5).
+4. **Next: step 11**, hosted vs self-hosted (sign-in, invitations and billing through the hub when hosted, the billing banner), then the AppShell restyle.
+
+### 0.5 Steps 6, 9 and 10: the app on schema `board`, staging seed, org scoping (2026-11-10)
+
+- **Client:** the Supabase client is created with `db: { schema: "board" }`; core tables are read with `.schema("public")`. `src/integrations/supabase/types.ts` is generated from `db/core` + `db/migrations` (schemas `public,board`), with `board` as the default schema for the `Tables<…>` helpers. Column `organization_id` is `org_id` everywhere; tables renamed in code: `board_positions` → `positions`, `board_terms` → `terms`, `organization_letterheads` → `letterheads`; files are in bucket `board-files`.
+- **Roles:** the app keeps one role per person, from the core role plus the office (`board.officers`): owner → owner, admin → admin, member + office → chair / secretary / treasurer, member → member, viewer → observer. Changing a role updates the core membership (owner and admins only, by the database) and then the office. Ownership changes only by transfer.
+- **Rewritten on core** (`src/data/cloud-adapter.ts`): my organizations (core name + `board.org_settings`, defaults when missing), creating (`create_organization`, then Board's time zone), renaming (`rename_organization`), settings (upsert), members (`org_member_directory`), invitations (`create_invitation` with `app = 'board'` and `{"office": …}`; `accept_invitation` then `board.on_invitation_accepted`; `revoke_invitation`), ownership (`ownership_transfer_candidates`, `transfer_ownership`), live-voting RPCs (`p_` parameters), the export (core organization and memberships plus Board's tables, including officers and people).
+- **Org scoping:** the current organization is the suite cookie `oah_org` (`shared/supabase/org.ts`), re-checked against memberships; otherwise the first organization alphabetically. The old local-storage choice is read once.
+- **Staging seed:** `db/seed/0001_board_demo.sql` replaces `reset_demo()` and its `pg_cron` job: Riverside Community Association, built once with dates relative to the day it runs. The demo sign-in is `board.demo@demo.openapphub.org`; the "Explore the demo board" button appears only where `VITE_ALLOW_DEMO_LOGIN=true` (staging) and on dev servers, no longer on production. Refuses a database the hub hasn't marked staging. CI loads it after the DB tests.
+- **Retired:** `supabase/migrations` and `supabase/config.toml`. Self-hosting is `npm run db:migrate` plus exposing `board` (README).
+- **Not changed yet (step 11):** Board keeps its own sign-in screens and session.
 
 ### 0.4 Steps 4, 5 and 8: runner, baseline, DB tests (2026-11-10)
 

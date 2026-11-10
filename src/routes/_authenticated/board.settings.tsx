@@ -84,7 +84,7 @@ function Settings() {
         format: "openboard-export",
         version: 1,
         exported_at: new Date().toISOString(),
-        organization_id: org.id,
+        org_id: org.id,
         counts: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v.length])),
       };
       downloadBlob(
@@ -273,14 +273,7 @@ function Settings() {
               </Button>
               <div className="flex flex-wrap gap-2 pt-2">
                 {(
-                  [
-                    "meetings",
-                    "motions",
-                    "minutes",
-                    "action_items",
-                    "board_terms",
-                    "audit_log",
-                  ] as const
+                  ["meetings", "motions", "minutes", "action_items", "terms", "audit_log"] as const
                 ).map((t) => (
                   <Button key={t} size="sm" variant="outline" onClick={() => exportCsv(t)}>
                     {t.replace("_", " ")} CSV

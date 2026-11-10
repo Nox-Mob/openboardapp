@@ -80,7 +80,7 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
       const path = `${org.id}/packets/${meeting.id}/v${version}.pdf`;
       await db.packets.create(
         {
-          organization_id: org.id,
+          org_id: org.id,
           meeting_id: meeting.id,
           version,
           storage_path: path,

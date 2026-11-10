@@ -36,7 +36,7 @@ export function LetterheadSettings() {
       const extension = mime === "application/pdf" ? "pdf" : mime === "image/png" ? "png" : "jpg";
       await db.letterhead.save(
         {
-          organization_id: org.id,
+          org_id: org.id,
           storage_path: `${org.id}/letterhead/${crypto.randomUUID()}.${extension}`,
           file_name: file.name,
           mime_type: mime,

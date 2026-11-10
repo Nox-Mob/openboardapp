@@ -59,7 +59,7 @@ function MeetingPage() {
 
   if (meeting.isLoading) return <LoadingState />;
   if (meeting.error) return <ErrorState error={meeting.error} />;
-  if (!meeting.data || meeting.data.organization_id !== org.id)
+  if (!meeting.data || meeting.data.org_id !== org.id)
     return (
       <EmptyState title="Meeting not found">
         It may belong to another organization.{" "}

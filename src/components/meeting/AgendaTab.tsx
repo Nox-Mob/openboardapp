@@ -67,7 +67,7 @@ export function AgendaTab({ meetingId, editable }: { meetingId: string; editable
         presenter: presenter || null,
         position,
         meeting_id: meetingId,
-        organization_id: org.id,
+        org_id: org.id,
         is_vote_item: isVote,
         proposed_motion: isVote ? motion.trim() || null : null,
         decision_rule: isVote ? rule : null,

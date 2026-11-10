@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { db } from "@/data";
 import type { OrgRole } from "./permissions";
 import { titleIndex, withTitle } from "./titles";
+import { getCurrentOrgCookie, resolveCurrentOrg, setCurrentOrg } from "../../shared/supabase/org";
 
 export interface OrgSummary {
   id: string;
@@ -28,12 +29,27 @@ interface OrgCtx {
 }
 
 const Ctx = createContext<OrgCtx | null>(null);
-const KEY = "board.currentOrg";
+// Earlier versions kept the choice here; read once so it carries over.
+const LEGACY_KEY = "board.currentOrg";
 
+function readLegacy(): string | null {
+  try {
+    return localStorage.getItem(LEGACY_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The current organization is the suite cookie `oah_org` (SHARED-SPEC §4.1): on
+ * .openapphub.org when hosted, so choosing an organization in any app chooses it in
+ * all of them. It's a preference, re-checked against the user's memberships below;
+ * otherwise the first organization alphabetically.
+ */
 export function OrgProvider({ userId, children }: { userId: string; children: ReactNode }) {
   const [orgId, setOrgIdState] = useState<string | null>(null);
   useEffect(() => {
-    setOrgIdState(localStorage.getItem(KEY));
+    setOrgIdState(getCurrentOrgCookie() ?? readLegacy());
   }, []);
 
   const q = useQuery({
@@ -43,7 +59,7 @@ export function OrgProvider({ userId, children }: { userId: string; children: Re
 
   const value = useMemo<OrgCtx>(() => {
     const orgs = q.data ?? [];
-    const org = orgs.find((o) => o.id === orgId) ?? orgs[0] ?? null;
+    const org = resolveCurrentOrg(orgs, orgId);
     return {
       userId,
       orgs,
@@ -51,7 +67,7 @@ export function OrgProvider({ userId, children }: { userId: string; children: Re
       loading: q.isLoading,
       refetch: () => void q.refetch(),
       setOrgId: (id) => {
-        localStorage.setItem(KEY, id);
+        setCurrentOrg(id);
         setOrgIdState(id);
       },
     };

@@ -46,7 +46,7 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
     const { data, error } = await attempt(
       db.minutes.create({
         meeting_id: meeting.id,
-        organization_id: org.id,
+        org_id: org.id,
         version: nextVersion(versions),
         content,
         created_by: userId,

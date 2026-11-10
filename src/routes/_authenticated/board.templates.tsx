@@ -68,7 +68,7 @@ function Templates() {
     const { error } = await attempt(
       db.templates.save({
         ...(form.id ? { id: form.id } : {}),
-        organization_id: org.id,
+        org_id: org.id,
         created_by: userId,
         name: form.name,
         meeting_title: form.meeting_title,

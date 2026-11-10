@@ -71,7 +71,10 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  // Board's tables are in schema "board"; core tables (organizations, memberships,
+  // profiles, invitations) are read with .schema("public").
+  return createClient<Database, "board">(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    db: { schema: "board" },
     global: {
       fetch: createSupabaseFetch(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY),
     },

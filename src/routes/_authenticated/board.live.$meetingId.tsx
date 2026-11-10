@@ -101,7 +101,7 @@ function LiveMeeting() {
 
   if (meeting.isLoading) return <LoadingState />;
   const m = meeting.data;
-  if (!m || m.organization_id !== org.id)
+  if (!m || m.org_id !== org.id)
     return (
       <EmptyState title="Meeting not found">
         <Link to="/board/meetings" className="text-primary underline">
