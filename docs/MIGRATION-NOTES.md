@@ -40,7 +40,7 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
 
 ### 0.2 Next steps
 
-1. Step 3, hygiene: **first part done** (§0.3). Still to do: replace Lovable's Vite wrapper, error reporting and `previewAuthStorage`.
+1. ~~Step 3, hygiene~~ **done**: the first part in §0.3; Lovable's Vite wrapper, error reporting and `previewAuthStorage` removed 2026-11-11 (docs/epic.md S-07).
 2. ~~Steps 4, 5 and 8~~ **done** (§0.4): runner, `migrate.yml`, baseline, DB tests, performance test.
 3. ~~Step 9, the client on `board`~~, the staging seed (step 6) and org scoping (step 10) **done** (§0.5).
 4. ~~Step 11, hosted vs self-hosted, and the AppShell restyle~~ **done** (§0.6).
