@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@shared/ui/AppShell";
 import { hubUrl, isHosted } from "@shared/supabase/hosted";
-import { docsUrl } from "@shared/docs";
+import { helpHrefFor } from "@/config/help";
 import { RouterLink } from "@/lib/router-link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -137,7 +137,7 @@ function Shell() {
       billing={billing.data ?? null}
       canManageBilling={can(org.role, "org.manage")}
       billingHref={hubUrl("/billing")}
-      helpHref={docsUrl("board/")}
+      helpHref={helpHrefFor(pathname)}
       onSignOut={() => void signOut()}
       LinkComponent={RouterLink}
     >

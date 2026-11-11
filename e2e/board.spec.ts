@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { DEMO, mainMenu, signIn } from "./helpers";
 
@@ -84,4 +85,17 @@ test("a wrong password is refused", async ({ page }) => {
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page.getByText(/invalid|incorrect|wrong/i).first()).toBeVisible();
   await expect(page).toHaveURL(/\/auth/);
+});
+
+// The shell's Help link (sidebar or header) opens the docs page for the screen (S-04).
+const helpLink = (page: Page, path: string) =>
+  page.locator(`a[href="https://docs.openapphub.org/${path}"]`).first();
+
+test("the Help link follows the screen", async ({ page }) => {
+  await signIn(page, "owner");
+  await expect(helpLink(page, "board/start/overview/")).toBeAttached();
+  await mainMenu(page).getByRole("link", { name: "Meetings", exact: true }).click();
+  await expect(helpLink(page, "board/meetings/running-a-meeting/")).toBeAttached();
+  await mainMenu(page).getByRole("link", { name: "Documents", exact: true }).click();
+  await expect(helpLink(page, "board/records/minutes-and-documents/")).toBeAttached();
 });
