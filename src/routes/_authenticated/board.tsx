@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { attempt, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
+import { useBilling } from "@/lib/use-billing";
 import { can, ROLE_LABELS } from "@/lib/permissions";
 import { LoadingState } from "@/components/PageStates";
 import { Button } from "@/components/ui/button";
@@ -81,11 +82,7 @@ function Shell() {
     queryFn: () => db.auth.currentUser(),
   });
   // The billing banner (trial, payment problem, read-only); null when billing is off.
-  const billing = useQuery({
-    queryKey: ["billing", org?.id],
-    enabled: !!org,
-    queryFn: () => db.billing.get(org?.id ?? ""),
-  });
+  const billing = useBilling(org?.id);
 
   async function signOut() {
     await qc.cancelQueries();

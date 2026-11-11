@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
 import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage, downloadBlob } from "@/lib/export";
 import { generateMinutes, nextVersion } from "@/lib/minutes";
 import { minutesToPdf } from "@/lib/packet";
@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, can } = useCurrentOrg();
   const minutes = useMinutes(meeting.id);
   const agenda = useAgenda(meeting.id);
   const att = useAttendance(meeting.id);
@@ -37,8 +37,8 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
     if (current) setDraft(current.content);
   }, [current?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const editor = can(org.role, "records.edit");
-  const approver = can(org.role, "minutes.approve");
+  const editor = can("records.edit");
+  const approver = can("minutes.approve");
   const nameOf = (id: string | null) =>
     members.data?.find((m) => m.user_id === id)?.name ?? "Unknown";
 

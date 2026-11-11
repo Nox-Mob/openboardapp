@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { PageHeader, LoadingState, EmptyState } from "@/components/PageStates";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,9 @@ export const Route = createFileRoute("/_authenticated/board/committees")({
 });
 
 function Committees() {
-  const { org } = useCurrentOrg();
+  const { org, can } = useCurrentOrg();
   const qc = useQueryClient();
-  const editor = can(org.role, "records.edit");
+  const editor = can("records.edit");
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const q = useQuery({

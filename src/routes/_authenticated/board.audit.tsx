@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/data";
 import { useCurrentOrg, useOrgMembers } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { PageHeader, LoadingState, EmptyState, ErrorState } from "@/components/PageStates";
 
 export const Route = createFileRoute("/_authenticated/board/audit")({
@@ -41,18 +41,17 @@ const ENTITY: Record<string, string> = {
 };
 
 function Audit() {
-  const { org } = useCurrentOrg();
+  const { org, can } = useCurrentOrg();
   const members = useOrgMembers(org.id);
   const q = useQuery({
-    enabled: can(org.role, "audit.read"),
+    enabled: can("audit.read"),
     queryKey: ["audit", org.id],
     queryFn: () => db.audit.list(org.id),
   });
   const nameOf = (id: string | null) =>
     members.data?.find((m) => m.user_id === id)?.name ?? (id ? "Former member" : "System");
 
-  if (!can(org.role, "audit.read"))
-    return <EmptyState title="Only officers can view the audit log" />;
+  if (!can("audit.read")) return <EmptyState title="Only officers can view the audit log" />;
   return (
     <>
       <PageHeader eyebrow={org.name} title="Audit log">

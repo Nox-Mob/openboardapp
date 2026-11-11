@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { PageHeader, LoadingState, EmptyState, ErrorState } from "@/components/PageStates";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export const Route = createFileRoute("/_authenticated/board/meetings/")({
 });
 
 function Meetings() {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, can } = useCurrentOrg();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -98,7 +98,7 @@ function Meetings() {
         eyebrow={org.name}
         title="Meetings"
         actions={
-          can(org.role, "records.edit") && (
+          can("records.edit") && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button>New meeting</Button>

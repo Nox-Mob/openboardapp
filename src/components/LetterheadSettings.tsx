@@ -4,7 +4,7 @@ import { Upload, FileDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { inspectLetterhead } from "@/lib/letterhead";
 import { loadLetterhead } from "@/lib/load-letterhead";
 import { textToPdf } from "@/lib/packet";
@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LetterheadSettings() {
-  const { org } = useCurrentOrg();
-  const manager = can(org.role, "org.manage");
+  const { org, can } = useCurrentOrg();
+  const manager = can("org.manage");
   const qc = useQueryClient();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);

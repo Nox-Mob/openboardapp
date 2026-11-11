@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { FileText, Vote as VoteIcon } from "lucide-react";
 import { attempt, db } from "@/data";
 import { useCurrentOrg, useTitles } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { signedUrl } from "@/lib/meeting-data";
 import {
@@ -69,7 +69,7 @@ const POLL = 3000;
 
 function LiveMeeting() {
   const { meetingId } = Route.useParams();
-  const { org } = useCurrentOrg();
+  const { org, can } = useCurrentOrg();
   const qc = useQueryClient();
   const meeting = useQuery({
     queryKey: ["meeting", meetingId],
@@ -113,7 +113,7 @@ function LiveMeeting() {
   const live = m.status === "in_progress";
   const openMotion = motions.data?.find((x) => x.voting_status === "open");
   const liveVotes = (motions.data ?? []).filter((x) => x.voting_status === "closed").reverse();
-  const officer = can(org.role, "records.edit");
+  const officer = can("records.edit");
 
   return (
     <>
@@ -362,7 +362,7 @@ function OpenVote({
   live: boolean;
   onChange: () => void;
 }) {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, readOnly } = useCurrentOrg();
   const progress = useQuery({
     queryKey: ["vote", "progress", motion.id],
     queryFn: () => db.voting.progress(motion.id),
@@ -457,7 +457,11 @@ function OpenVote({
         <p className="mt-4 rounded-md border border-success/40 bg-success/5 px-3 py-2 text-sm font-medium">
           Your vote is recorded: {VOTE_LABEL[myVote.vote as Vote]}. It cannot be changed.
         </p>
-      ) : !live ? null : eligible === false ? (
+      ) : !live ? null : readOnly ? (
+        <p className="mt-4 rounded-md border px-3 py-2 text-sm text-muted-foreground">
+          Board is read-only for this organization, so votes can't be cast.
+        </p>
+      ) : eligible === false ? (
         <p className="mt-4 rounded-md border px-3 py-2 text-sm text-muted-foreground">
           You are not on the voter list for this motion. Only voting members present when it was
           opened can vote.
@@ -479,7 +483,7 @@ function OpenVote({
         </div>
       ) : null}
 
-      {canCloseEarly(org.role, org) && (
+      {!readOnly && canCloseEarly(org.role, org) && (
         <Button variant="outline" className="mt-4" onClick={close}>
           Close vote
         </Button>

@@ -5,7 +5,7 @@ import { attempt, db } from "@/data";
 import { errorMessage } from "@/lib/export";
 import { useCurrentOrg } from "@/lib/org-context";
 import { confirmationMatches } from "@/lib/ownership";
-import { can, ROLE_LABELS } from "@/lib/permissions";
+import { ROLE_LABELS } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,8 +25,8 @@ import {
  * typed name, so nothing here is the security boundary.
  */
 export function TransferOwnership() {
-  const { org } = useCurrentOrg();
-  const owner = can(org.role, "ownership.transfer");
+  const { org, can } = useCurrentOrg();
+  const owner = can("ownership.transfer");
   const qc = useQueryClient();
   const [selected, setSelected] = useState("");
   const [open, setOpen] = useState(false);

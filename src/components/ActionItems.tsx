@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
 import { useCurrentOrg, useOrgMembers, useTitles } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { LoadingState, EmptyState } from "@/components/PageStates";
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,11 @@ const STATUSES = ["open", "in_progress", "done", "cancelled"] as const;
 type Status = (typeof STATUSES)[number];
 
 export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineOnly?: boolean }) {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, can, readOnly } = useCurrentOrg();
   const members = useOrgMembers(org.id);
   const titles = useTitles(org.id);
   const qc = useQueryClient();
-  const editor = can(org.role, "records.edit");
+  const editor = can("records.edit");
   const [f, setF] = useState({ title: "", assignee_id: "", due_date: "" });
   const today = new Date().toLocaleDateString("en-CA");
   const key = ["actions", org.id, meetingId ?? "all", mineOnly ? "mine" : "any"];
@@ -150,7 +150,7 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
                   <Select
                     value={t.status}
                     onValueChange={(v) => setStatus(t.id, v as Status)}
-                    disabled={!editor && t.assignee_id !== userId}
+                    disabled={readOnly || (!editor && t.assignee_id !== userId)}
                   >
                     <SelectTrigger className="w-36">
                       <SelectValue />
