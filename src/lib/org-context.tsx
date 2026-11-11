@@ -3,7 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { db } from "@/data";
 import type { OrgRole } from "./permissions";
 import { titleIndex, withTitle } from "./titles";
-import { getCurrentOrgCookie, resolveCurrentOrg, setCurrentOrg , takeOrgFromUrl } from "../../shared/supabase/org";
+import {
+  getCurrentOrgCookie,
+  resolveCurrentOrg,
+  setCurrentOrg,
+  takeOrgFromUrl,
+} from "../../shared/supabase/org";
 
 export interface OrgSummary {
   id: string;
