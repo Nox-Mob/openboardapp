@@ -10,7 +10,7 @@ export { detectPlatform, type Platform } from "./platform";
 
 export function selectAdapter(platform: Platform): DataLayer {
   switch (platform) {
-    case "lovable-cloud":
+    case "supabase":
       return cloudAdapter;
     default:
       throw new Error("No data platform is configured for this app.");
