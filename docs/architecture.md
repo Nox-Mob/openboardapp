@@ -1,6 +1,6 @@
 # OpenBoard architecture
 
-Current as of October 9, 2026. One board-management application backed by Lovable Cloud: PostgreSQL, authentication and private file storage. No microservices, queues, offline database or synchronization engine.
+One board-management application backed by Supabase (the OpenAppHub suite's shared project when hosted, your own when self-hosted): PostgreSQL, authentication and private file storage. No microservices, queues, offline database or synchronization engine.
 
 ```text
 React screens (src/routes, src/components)
@@ -23,7 +23,7 @@ Status labels used below: **Implemented and tested**, **Implemented, partly veri
 
 - **Screens** use `db` from `@/data`, not database or storage clients. React Query manages caching, invalidation and live-meeting polling. Shared `EmptyState`, `LoadingState` and `ErrorState` components live in `src/components/PageStates.tsx`.
 - **Data facade** (`src/data/index.ts`) selects the configured adapter and exports its `DataLayer` type. `attempt()` converts a rejected data call into a `{ data, error }` result for form handlers.
-- **Platform detection** (`src/data/platform.ts`) recognizes Lovable Cloud when both public connection settings exist. An unconfigured platform fails explicitly. There is currently only one adapter; the abstraction does not imply SQLite, self-hosting or offline support.
+- **Platform detection** (`src/data/platform.ts`) recognizes Supabase when both public connection settings exist. An unconfigured platform fails explicitly. There is currently only one adapter; the abstraction does not imply SQLite, self-hosting or offline support.
 - **Cloud adapter** (`src/data/cloud-adapter.ts`) owns authentication, table queries, private file operations and governance RPC calls. Ordinary requests run as the signed-in user under row-level security. `DataLayer` is currently inferred from this adapter rather than defined as an independent ports package.
 - **Shared rules** (`src/lib`) contain browser-safe permission, voting, title, template, minutes and export helpers. There is no separate services/domain/ports hierarchy.
 - **Database guards** enforce organization isolation, permissions, parent-link consistency, audit history, official-record locks and atomic live voting. Client-side checks improve the experience but are not the security boundary.

@@ -1,17 +1,6 @@
-<!-- LOVABLE:BEGIN -->
-
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-
-<!-- LOVABLE:END -->
-
 # AGENTS.md — OpenBoardApp (Nox-Mob/OpenBoardApp)
+
+> **Branches (owner rule, 2026-11-11):** pull requests target `staging`, and every merge goes to `staging`. Nothing merges into `main` (production) without the owner's approval, or the owner merging it. CI runs on pull requests and on pushes to `staging`; only workflows that must run on `main` (releases) do.
 
 ## Suite migration (v2)
 
@@ -37,7 +26,7 @@ Board's own project (`dnsqxiiexkdokgebysrt`) is wiped after Board moves and beco
 | D8 inputs       | Spec §0.1 is filled in. **Design is a full refresh** for every app (spec §9).                                                                                                                                                                                                                                                    |
 | C4 audit        | Audit `board.*` only; core table history is the hub's (`hub.audit_log`).                                                                                                                                                                                                                                                         |
 | C8 Google       | Plain `supabase.auth.signInWithOAuth` for self-hosted; hosted sign-in is the hub.                                                                                                                                                                                                                                                |
-| C9 Lovable      | **Owner disconnects Lovable before Phase 2 reaches `main`.** List it as an owner step in the step-3 PR.                                                                                                                                                                                                                          |
+| C9 Old editor   | **Done:** the repo is disconnected from the old editor and its tooling is removed (S-07).                                                                                                                                                                                                                                        |
 | Step 7          | Skip the export helper, as you proposed.                                                                                                                                                                                                                                                                                         |
 
 ### Changes to your plan
