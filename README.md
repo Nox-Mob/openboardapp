@@ -29,6 +29,8 @@ npm run dev
 
 Checks: `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run test:unit`, `npm run build`.
 
+End-to-end tests: `npm run test:e2e` (Playwright, `e2e/`) runs the app on a local dev server, self-hosted (its own sign-in page), against **staging** as the suite demo accounts (`demo@demo.openapphub.org` owns Riverside Community Association; `test@demo.openapphub.org` has no organization; password `OpenAppHubDemo2026`; reset every 12 hours). Staging's public settings come from `wrangler.jsonc` `env.staging`, so no secrets are needed. CI runs it in `.github/workflows/e2e.yml`. In the Claude cloud sandbox: `E2E_NO_SANDBOX=1 E2E_CHROMIUM_PATH=/opt/pw-browsers/chromium-1243/chrome-linux64/chrome npm run test:e2e`.
+
 ## Self-hosting
 
 Board runs on its own server and its own Supabase project. `npm run build` builds from your own `.env` / `.env.local` (see [`.env.example`](.env.example)); it needs no secrets. The database is the OpenAppHub core plus Board's schema `board`: run `DATABASE_URL=postgres://… npm run db:migrate` (it applies `db/core` then `db/migrations`, and only what's new on later runs), then add `board` to the exposed schemas (Supabase: Project Settings → Data API; Docker: `PGRST_DB_SCHEMAS` in the stack's `.env`). Demo data for development or staging: `npm run db:migrate -- --seed` (it refuses a database with real organizations). With `VITE_HOSTED=false` (the default) Board keeps its own sign-in, organizations and invitations and doesn't link to openapphub.org. `wrangler.jsonc` isn't used.

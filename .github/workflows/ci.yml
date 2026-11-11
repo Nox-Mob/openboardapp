@@ -94,7 +94,9 @@ jobs:
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: Install psql
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+        # GitHub's Ubuntu runners ship psql; install it through apt only when it's missing,
+        # so an Ubuntu mirror outage doesn't fail the run.
+        run: command -v psql || (sudo apt-get update && sudo apt-get install -y postgresql-client)
       - name: Static migration checks (row level security + policies on every table)
         run: node scripts/ci/check-migrations.mjs
       - name: Apply migrations and run the rule tests
@@ -127,7 +129,9 @@ jobs:
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: Install psql
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+        # GitHub's Ubuntu runners ship psql; install it through apt only when it's missing,
+        # so an Ubuntu mirror outage doesn't fail the run.
+        run: command -v psql || (sudo apt-get update && sudo apt-get install -y postgresql-client)
       - name: Seed a large board history and time the heavy reads
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres

@@ -1,5 +1,7 @@
 # Roadmap
 
+The to-do list, with what's left for the OpenAppHub suite migration, is now [`docs/epic.md`](docs/epic.md). This file keeps the original checklist.
+
 - [x] Plan approved
 - [x] Foundation: sign-in, organizations, roles, invites
 - [x] Governance: roster, officers, terms, committees
