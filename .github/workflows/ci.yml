@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: Vendored shared code matches OpenAppHub
         run: node scripts/check-shared.mjs
@@ -69,7 +69,7 @@ jobs:
       - name: Report failures
         if: failure()
         run: echo "### ❌ Unit tests failed — see the annotations for which rule broke." >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with: { name: unit-test-results, path: test-results.xml }
 
@@ -91,7 +91,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: Install psql
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
@@ -124,7 +124,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: Install psql
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
@@ -144,7 +144,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: tsc --noEmit
         run: |
@@ -163,7 +163,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: vite build
         run: |
@@ -181,7 +181,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: eslint
         run: |
@@ -199,7 +199,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - run: npm run format:check || (echo "### ⚠️ Files not formatted — run \`npm run format\` locally" >> "$GITHUB_STEP_SUMMARY"; exit 1)
 
@@ -209,7 +209,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with: { node-version: 22, cache: npm }
+        with: { node-version: 24, cache: npm }
       - run: npm ci
       - name: Audit shipped packages (fails on high/critical)
         run: |
