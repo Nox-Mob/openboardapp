@@ -3,7 +3,7 @@
  * Pages never import a database client; they call `db` from "@/data",
  * which picks an adapter based on this check.
  */
-export type Platform = "lovable-cloud" | "unconfigured";
+export type Platform = "supabase" | "unconfigured";
 
 export interface PlatformEnv {
   VITE_SUPABASE_URL?: string;
@@ -11,6 +11,6 @@ export interface PlatformEnv {
 }
 
 export function detectPlatform(env: PlatformEnv): Platform {
-  if (env.VITE_SUPABASE_URL && env.VITE_SUPABASE_PUBLISHABLE_KEY) return "lovable-cloud";
+  if (env.VITE_SUPABASE_URL && env.VITE_SUPABASE_PUBLISHABLE_KEY) return "supabase";
   return "unconfigured";
 }

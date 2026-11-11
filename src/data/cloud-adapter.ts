@@ -84,9 +84,9 @@ export const EXPORT_TABLES = [
 ] as const;
 export type ExportTable = (typeof EXPORT_TABLES)[number];
 
-/** Lovable Cloud implementation of the data layer. All reads/writes run under row-level security as the signed-in user. */
+/** Supabase implementation of the data layer. All reads/writes run under row-level security as the signed-in user. */
 export const cloudAdapter = {
-  platform: "lovable-cloud" as const,
+  platform: "supabase" as const,
 
   auth: {
     async hasSession() {

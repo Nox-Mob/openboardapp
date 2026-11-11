@@ -5,10 +5,10 @@ import { detectPlatform } from "./platform";
 import { selectAdapter } from "./index";
 
 describe("data layer platform check", () => {
-  it("uses Lovable Cloud when its URL and key are configured", () => {
+  it("uses Supabase when its URL and key are configured", () => {
     expect(
       detectPlatform({ VITE_SUPABASE_URL: "https://x", VITE_SUPABASE_PUBLISHABLE_KEY: "k" }),
-    ).toBe("lovable-cloud");
+    ).toBe("supabase");
   });
   it("reports unconfigured when either setting is missing", () => {
     expect(detectPlatform({ VITE_SUPABASE_URL: "https://x" })).toBe("unconfigured");
@@ -16,7 +16,7 @@ describe("data layer platform check", () => {
   });
   it("refuses to run without a configured platform", () => {
     expect(() => selectAdapter("unconfigured")).toThrow(/No data platform/);
-    expect(selectAdapter("lovable-cloud").platform).toBe("lovable-cloud");
+    expect(selectAdapter("supabase").platform).toBe("supabase");
   });
 });
 
@@ -35,9 +35,7 @@ describe("UI code never talks to the database directly", () => {
   );
   it("no page, component or helper imports the database client", () => {
     const offenders = ui.filter((f) =>
-      /@\/integrations\/supabase\/client["']|@\/integrations\/lovable/.test(
-        readFileSync(f, "utf8"),
-      ),
+      /@\/integrations\/supabase\/client["']/.test(readFileSync(f, "utf8")),
     );
     expect(offenders).toEqual([]);
   });
