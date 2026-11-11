@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { db } from "@/data";
 import type { OrgRole } from "./permissions";
 import { titleIndex, withTitle } from "./titles";
-import { getCurrentOrgCookie, resolveCurrentOrg, setCurrentOrg } from "../../shared/supabase/org";
+import { getCurrentOrgCookie, resolveCurrentOrg, setCurrentOrg , takeOrgFromUrl } from "../../shared/supabase/org";
 
 export interface OrgSummary {
   id: string;
@@ -49,7 +49,8 @@ function readLegacy(): string | null {
 export function OrgProvider({ userId, children }: { userId: string; children: ReactNode }) {
   const [orgId, setOrgIdState] = useState<string | null>(null);
   useEffect(() => {
-    setOrgIdState(getCurrentOrgCookie() ?? readLegacy());
+    // A link from OpenAppHub (?org=) opens that organization; then the suite cookie.
+    setOrgIdState(takeOrgFromUrl() ?? getCurrentOrgCookie() ?? readLegacy());
   }, []);
 
   const q = useQuery({
