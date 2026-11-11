@@ -1,3 +1,4 @@
+import { hubUrl, isHosted } from "@shared/supabase/hosted";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -82,8 +83,8 @@ function RoleCard({
   candidates,
   orgId,
 }: {
-  role: Tables<"board_positions">;
-  terms: Tables<"board_terms">[];
+  role: Tables<"positions">;
+  terms: Tables<"terms">[];
   today: string;
   editor: boolean;
   candidates: Candidate[];
@@ -108,7 +109,7 @@ function RoleCard({
     if (!c) return;
     const { error } = await attempt(
       db.terms.assign({
-        organization_id: orgId,
+        org_id: orgId,
         position_id: role.id,
         position: role.title,
         person_name: c.name,
@@ -283,7 +284,7 @@ function Members() {
   }
 
   async function changeRole(id: string, role: OrgRole) {
-    const { error } = await attempt(db.members.setRole(id, role));
+    const { error } = await attempt(db.members.setRole(org.id, id, role));
     if (error) {
       toast.error(errorMessage(error));
       return;
@@ -292,7 +293,7 @@ function Members() {
   }
   async function removeMember(id: string) {
     if (!confirm("Remove this person from the organization?")) return;
-    const { error } = await attempt(db.members.remove(id));
+    const { error } = await attempt(db.members.remove(org.id, id));
     if (error) {
       toast.error(errorMessage(error));
       return;
@@ -303,7 +304,7 @@ function Members() {
     e.preventDefault();
     const { error } = await attempt(
       db.positions.add({
-        organization_id: org.id,
+        org_id: org.id,
         title: role.title.trim(),
         term_years: role.term_years,
         sort_order: positions.data?.length ?? 0,
@@ -397,57 +398,73 @@ function Members() {
         </section>
         {manager && (
           <section className="space-y-3">
-            <form onSubmit={invite} className="space-y-3 rounded-lg border bg-card p-5">
-              <p className="eyebrow">Invite someone</p>
-              <div>
-                <Label>Email (for your records)</Label>
-                <Input
-                  type="email"
-                  value={inv.email}
-                  onChange={(e) => setInv({ ...inv, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Role</Label>
-                <Select
-                  value={inv.role}
-                  onValueChange={(v) => setInv({ ...inv, role: v as OrgRole })}
+            {isHosted() ? (
+              <div className="space-y-2 rounded-lg border bg-card p-5">
+                <p className="eyebrow">Invite someone</p>
+                <p className="text-sm text-muted-foreground">
+                  Invitations are sent from OpenAppHub, for every app at once. An office (chair,
+                  secretary, treasurer) is set here once they've joined.
+                </p>
+                <a
+                  href={hubUrl("/members")}
+                  className="text-sm font-medium text-primary hover:underline"
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INVITABLE.map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {ROLE_LABELS[r]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  Members and invitations
+                </a>
               </div>
-              <Button type="submit" className="w-full">
-                Create invite link
-              </Button>
-              {link && (
-                <div className="rounded-md bg-muted p-3 text-xs">
-                  <p className="mb-1 font-medium">Send this link (valid 14 days, single use):</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 break-all">{link}</code>
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => {
-                        navigator.clipboard.writeText(link);
-                        toast.success("Copied");
-                      }}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
+            ) : (
+              <form onSubmit={invite} className="space-y-3 rounded-lg border bg-card p-5">
+                <p className="eyebrow">Invite someone</p>
+                <div>
+                  <Label>Email (for your records)</Label>
+                  <Input
+                    type="email"
+                    value={inv.email}
+                    onChange={(e) => setInv({ ...inv, email: e.target.value })}
+                  />
                 </div>
-              )}
-            </form>
+                <div>
+                  <Label>Role</Label>
+                  <Select
+                    value={inv.role}
+                    onValueChange={(v) => setInv({ ...inv, role: v as OrgRole })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INVITABLE.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {ROLE_LABELS[r]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button type="submit" className="w-full">
+                  Create invite link
+                </Button>
+                {link && (
+                  <div className="rounded-md bg-muted p-3 text-xs">
+                    <p className="mb-1 font-medium">Send this link (valid 14 days, single use):</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 break-all">{link}</code>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          navigator.clipboard.writeText(link);
+                          toast.success("Copied");
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </form>
+            )}
             {!!invites.data?.length && (
               <div className="rounded-lg border bg-card p-4 text-sm">
                 <p className="eyebrow mb-2">Pending invites</p>

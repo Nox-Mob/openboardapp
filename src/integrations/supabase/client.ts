@@ -2,6 +2,9 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { brokeredPreviewStorage } from "./previewAuthStorage";
+import { createBrowserClient } from "@supabase/ssr";
+import { isHosted } from "../../../shared/supabase/hosted";
+import { cookieOptions } from "../../../shared/supabase/client";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -71,7 +74,19 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  // Board's tables are in schema "board"; core tables (organizations, memberships,
+  // profiles, invitations) are read with .schema("public").
+  // Hosted (SHARED-SPEC §4.1): the session is a cookie on .openapphub.org, shared with the
+  // hub and the other apps, so one sign-in covers the suite. Self-hosted: as before.
+  if (isHosted() && typeof window !== "undefined") {
+    return createBrowserClient<Database, "board">(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      db: { schema: "board" },
+      cookieOptions: cookieOptions(),
+    });
+  }
+
+  return createClient<Database, "board">(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    db: { schema: "board" },
     global: {
       fetch: createSupabaseFetch(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY),
     },

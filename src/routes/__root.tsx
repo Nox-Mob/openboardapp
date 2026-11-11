@@ -14,6 +14,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { db } from "@/data";
 import { Toaster } from "@/components/ui/sonner";
+import { themeInitScript } from "@shared/theme";
+import { CookieConsent } from "@shared/ui/CookieConsent";
 
 function NotFoundComponent() {
   return (
@@ -93,12 +95,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Libre+Baskerville:wght@400;700&display=swap",
-      },
     ],
   }),
   shellComponent: RootShell,
@@ -109,8 +105,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-app="board" suppressHydrationWarning>
       <head>
+        {/* The suite's light / dark / system choice, applied before first paint (shared/theme.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript() }} />
         <HeadContent />
       </head>
       <body>
@@ -136,6 +134,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster richColors position="top-right" />
+      <CookieConsent policyHref="/cookies" privacyHref="/privacy" />
     </QueryClientProvider>
   );
 }

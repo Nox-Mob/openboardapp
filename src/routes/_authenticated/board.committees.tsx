@@ -40,7 +40,7 @@ function Committees() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await attempt(
-      db.committees.add({ name, description: desc || null, organization_id: org.id }),
+      db.committees.add({ name, description: desc || null, org_id: org.id }),
     );
     if (error) {
       toast.error(errorMessage(error));
@@ -56,7 +56,7 @@ function Committees() {
         committee_id: committeeId,
         person_name,
         role: role || "Member",
-        organization_id: org.id,
+        org_id: org.id,
       }),
     );
     if (error) {

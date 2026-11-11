@@ -80,7 +80,7 @@ function Meetings() {
     const agenda = chosen ? chosen.agenda : STANDARD_AGENDA;
     const { data, error } = await attempt(
       db.meetings.create(
-        { ...form, organization_id: org.id, created_by: userId, status: "scheduled" },
+        { ...form, org_id: org.id, created_by: userId, status: "scheduled" },
         agenda,
       ),
     );

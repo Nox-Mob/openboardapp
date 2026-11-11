@@ -36,7 +36,7 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
       .filter((m) => !existing.has(m.user_id) && m.role !== "observer")
       .map((m) => ({
         meeting_id: meetingId,
-        organization_id: org.id,
+        org_id: org.id,
         user_id: m.user_id,
         person_name: m.name,
         status: "absent" as const,
@@ -58,7 +58,7 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
     const { error } = await attempt(
       db.attendance.add({
         meeting_id: meetingId,
-        organization_id: org.id,
+        org_id: org.id,
         person_name: guest,
         status: "present",
         is_voting: false,

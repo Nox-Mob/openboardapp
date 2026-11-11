@@ -17,7 +17,7 @@
 
 **Read `docs/SHARED-SPEC.md` (v2) first.** Your step plan is the **Progress** table in `docs/MIGRATION-NOTES.md`; this file gives the owner's answers and the changes v2 makes to it.
 
-App ID `board` · schema `board` · hosted at `board.openapphub.org` (staging `board-staging.openapphub.org`) · package manager **npm**.
+App ID `board` · schema `board` · hosted at `board.openapphub.org` (staging `staging.board.staging.openapphub.org`) · package manager **npm**.
 
 Board's own project (`dnsqxiiexkdokgebysrt`) is wiped after Board moves and becomes the suite's **staging** project. Nothing in it is copied; demo content becomes seed SQL.
 
@@ -109,7 +109,7 @@ These describe the code as it is today. Each migration step that changes one of 
 - Letterhead: organization_letterheads stores the active private org-files reference; upload paths are unique, managers alone change stationery, and shared prepareLetterhead paints only generated pages with reserved header/footer space, never existing packet attachments.
 - Routing: public website at /, signed-in app under /\_authenticated/board; current org is kept in localStorage via OrgProvider.
 - Exports escape formula-looking text via src/lib/export.ts.
-- Demo: "Riverside Community Association" (d0000000-0000-0000-0000-000000000001) is built by public.reset_demo() (supabase/migrations/20261106010000_demo_org.sql), which pg_cron reruns every 6 hours. Five people hold the five board positions; only one demo account (Alex Morgan, Vice President, admin, not owner) can sign in, and its credentials are shown on the sign-in page, not here. The others use @riverside.example.org addresses with no password and are banned. Change demo content in that function, never on page load. Step 6 replaces this with staging-only seed SQL on @demo.openapphub.org addresses.
+- Demo (staging only): "Riverside Community Association" (d0000000-0000-0000-0000-000000000001) is built once by db/seed/0001_board_demo.sql (`npm run db:migrate -- --seed`; Migrate → staging). Five people hold the five board positions; only one demo account (Alex Morgan, Vice President, admin, not owner) can sign in, and its sign-in is offered only where VITE_ALLOW_DEMO_LOGIN=true (staging) or on dev servers. The others use @riverside.example.org addresses with no password and are banned. Change demo content in the seed, never on page load.
 - Tests: db/tests/\*.sql (npm run db:test) build a throwaway database with the migration runner and test the database rules; npm run db:perf times heavy reads up to 50,000 meetings; src/test/pages.test.tsx pins every route. Never point db tests at a real database.
 - Live voting: member votes are written only through SECURITY DEFINER RPCs (start_vote, cast_vote, close_vote, record_disposition) that lock the motion row, freeze the electorate at open, and snapshot the record into motions.vote_record; member_votes/vote_electorate are immutable and protect_live_motion blocks direct edits, so official votes never depend on the UI. Vote items on the agenda may override the org decision rule (agenda_items.decision_rule, null = org default); start_vote snapshots the effective rule into vote_record.
 - Board roles: board_positions holds each role and its term length; board_terms rows are the holder history (position_id links them), and handing a role over ends the open term the day before so history is never overwritten; current titles come from src/lib/titles.ts and show beside names via useTitles.

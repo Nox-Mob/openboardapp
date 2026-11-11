@@ -47,7 +47,7 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
         assignee_id: f.assignee_id || null,
         due_date: f.due_date || null,
         meeting_id: meetingId ?? null,
-        organization_id: org.id,
+        org_id: org.id,
         created_by: userId,
       }),
     );

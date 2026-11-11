@@ -1,5 +1,9 @@
-import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AppShell } from "@shared/ui/AppShell";
+import { hubUrl, isHosted } from "@shared/supabase/hosted";
+import { docsUrl } from "@shared/docs";
+import { RouterLink } from "@/lib/router-link";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -7,7 +11,6 @@ import {
   FileText,
   LayoutDashboard,
   ListChecks,
-  LogOut,
   ScrollText,
   Settings,
   Users,
@@ -62,16 +65,34 @@ const nav = [
   { to: "/board/committees", label: "Committees", icon: Network },
 ] as const;
 
+/**
+ * Every board page sits in the suite's AppShell (shared/ui, SHARED-SPEC §9): sidebar, top bar
+ * with the suite and organization switchers, Help and the user menu (theme, sign out), and the
+ * billing banner. Hosted, organizations are created in OpenAppHub.
+ */
 function Shell() {
-  const { orgs, org, setOrgId, loading } = useOrg();
+  const { orgs, org, setOrgId, loading, userId } = useOrg();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+
+  const user = useQuery({
+    queryKey: ["auth-user", userId],
+    queryFn: () => db.auth.currentUser(),
+  });
+  // The billing banner (trial, payment problem, read-only); null when billing is off.
+  const billing = useQuery({
+    queryKey: ["billing", org?.id],
+    enabled: !!org,
+    queryFn: () => db.billing.get(org?.id ?? ""),
+  });
 
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
     await db.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    if (isHosted()) window.location.assign(hubUrl("/"));
+    else navigate({ to: "/auth", replace: true });
   }
 
   if (loading)
@@ -82,103 +103,81 @@ function Shell() {
     );
   if (!org) return <CreateOrg onSignOut={signOut} />;
 
+  const items = [
+    ...nav,
+    ...(can(org.role, "audit.read")
+      ? [{ to: "/board/audit", label: "Audit log", icon: ScrollText }]
+      : []),
+  ];
+  const isCurrent = (to: string, exact?: boolean) =>
+    exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+
   return (
-    <div className="flex min-h-screen">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex">
-        <div className="border-b border-sidebar-border px-5 py-5">
-          <Link to="/" className="font-display text-lg">
-            OpenBoardApp
-          </Link>
-          <select
-            aria-label="Organization"
-            className="mt-3 w-full rounded-md border border-sidebar-border bg-sidebar-accent px-2 py-1.5 text-sm text-sidebar-accent-foreground"
-            value={org.id}
-            onChange={(e) =>
-              e.target.value === "__new" ? setOrgId("__new") : setOrgId(e.target.value)
-            }
-          >
-            {orgs.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}
-              </option>
-            ))}
-          </select>
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-sidebar-foreground/60">
-            {ROLE_LABELS[org.role]}
-          </p>
-        </div>
-        <nav className="flex-1 space-y-0.5 p-3">
-          {nav.map((n) => (
-            <Link
-              key={n.to}
-              to={n.to}
-              activeOptions={{ exact: "exact" in n }}
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
-            >
-              <n.icon className="h-4 w-4" /> {n.label}
-            </Link>
-          ))}
-          {can(org.role, "audit.read") && (
-            <Link
-              to="/board/audit"
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent"
-              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
-            >
-              <ScrollText className="h-4 w-4" /> Audit log
-            </Link>
-          )}
-          <Link
-            to="/board/settings"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent"
-            activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
-          >
-            <Settings className="h-4 w-4" /> Settings & export
-          </Link>
-        </nav>
+    <AppShell
+      app="board"
+      nav={items.map((n) => ({
+        label: n.label,
+        href: n.to,
+        icon: <n.icon aria-hidden="true" />,
+        current: isCurrent(n.to, "exact" in n),
+      }))}
+      navFooter={[
+        {
+          label: "Settings & export",
+          href: "/board/settings",
+          icon: <Settings aria-hidden="true" />,
+          current: isCurrent("/board/settings"),
+        },
+      ]}
+      user={user.data ?? null}
+      orgs={orgs.map((o) => ({ id: o.id, name: o.name, role: ROLE_LABELS[o.role] }))}
+      currentOrgId={org.id}
+      onSelectOrg={(id) => setOrgId(id)}
+      {...(isHosted() ? { orgCreateHref: hubUrl("/orgs/new") } : {})}
+      billing={billing.data ?? null}
+      canManageBilling={can(org.role, "org.manage")}
+      billingHref={hubUrl("/billing")}
+      helpHref={docsUrl("board/")}
+      onSignOut={() => void signOut()}
+      LinkComponent={RouterLink}
+    >
+      <Outlet />
+    </AppShell>
+  );
+}
+
+function CreateOrg({ onSignOut }: { onSignOut: () => void }) {
+  if (isHosted()) return <CreateOrgInHub onSignOut={onSignOut} />;
+  return <CreateOrgHere onSignOut={onSignOut} />;
+}
+
+/** Hosted: organizations are created in OpenAppHub, then open here. */
+function CreateOrgInHub({ onSignOut }: { onSignOut: () => void }) {
+  return (
+    <div className="grid min-h-screen place-items-center px-4">
+      <div className="w-full max-w-md rounded-lg border bg-card p-8">
+        <p className="eyebrow">Welcome</p>
+        <h1 className="mt-2 text-2xl">Set up your organization</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Organizations are created in OpenAppHub, for every app at once. If you were invited, open
+          the invitation link instead.
+        </p>
+        <Button asChild className="mt-5 w-full">
+          <a href={hubUrl("/orgs/new")}>Create organization</a>
+        </Button>
         <button
-          onClick={signOut}
-          className="flex items-center gap-3 border-t border-sidebar-border px-6 py-4 text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground"
+          type="button"
+          onClick={onSignOut}
+          className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
         >
-          <LogOut className="h-4 w-4" /> Sign out
+          Sign out
         </button>
-      </aside>
-      <div className="flex-1">
-        <div className="flex items-center justify-between border-b bg-sidebar px-4 py-3 text-sidebar-foreground md:hidden">
-          <span className="font-display">{org.name}</span>
-          <button onClick={signOut} aria-label="Sign out">
-            <LogOut className="h-4 w-4" />
-          </button>
-        </div>
-        <nav className="flex gap-1 overflow-x-auto border-b bg-card px-2 py-2 md:hidden">
-          {nav.map((n) => (
-            <Link
-              key={n.to}
-              to={n.to}
-              activeOptions={{ exact: "exact" in n }}
-              className="whitespace-nowrap rounded px-3 py-1.5 text-xs"
-              activeProps={{ className: "bg-primary text-primary-foreground" }}
-            >
-              {n.label}
-            </Link>
-          ))}
-          <Link
-            to="/board/settings"
-            className="whitespace-nowrap rounded px-3 py-1.5 text-xs"
-            activeProps={{ className: "bg-primary text-primary-foreground" }}
-          >
-            Settings
-          </Link>
-        </nav>
-        <main className="mx-auto max-w-6xl px-4 py-8 md:px-10">
-          <Outlet />
-        </main>
       </div>
     </div>
   );
 }
 
-function CreateOrg({ onSignOut }: { onSignOut: () => void }) {
+function CreateOrgHere({ onSignOut }: { onSignOut: () => void }) {
   const { refetch, setOrgId } = useOrg();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);

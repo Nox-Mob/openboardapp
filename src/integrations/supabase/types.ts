@@ -7,12 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.18"
-  }
-  public: {
+  board: {
     Tables: {
       action_items: {
         Row: {
@@ -23,10 +18,11 @@ export type Database = {
           due_date: string | null
           id: string
           meeting_id: string | null
-          organization_id: string
-          status: Database["public"]["Enums"]["task_status"]
+          org_id: string
+          status: Database["board"]["Enums"]["task_status"]
           title: string
         }
+        ComputedFields: never
         Insert: {
           assignee_id?: string | null
           created_at?: string
@@ -35,8 +31,8 @@ export type Database = {
           due_date?: string | null
           id?: string
           meeting_id?: string | null
-          organization_id: string
-          status?: Database["public"]["Enums"]["task_status"]
+          org_id: string
+          status?: Database["board"]["Enums"]["task_status"]
           title: string
         }
         Update: {
@@ -47,23 +43,15 @@ export type Database = {
           due_date?: string | null
           id?: string
           meeting_id?: string | null
-          organization_id?: string
-          status?: Database["public"]["Enums"]["task_status"]
+          org_id?: string
+          status?: Database["board"]["Enums"]["task_status"]
           title?: string
         }
         Relationships: [
           {
             foreignKeyName: "action_items_meeting_id_fkey"
             columns: ["meeting_id"]
-            isOneToOne: false
             referencedRelation: "meetings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "action_items_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -78,12 +66,13 @@ export type Database = {
           is_vote_item: boolean
           meeting_id: string
           notes: string
-          organization_id: string
+          org_id: string
           position: number
           presenter: string | null
           proposed_motion: string | null
           title: string
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           decision_rule?: string | null
@@ -93,7 +82,7 @@ export type Database = {
           is_vote_item?: boolean
           meeting_id: string
           notes?: string
-          organization_id: string
+          org_id: string
           position?: number
           presenter?: string | null
           proposed_motion?: string | null
@@ -108,7 +97,7 @@ export type Database = {
           is_vote_item?: boolean
           meeting_id?: string
           notes?: string
-          organization_id?: string
+          org_id?: string
           position?: number
           presenter?: string | null
           proposed_motion?: string | null
@@ -118,15 +107,7 @@ export type Database = {
           {
             foreignKeyName: "agenda_items_meeting_id_fkey"
             columns: ["meeting_id"]
-            isOneToOne: false
             referencedRelation: "meetings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agenda_items_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -137,19 +118,22 @@ export type Database = {
           id: string
           is_voting: boolean
           meeting_id: string
-          organization_id: string
+          org_id: string
+          person_id: string | null
           person_name: string
-          status: Database["public"]["Enums"]["attendance_status"]
+          status: Database["board"]["Enums"]["attendance_status"]
           user_id: string | null
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           id?: string
           is_voting?: boolean
           meeting_id: string
-          organization_id: string
+          org_id: string
+          person_id?: string | null
           person_name: string
-          status?: Database["public"]["Enums"]["attendance_status"]
+          status?: Database["board"]["Enums"]["attendance_status"]
           user_id?: string | null
         }
         Update: {
@@ -157,24 +141,23 @@ export type Database = {
           id?: string
           is_voting?: boolean
           meeting_id?: string
-          organization_id?: string
+          org_id?: string
+          person_id?: string | null
           person_name?: string
-          status?: Database["public"]["Enums"]["attendance_status"]
+          status?: Database["board"]["Enums"]["attendance_status"]
           user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "attendance_meeting_id_fkey"
             columns: ["meeting_id"]
-            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "attendance_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
+            foreignKeyName: "attendance_person_id_fkey"
+            columns: ["person_id"]
+            referencedRelation: "people"
             referencedColumns: ["id"]
           },
         ]
@@ -188,9 +171,10 @@ export type Database = {
           entity: string
           entity_id: string | null
           id: number
-          organization_id: string
+          org_id: string
           summary: string | null
         }
+        ComputedFields: never
         Insert: {
           action: string
           actor_id?: string | null
@@ -199,7 +183,7 @@ export type Database = {
           entity: string
           entity_id?: string | null
           id?: never
-          organization_id: string
+          org_id: string
           summary?: string | null
         }
         Update: {
@@ -210,123 +194,29 @@ export type Database = {
           entity?: string
           entity_id?: string | null
           id?: never
-          organization_id?: string
+          org_id?: string
           summary?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "audit_log_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      board_positions: {
-        Row: {
-          created_at: string
-          id: string
-          organization_id: string
-          sort_order: number
-          term_years: number | null
-          title: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          organization_id: string
-          sort_order?: number
-          term_years?: number | null
-          title: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          organization_id?: string
-          sort_order?: number
-          term_years?: number | null
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "board_positions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      board_terms: {
-        Row: {
-          created_at: string
-          end_date: string | null
-          id: string
-          notes: string | null
-          organization_id: string
-          person_name: string
-          position: string
-          position_id: string | null
-          start_date: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          notes?: string | null
-          organization_id: string
-          person_name: string
-          position?: string
-          position_id?: string | null
-          start_date: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          notes?: string | null
-          organization_id?: string
-          person_name?: string
-          position?: string
-          position_id?: string | null
-          start_date?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "board_terms_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "board_terms_position_id_fkey"
-            columns: ["position_id"]
-            isOneToOne: false
-            referencedRelation: "board_positions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       committee_members: {
         Row: {
           committee_id: string
           created_at: string
           id: string
-          organization_id: string
+          org_id: string
+          person_id: string | null
           person_name: string
           role: string
           user_id: string | null
         }
+        ComputedFields: never
         Insert: {
           committee_id: string
           created_at?: string
           id?: string
-          organization_id: string
+          org_id: string
+          person_id?: string | null
           person_name: string
           role?: string
           user_id?: string | null
@@ -335,7 +225,8 @@ export type Database = {
           committee_id?: string
           created_at?: string
           id?: string
-          organization_id?: string
+          org_id?: string
+          person_id?: string | null
           person_name?: string
           role?: string
           user_id?: string | null
@@ -344,15 +235,13 @@ export type Database = {
           {
             foreignKeyName: "committee_members_committee_id_fkey"
             columns: ["committee_id"]
-            isOneToOne: false
             referencedRelation: "committees"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "committee_members_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
+            foreignKeyName: "committee_members_person_id_fkey"
+            columns: ["person_id"]
+            referencedRelation: "people"
             referencedColumns: ["id"]
           },
         ]
@@ -363,31 +252,24 @@ export type Database = {
           description: string | null
           id: string
           name: string
-          organization_id: string
+          org_id: string
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           description?: string | null
           id?: string
           name: string
-          organization_id: string
+          org_id: string
         }
         Update: {
           created_at?: string
           description?: string | null
           id?: string
           name?: string
-          organization_id?: string
+          org_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "committees_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       document_versions: {
         Row: {
@@ -396,19 +278,20 @@ export type Database = {
           file_name: string
           id: string
           mime_type: string | null
-          organization_id: string
+          org_id: string
           size_bytes: number | null
           storage_path: string
           uploaded_by: string | null
           version: number
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           document_id: string
           file_name: string
           id?: string
           mime_type?: string | null
-          organization_id: string
+          org_id: string
           size_bytes?: number | null
           storage_path: string
           uploaded_by?: string | null
@@ -420,7 +303,7 @@ export type Database = {
           file_name?: string
           id?: string
           mime_type?: string | null
-          organization_id?: string
+          org_id?: string
           size_bytes?: number | null
           storage_path?: string
           uploaded_by?: string | null
@@ -430,15 +313,7 @@ export type Database = {
           {
             foreignKeyName: "document_versions_document_id_fkey"
             columns: ["document_id"]
-            isOneToOne: false
             referencedRelation: "documents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "document_versions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -450,16 +325,17 @@ export type Database = {
           created_by: string | null
           id: string
           meeting_id: string | null
-          organization_id: string
+          org_id: string
           title: string
         }
+        ComputedFields: never
         Insert: {
           category?: string
           created_at?: string
           created_by?: string | null
           id?: string
           meeting_id?: string | null
-          organization_id: string
+          org_id: string
           title: string
         }
         Update: {
@@ -468,116 +344,88 @@ export type Database = {
           created_by?: string | null
           id?: string
           meeting_id?: string | null
-          organization_id?: string
+          org_id?: string
           title?: string
         }
         Relationships: [
           {
             foreignKeyName: "documents_meeting_id_fkey"
             columns: ["meeting_id"]
-            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "documents_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
         ]
       }
-      invitations: {
+      letterheads: {
         Row: {
-          accepted_at: string | null
-          accepted_by: string | null
-          created_at: string
-          created_by: string
-          email: string | null
-          expires_at: string
+          file_name: string
+          footer_points: number
+          header_points: number
           id: string
-          organization_id: string
-          role: Database["public"]["Enums"]["org_role"]
-          token_hash: string
+          mime_type: string
+          org_id: string
+          storage_path: string
+          updated_at: string
         }
+        ComputedFields: never
         Insert: {
-          accepted_at?: string | null
-          accepted_by?: string | null
-          created_at?: string
-          created_by: string
-          email?: string | null
-          expires_at?: string
+          file_name: string
+          footer_points?: number
+          header_points?: number
           id?: string
-          organization_id: string
-          role?: Database["public"]["Enums"]["org_role"]
-          token_hash: string
+          mime_type: string
+          org_id: string
+          storage_path: string
+          updated_at?: string
         }
         Update: {
-          accepted_at?: string | null
-          accepted_by?: string | null
-          created_at?: string
-          created_by?: string
-          email?: string | null
-          expires_at?: string
+          file_name?: string
+          footer_points?: number
+          header_points?: number
           id?: string
-          organization_id?: string
-          role?: Database["public"]["Enums"]["org_role"]
-          token_hash?: string
+          mime_type?: string
+          org_id?: string
+          storage_path?: string
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "invitations_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       meeting_templates: {
         Row: {
-          agenda: Json
+          agenda: NonNullable<Json>
           created_at: string
           created_by: string | null
           id: string
           location: string | null
           meeting_title: string
           name: string
-          organization_id: string
+          org_id: string
           start_time: string | null
         }
+        ComputedFields: never
         Insert: {
-          agenda?: Json
+          agenda?: NonNullable<Json>
           created_at?: string
           created_by?: string | null
           id?: string
           location?: string | null
           meeting_title?: string
           name: string
-          organization_id: string
+          org_id: string
           start_time?: string | null
         }
         Update: {
-          agenda?: Json
+          agenda?: NonNullable<Json>
           created_at?: string
           created_by?: string | null
           id?: string
           location?: string | null
           meeting_title?: string
           name?: string
-          organization_id?: string
+          org_id?: string
           start_time?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "meeting_templates_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       meetings: {
         Row: {
@@ -586,20 +434,21 @@ export type Database = {
           id: string
           location: string | null
           meeting_date: string
-          organization_id: string
+          org_id: string
           start_time: string | null
-          status: Database["public"]["Enums"]["meeting_status"]
+          status: Database["board"]["Enums"]["meeting_status"]
           title: string
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           created_by?: string | null
           id?: string
           location?: string | null
           meeting_date: string
-          organization_id: string
+          org_id: string
           start_time?: string | null
-          status?: Database["public"]["Enums"]["meeting_status"]
+          status?: Database["board"]["Enums"]["meeting_status"]
           title: string
         }
         Update: {
@@ -608,20 +457,12 @@ export type Database = {
           id?: string
           location?: string | null
           meeting_date?: string
-          organization_id?: string
+          org_id?: string
           start_time?: string | null
-          status?: Database["public"]["Enums"]["meeting_status"]
+          status?: Database["board"]["Enums"]["meeting_status"]
           title?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "meetings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       member_votes: {
         Row: {
@@ -629,17 +470,18 @@ export type Database = {
           created_at: string
           id: string
           motion_id: string
-          organization_id: string
+          org_id: string
           person_name: string
           user_id: string
           vote: string
         }
+        ComputedFields: never
         Insert: {
           attendance_id?: string | null
           created_at?: string
           id?: string
           motion_id: string
-          organization_id: string
+          org_id: string
           person_name: string
           user_id: string
           vote: string
@@ -649,7 +491,7 @@ export type Database = {
           created_at?: string
           id?: string
           motion_id?: string
-          organization_id?: string
+          org_id?: string
           person_name?: string
           user_id?: string
           vote?: string
@@ -658,47 +500,7 @@ export type Database = {
           {
             foreignKeyName: "member_votes_motion_id_fkey"
             columns: ["motion_id"]
-            isOneToOne: false
             referencedRelation: "motions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "member_votes_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      memberships: {
-        Row: {
-          created_at: string
-          id: string
-          organization_id: string
-          role: Database["public"]["Enums"]["org_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          organization_id: string
-          role?: Database["public"]["Enums"]["org_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          organization_id?: string
-          role?: Database["public"]["Enums"]["org_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "memberships_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -712,11 +514,12 @@ export type Database = {
           created_by: string | null
           id: string
           meeting_id: string
-          organization_id: string
-          status: Database["public"]["Enums"]["minutes_status"]
+          org_id: string
+          status: Database["board"]["Enums"]["minutes_status"]
           submitted_at: string | null
           version: number
         }
+        ComputedFields: never
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
@@ -725,8 +528,8 @@ export type Database = {
           created_by?: string | null
           id?: string
           meeting_id: string
-          organization_id: string
-          status?: Database["public"]["Enums"]["minutes_status"]
+          org_id: string
+          status?: Database["board"]["Enums"]["minutes_status"]
           submitted_at?: string | null
           version: number
         }
@@ -738,8 +541,8 @@ export type Database = {
           created_by?: string | null
           id?: string
           meeting_id?: string
-          organization_id?: string
-          status?: Database["public"]["Enums"]["minutes_status"]
+          org_id?: string
+          status?: Database["board"]["Enums"]["minutes_status"]
           submitted_at?: string | null
           version?: number
         }
@@ -747,15 +550,7 @@ export type Database = {
           {
             foreignKeyName: "minutes_meeting_id_fkey"
             columns: ["meeting_id"]
-            isOneToOne: false
             referencedRelation: "meetings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "minutes_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -777,8 +572,8 @@ export type Database = {
           moved_by: string | null
           opened_at: string | null
           opened_by: string | null
-          organization_id: string
-          outcome: Database["public"]["Enums"]["motion_outcome"]
+          org_id: string
+          outcome: Database["board"]["Enums"]["motion_outcome"]
           roll_call: Json | null
           seconded_by: string | null
           vote_record: Json | null
@@ -788,6 +583,7 @@ export type Database = {
           votes_yes: number
           voting_status: string
         }
+        ComputedFields: never
         Insert: {
           agenda_item_id?: string | null
           closed_at?: string | null
@@ -804,8 +600,8 @@ export type Database = {
           moved_by?: string | null
           opened_at?: string | null
           opened_by?: string | null
-          organization_id: string
-          outcome?: Database["public"]["Enums"]["motion_outcome"]
+          org_id: string
+          outcome?: Database["board"]["Enums"]["motion_outcome"]
           roll_call?: Json | null
           seconded_by?: string | null
           vote_record?: Json | null
@@ -831,8 +627,8 @@ export type Database = {
           moved_by?: string | null
           opened_at?: string | null
           opened_by?: string | null
-          organization_id?: string
-          outcome?: Database["public"]["Enums"]["motion_outcome"]
+          org_id?: string
+          outcome?: Database["board"]["Enums"]["motion_outcome"]
           roll_call?: Json | null
           seconded_by?: string | null
           vote_record?: Json | null
@@ -846,107 +642,74 @@ export type Database = {
           {
             foreignKeyName: "motions_agenda_item_id_fkey"
             columns: ["agenda_item_id"]
-            isOneToOne: false
             referencedRelation: "agenda_items"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "motions_meeting_id_fkey"
             columns: ["meeting_id"]
-            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "motions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
         ]
       }
-      organization_letterheads: {
-        Row: {
-          file_name: string
-          footer_points: number
-          header_points: number
-          id: string
-          mime_type: string
-          organization_id: string
-          storage_path: string
-          updated_at: string
-        }
-        Insert: {
-          file_name: string
-          footer_points?: number
-          header_points?: number
-          id?: string
-          mime_type: string
-          organization_id: string
-          storage_path: string
-          updated_at?: string
-        }
-        Update: {
-          file_name?: string
-          footer_points?: number
-          header_points?: number
-          id?: string
-          mime_type?: string
-          organization_id?: string
-          storage_path?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organization_letterheads_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: true
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      organizations: {
+      officers: {
         Row: {
           created_at: string
-          created_by: string
+          office: Database["board"]["Enums"]["office"]
+          org_id: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          office: Database["board"]["Enums"]["office"]
+          org_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          office?: Database["board"]["Enums"]["office"]
+          org_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      org_settings: {
+        Row: {
           decision_rule: string
-          id: string
-          name: string
+          org_id: string
           quorum_count: number
           seconder_required: boolean
           timezone: string
+          updated_at: string
           vote_close_modes: string[]
-          vote_closer_roles: Database["public"]["Enums"]["org_role"][]
+          vote_closer_roles: string[]
           vote_recording: string
           vote_timer_minutes: number | null
         }
+        ComputedFields: never
         Insert: {
-          created_at?: string
-          created_by: string
           decision_rule?: string
-          id?: string
-          name: string
+          org_id: string
           quorum_count?: number
           seconder_required?: boolean
           timezone?: string
+          updated_at?: string
           vote_close_modes?: string[]
-          vote_closer_roles?: Database["public"]["Enums"]["org_role"][]
+          vote_closer_roles?: string[]
           vote_recording?: string
           vote_timer_minutes?: number | null
         }
         Update: {
-          created_at?: string
-          created_by?: string
           decision_rule?: string
-          id?: string
-          name?: string
+          org_id?: string
           quorum_count?: number
           seconder_required?: boolean
           timezone?: string
+          updated_at?: string
           vote_close_modes?: string[]
-          vote_closer_roles?: Database["public"]["Enums"]["org_role"][]
+          vote_closer_roles?: string[]
           vote_recording?: string
           vote_timer_minutes?: number | null
         }
@@ -954,35 +717,36 @@ export type Database = {
       }
       packets: {
         Row: {
-          contents: Json
+          contents: NonNullable<Json>
           created_at: string
           created_by: string | null
           distributed_at: string | null
           id: string
           meeting_id: string
-          organization_id: string
+          org_id: string
           storage_path: string
           version: number
         }
+        ComputedFields: never
         Insert: {
-          contents?: Json
+          contents?: NonNullable<Json>
           created_at?: string
           created_by?: string | null
           distributed_at?: string | null
           id?: string
           meeting_id: string
-          organization_id: string
+          org_id: string
           storage_path: string
           version: number
         }
         Update: {
-          contents?: Json
+          contents?: NonNullable<Json>
           created_at?: string
           created_by?: string | null
           distributed_at?: string | null
           id?: string
           meeting_id?: string
-          organization_id?: string
+          org_id?: string
           storage_path?: string
           version?: number
         }
@@ -990,39 +754,122 @@ export type Database = {
           {
             foreignKeyName: "packets_meeting_id_fkey"
             columns: ["meeting_id"]
-            isOneToOne: false
             referencedRelation: "meetings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "packets_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
       }
-      profiles: {
+      people: {
         Row: {
           created_at: string
           email: string | null
-          full_name: string | null
+          full_name: string
           id: string
+          notes: string | null
+          org_id: string
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           email?: string | null
-          full_name?: string | null
-          id: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          org_id: string
         }
         Update: {
           created_at?: string
           email?: string | null
-          full_name?: string | null
+          full_name?: string
           id?: string
+          notes?: string | null
+          org_id?: string
         }
         Relationships: []
+      }
+      positions: {
+        Row: {
+          created_at: string
+          id: string
+          org_id: string
+          sort_order: number
+          term_years: number | null
+          title: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          id?: string
+          org_id: string
+          sort_order?: number
+          term_years?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_id?: string
+          sort_order?: number
+          term_years?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
+      terms: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          org_id: string
+          person_id: string | null
+          person_name: string
+          position: string
+          position_id: string | null
+          start_date: string
+          user_id: string | null
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          person_id?: string | null
+          person_name: string
+          position?: string
+          position_id?: string | null
+          start_date: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          person_id?: string | null
+          person_name?: string
+          position?: string
+          position_id?: string | null
+          start_date?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_person_id_fkey"
+            columns: ["person_id"]
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terms_position_id_fkey"
+            columns: ["position_id"]
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vote_electorate: {
         Row: {
@@ -1030,16 +877,17 @@ export type Database = {
           created_at: string
           id: string
           motion_id: string
-          organization_id: string
+          org_id: string
           person_name: string
           user_id: string
         }
+        ComputedFields: never
         Insert: {
           attendance_id?: string | null
           created_at?: string
           id?: string
           motion_id: string
-          organization_id: string
+          org_id: string
           person_name: string
           user_id: string
         }
@@ -1048,7 +896,7 @@ export type Database = {
           created_at?: string
           id?: string
           motion_id?: string
-          organization_id?: string
+          org_id?: string
           person_name?: string
           user_id?: string
         }
@@ -1056,15 +904,7 @@ export type Database = {
           {
             foreignKeyName: "vote_electorate_motion_id_fkey"
             columns: ["motion_id"]
-            isOneToOne: false
             referencedRelation: "motions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vote_electorate_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1074,70 +914,73 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_invitation: { Args: { _token: string }; Returns: string }
-      can_edit_records: { Args: { _org: string }; Returns: boolean }
-      can_manage_org: { Args: { _org: string }; Returns: boolean }
-      cast_vote: { Args: { _motion: string; _vote: string }; Returns: string }
-      close_vote: { Args: { _motion: string }; Returns: undefined }
-      create_invitation: {
-        Args: {
-          _email: string
-          _org: string
-          _role: Database["public"]["Enums"]["org_role"]
-        }
-        Returns: string
-      }
-      create_organization: {
-        Args: { _name: string; _timezone?: string }
-        Returns: string
-      }
+      audit_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
+      can_edit_records: { Args: { p_org: string }; Returns: boolean }
+      can_manage: { Args: { p_org: string }; Returns: boolean }
+      can_read_audit: { Args: { p_org: string }; Returns: boolean }
+      cast_vote: { Args: { p_motion: string; p_vote: string }; Returns: string }
+      close_vote: { Args: { p_motion: string }; Returns: undefined }
+      editable_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
       finish_vote: {
-        Args: { _how: string; _motion: string }
+        Args: { p_how: string; p_motion: string }
         Returns: undefined
       }
-      has_org_role: {
-        Args: {
-          _org: string
-          _roles: Database["public"]["Enums"]["org_role"][]
-        }
+      holds_any: {
+        Args: { p_org: string; p_roles: string[] }
         Returns: boolean
       }
-      is_org_member: { Args: { _org: string }; Returns: boolean }
-      ownership_transfer_candidates: {
-        Args: { _org: string }
-        Returns: {
-          confirm_text: string
-          email: string
-          full_name: string | null
-          role: Database["public"]["Enums"]["org_role"]
-          user_id: string
-        }[]
+      managed_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
+      my_office: {
+        Args: { p_org: string }
+        Returns: Database["board"]["Enums"]["office"]
       }
+      on_invitation_accepted: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
+      org_gone: { Args: { p_org: string }; Returns: boolean }
+      readable_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
       record_disposition: {
         Args: {
-          _motion: string
-          _note: string
-          _outcome: Database["public"]["Enums"]["motion_outcome"]
+          p_motion: string
+          p_note: string
+          p_outcome: Database["board"]["Enums"]["motion_outcome"]
         }
         Returns: undefined
       }
-      shares_org_with: { Args: { _user: string }; Returns: boolean }
+      settings: {
+        Args: { p_org: string }
+        Returns: {
+          decision_rule: string
+          org_id: string
+          quorum_count: number
+          seconder_required: boolean
+          timezone: string
+          updated_at: string
+          vote_close_modes: string[]
+          vote_closer_roles: string[]
+          vote_recording: string
+          vote_timer_minutes: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "org_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       start_vote: {
         Args: {
-          _agenda_item: string
-          _meeting: string
-          _moved_by: string
-          _seconded_by: string
-          _text: string
+          p_agenda_item: string
+          p_meeting: string
+          p_moved_by: string
+          p_seconded_by: string
+          p_text: string
         }
         Returns: string
       }
-      transfer_ownership: {
-        Args: { _confirmation: string; _new_owner: string; _org: string }
-        Returns: undefined
-      }
-      vote_is_closed: { Args: { _motion: string }; Returns: boolean }
-      vote_progress: { Args: { _motion: string }; Returns: Json }
+      vote_is_closed: { Args: { p_motion: string }; Returns: boolean }
+      vote_progress: { Args: { p_motion: string }; Returns: Json }
     }
     Enums: {
       attendance_status: "present" | "absent" | "excused" | "remote"
@@ -1149,15 +992,285 @@ export type Database = {
         | "archived"
       minutes_status: "draft" | "submitted" | "approved" | "superseded"
       motion_outcome: "pending" | "carried" | "failed" | "tabled" | "withdrawn"
-      org_role:
-        | "owner"
-        | "admin"
-        | "chair"
-        | "secretary"
-        | "treasurer"
-        | "member"
-        | "observer"
+      office: "chair" | "secretary" | "treasurer"
       task_status: "open" | "in_progress" | "done" | "cancelled"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      instance_settings: {
+        Row: {
+          billing_enabled: boolean
+          hub_url: string | null
+          id: boolean
+        }
+        ComputedFields: never
+        Insert: {
+          billing_enabled?: boolean
+          hub_url?: string | null
+          id?: boolean
+        }
+        Update: {
+          billing_enabled?: boolean
+          hub_url?: string | null
+          id?: boolean
+        }
+        Relationships: []
+      }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          app: string | null
+          app_payload: NonNullable<Json>
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invited_by: string | null
+          org_id: string
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["org_role"] | null
+          token_hash: string
+        }
+        ComputedFields: never
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          app?: string | null
+          app_payload?: NonNullable<Json>
+          created_at?: string
+          email?: string | null
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          org_id: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["org_role"] | null
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          app?: string | null
+          app_payload?: NonNullable<Json>
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          org_id?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["org_role"] | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_org_id_fkey"
+            columns: ["org_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          created_at: string
+          org_id: string
+          role: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          org_id: string
+          role?: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          org_id?: string
+          role?: Database["public"]["Enums"]["org_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_org_id_fkey"
+            columns: ["org_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          name: string
+          slug: string | null
+          time_zone: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          name: string
+          slug?: string | null
+          time_zone?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          name?: string
+          slug?: string | null
+          time_zone?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      _clean_org_name: { Args: { p_name: string }; Returns: string }
+      _is_active_user: { Args: { p_user: string }; Returns: boolean }
+      _member_confirm_text: { Args: { p_user: string }; Returns: string }
+      _require_uid: { Args: Record<PropertyKey, never>; Returns: string }
+      _token_hash: { Args: { p_token: string }; Returns: string }
+      accept_invitation: {
+        Args: { p_token: string }
+        Returns: {
+          app: string
+          app_payload: Json
+          id: string
+          org_id: string
+          role: Database["public"]["Enums"]["org_role"]
+        }[]
+      }
+      can_write: { Args: { p_app: string; p_org: string }; Returns: boolean }
+      create_invitation: {
+        Args: {
+          p_app?: string
+          p_days?: number
+          p_email: string
+          p_org: string
+          p_payload?: Json
+          p_role: Database["public"]["Enums"]["org_role"]
+        }
+        Returns: {
+          invitation_id: string
+          token: string
+        }[]
+      }
+      create_organization: { Args: { p_name: string }; Returns: string }
+      delete_organization: {
+        Args: { p_confirm_name: string; p_org: string }
+        Returns: undefined
+      }
+      get_invitation: {
+        Args: { p_token: string }
+        Returns: {
+          app: string
+          email: string
+          org_name: string
+          role: Database["public"]["Enums"]["org_role"]
+          status: string
+        }[]
+      }
+      has_app_access: {
+        Args: { p_app: string; p_org: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          p_org: string
+          p_roles: Database["public"]["Enums"]["org_role"][]
+        }
+        Returns: boolean
+      }
+      is_member: { Args: { p_org: string }; Returns: boolean }
+      list_invitations: {
+        Args: { p_org: string }
+        Returns: {
+          app: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          invited_by_name: string
+          role: Database["public"]["Enums"]["org_role"]
+          status: string
+        }[]
+      }
+      org_member_directory: {
+        Args: { p_org: string }
+        Returns: {
+          display_name: string
+          email: string
+          role: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }[]
+      }
+      ownership_transfer_candidates: {
+        Args: { p_org: string }
+        Returns: {
+          display_name: string
+          email: string
+          role: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }[]
+      }
+      rename_organization: {
+        Args: { p_name: string; p_org: string }
+        Returns: undefined
+      }
+      revoke_invitation: { Args: { p_id: string }; Returns: undefined }
+      set_organization_preferences: {
+        Args: { p_currency: string; p_org: string; p_time_zone: string }
+        Returns: undefined
+      }
+      shares_org: { Args: { p_user: string }; Returns: boolean }
+      transfer_ownership:
+        | { Args: { p_new_owner: string; p_org: string }; Returns: undefined }
+        | {
+            Args: { p_confirm: string; p_new_owner: string; p_org: string }
+            Returns: undefined
+          }
+    }
+    Enums: {
+      org_role: "owner" | "admin" | "member" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1167,7 +1280,8 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+// Board's own schema is the default for Tables<…>, TablesInsert<…>, Enums<…> (the client uses db.schema "board").
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "board">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -1283,7 +1397,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  public: {
+  board: {
     Enums: {
       attendance_status: ["present", "absent", "excused", "remote"],
       meeting_status: [
@@ -1295,16 +1409,13 @@ export const Constants = {
       ],
       minutes_status: ["draft", "submitted", "approved", "superseded"],
       motion_outcome: ["pending", "carried", "failed", "tabled", "withdrawn"],
-      org_role: [
-        "owner",
-        "admin",
-        "chair",
-        "secretary",
-        "treasurer",
-        "member",
-        "observer",
-      ],
+      office: ["chair", "secretary", "treasurer"],
       task_status: ["open", "in_progress", "done", "cancelled"],
+    },
+  },
+  public: {
+    Enums: {
+      org_role: ["owner", "admin", "member", "viewer"],
     },
   },
 } as const

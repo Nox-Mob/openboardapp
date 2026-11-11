@@ -1,4 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { isHosted, loginRedirect, suiteUrls } from "@shared/supabase/hosted";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
@@ -6,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { errorMessage } from "@/lib/export";
+
+// The suite demo (demo@demo.openapphub.org, Riverside Community Association) exists on staging
+// and development databases only (db/seed), so its sign-in is offered only there. Hosted,
+// sign-in is OpenAppHub's, which offers the same demo.
+const DEMO_LOGIN =
+  import.meta.env.DEV || import.meta.env["VITE_ALLOW_DEMO_LOGIN"] === "true"
+    ? { email: "demo@demo.openapphub.org", password: "OpenAppHubDemo2026" }
+    : null;
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { redirect?: string } =>
@@ -20,6 +29,14 @@ export const Route = createFileRoute("/auth")({
       { property: "og:description", content: "Sign in to your organization's board room." },
     ],
   }),
+  // Hosted: sign-in, sign-up and password reset are OpenAppHub's (SHARED-SPEC §1.1).
+  beforeLoad: () => {
+    if (isHosted()) {
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : (suiteUrls().board ?? "");
+      throw redirect({ href: loginRedirect(`${origin}/board`) });
+    }
+  },
   component: AuthPage,
 });
 
@@ -99,22 +116,24 @@ function AuthPage() {
               <Button variant="outline" className="mt-5 w-full" onClick={google} type="button">
                 Continue with Google
               </Button>
-              <Button
-                variant="secondary"
-                className="mt-2 w-full"
-                type="button"
-                disabled={busy}
-                onClick={async () => {
-                  setBusy(true);
-                  const { error } = await attempt(
-                    db.auth.signIn("demo@demo.org", "OpenBoardDemo!2026"),
-                  );
-                  setBusy(false);
-                  if (error) toast.error(errorMessage(error));
-                }}
-              >
-                Explore the demo board
-              </Button>
+              {DEMO_LOGIN ? (
+                <Button
+                  variant="secondary"
+                  className="mt-2 w-full"
+                  type="button"
+                  disabled={busy}
+                  onClick={async () => {
+                    setBusy(true);
+                    const { error } = await attempt(
+                      db.auth.signIn(DEMO_LOGIN.email, DEMO_LOGIN.password),
+                    );
+                    setBusy(false);
+                    if (error) toast.error(errorMessage(error));
+                  }}
+                >
+                  Explore the demo board
+                </Button>
+              ) : null}
               <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" />
                 or

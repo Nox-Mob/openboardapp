@@ -5,7 +5,7 @@ This is Board's inventory and step plan for joining the OpenAppHub suite (`docs/
 - First written November 8, 2026, from `main` at `361780b` (step 1). Sources: `supabase/migrations/` (11 files), `src/integrations/supabase/types.ts`, `src/data/cloud-adapter.ts`, `docs/migration/phase-0-inventory.md`. Phase 0 already proved the migrations rebuild the live schema with identical columns (`replay` job), so no schema dump was needed.
 - Updated the same day for spec v2: the owner's answers to §8 are filled in, and the plan includes v2's changes.
 
-Target: Board's tables move to schema **`board`** in the shared production project `nxungwtxnctcqolfshcr` (today's OpenCharterApp project). Board's own project `dnsqxiiexkdokgebysrt` is then wiped and becomes the suite's staging project. Nothing in it is copied; demo content becomes seed SQL. Hosted at `board.openapphub.org`, staging at `board-staging.openapphub.org`.
+Target: Board's tables move to schema **`board`** in the shared production project `nxungwtxnctcqolfshcr` (today's OpenCharterApp project). Board's own project `dnsqxiiexkdokgebysrt` is then wiped and becomes the suite's staging project. Nothing in it is copied; demo content becomes seed SQL. Hosted at `board.openapphub.org`, staging at `staging.board.staging.openapphub.org`.
 
 ## 0. Spec v2.2 changes (2026-11-09): read first
 
@@ -40,9 +40,28 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
 
 ### 0.2 Next steps
 
-1. Step 3, hygiene: **first part done** (§0.3). Still to do: replace Lovable's Vite wrapper, error reporting and `previewAuthStorage` (with the client, step 9).
+1. Step 3, hygiene: **first part done** (§0.3). Still to do: replace Lovable's Vite wrapper, error reporting and `previewAuthStorage`.
 2. ~~Steps 4, 5 and 8~~ **done** (§0.4): runner, `migrate.yml`, baseline, DB tests, performance test.
-3. **Next: step 9**, the client on the `board` schema (`VITE_APP_SCHEMA=board`, `.schema('public')` for core), then org scoping (10) and hosted vs self-hosted (11). Until step 9, the app still calls the old public tables, which don't exist on the new database.
+3. ~~Step 9, the client on `board`~~, the staging seed (step 6) and org scoping (step 10) **done** (§0.5).
+4. ~~Step 11, hosted vs self-hosted, and the AppShell restyle~~ **done** (§0.6).
+5. Next: integration views for the hub dashboard, help links, replacing Lovable's Vite wrapper.
+
+### 0.6 Step 11 and the restyle: hosted vs self-hosted, suite design (2026-11-10)
+
+- **Hosted** (`VITE_HOSTED=true`): the browser session is a cookie on `.openapphub.org` (`@supabase/ssr`), shared with the hub and the other apps. `/auth` and signed-out pages go to the hub's sign-in and come back. New organizations, invitations and ownership transfer are in the hub (Board shows links); Board keeps roles and offices, removal, settings, letterhead and export. Signing out returns to the hub.
+- **Self-hosted:** unchanged (Board's own sign-in, organizations, invitations and transfer).
+- **Restyle** (behaviour and wording unchanged): `styles.css` uses the suite tokens and Inter; every board page is in the shared `AppShell` (same nav, suite and organization switchers, Help, the user menu with the suite theme toggle, the billing banner from `get_org_billing` via the data layer); `<html data-app="board">` with the suite theme script; cookie consent and a `/cookies` page.
+- **Shared 1.3.0** vendored.
+
+### 0.5 Steps 6, 9 and 10: the app on schema `board`, staging seed, org scoping (2026-11-10)
+
+- **Client:** the Supabase client is created with `db: { schema: "board" }`; core tables are read with `.schema("public")`. `src/integrations/supabase/types.ts` is generated from `db/core` + `db/migrations` (schemas `public,board`), with `board` as the default schema for the `Tables<…>` helpers. Column `organization_id` is `org_id` everywhere; tables renamed in code: `board_positions` → `positions`, `board_terms` → `terms`, `organization_letterheads` → `letterheads`; files are in bucket `board-files`.
+- **Roles:** the app keeps one role per person, from the core role plus the office (`board.officers`): owner → owner, admin → admin, member + office → chair / secretary / treasurer, member → member, viewer → observer. Changing a role updates the core membership (owner and admins only, by the database) and then the office. Ownership changes only by transfer.
+- **Rewritten on core** (`src/data/cloud-adapter.ts`): my organizations (core name + `board.org_settings`, defaults when missing), creating (`create_organization`, then Board's time zone), renaming (`rename_organization`), settings (upsert), members (`org_member_directory`), invitations (`create_invitation` with `app = 'board'` and `{"office": …}`; `accept_invitation` then `board.on_invitation_accepted`; `revoke_invitation`), ownership (`ownership_transfer_candidates`, `transfer_ownership`), live-voting RPCs (`p_` parameters), the export (core organization and memberships plus Board's tables, including officers and people).
+- **Org scoping:** the current organization is the suite cookie `oah_org` (`shared/supabase/org.ts`), re-checked against memberships; otherwise the first organization alphabetically. The old local-storage choice is read once.
+- **Staging seed:** `db/seed/0001_board_demo.sql` replaces `reset_demo()` and its `pg_cron` job: Riverside Community Association, built once with dates relative to the day it runs. The demo sign-in is `board.demo@demo.openapphub.org`; the "Explore the demo board" button appears only where `VITE_ALLOW_DEMO_LOGIN=true` (staging) and on dev servers, no longer on production. Refuses a database the hub hasn't marked staging. CI loads it after the DB tests.
+- **Retired:** `supabase/migrations` and `supabase/config.toml`. Self-hosting is `npm run db:migrate` plus exposing `board` (README).
+- **Not changed yet (step 11):** Board keeps its own sign-in screens and session.
 
 ### 0.4 Steps 4, 5 and 8: runner, baseline, DB tests (2026-11-10)
 
@@ -67,7 +86,7 @@ files here: change them in Nox-Mob/OpenAppHub and sync.
 
 - `package-lock.json` resolves every package from registry.npmjs.org (83 were on Lovable's private cache); CI fails if a private registry comes back.
 - `.env` is untracked (CI fails on a tracked env file); `.env.example` lists every variable. Unit tests in CI use placeholder values.
-- `wrangler.jsonc`: top level = production (`board.openapphub.org`, `openapphub-prod`), `env.staging` (`board-staging.openapphub.org`, `openapphub-staging`). `npm run build:hosted` / `build:hosted:staging` write its public `VITE_*` values before building (`scripts/deploy/build-env.mjs`).
+- `wrangler.jsonc`: top level = production (`board.openapphub.org`, `openapphub-prod`), `env.staging` (`staging.board.staging.openapphub.org`, `openapphub-staging`). `npm run build:hosted` / `build:hosted:staging` write its public `VITE_*` values before building (`scripts/deploy/build-env.mjs`).
 - Security headers on every response (`src/lib/security-headers.ts`, `src/server.ts`); the CSP allows the Supabase project for connections, images and file previews.
 - Unused `client.server.ts` (service role) and `cron-auth.ts` removed: Board uses no service-role key.
 - The old shared test backend is gone, so the live `database-rules` suites skip themselves; the same suites still run against a local database in `supabase-db.yml`.

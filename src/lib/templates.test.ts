@@ -44,7 +44,7 @@ describe("meeting templates", () => {
   });
   it("new meeting agenda rows are numbered from 0 and tied to the meeting and org", () => {
     const rows = agendaRowsFor([{ title: "One" }, { title: "Two" }], "m1", "o1");
-    expect(rows.map((r) => [r.position, r.meeting_id, r.organization_id])).toEqual([
+    expect(rows.map((r) => [r.position, r.meeting_id, r.org_id])).toEqual([
       [0, "m1", "o1"],
       [1, "m1", "o1"],
     ]);
