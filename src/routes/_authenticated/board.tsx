@@ -16,6 +16,7 @@ import {
   Users,
   Network,
   LayoutTemplate,
+  Mail,
 } from "lucide-react";
 import { attempt, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
@@ -124,6 +125,12 @@ function Shell() {
           href: "/board/settings",
           icon: <Settings aria-hidden="true" />,
           current: isCurrent("/board/settings"),
+        },
+        {
+          label: "Email",
+          href: "/board/email",
+          icon: <Mail aria-hidden="true" />,
+          current: isCurrent("/board/email"),
         },
       ]}
       user={user.data ?? null}

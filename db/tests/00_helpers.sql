@@ -3,7 +3,7 @@
 -- Each test file wraps its work in begin … rollback.
 
 create schema if not exists tests;
-grant usage on schema tests to anon, authenticated;
+grant usage on schema tests to anon, authenticated, service_role;
 
 create or replace function tests.create_user(p_email text, p_meta jsonb default '{}'::jsonb, p_confirmed boolean default true)
 returns uuid language plpgsql as $$
@@ -27,6 +27,14 @@ begin
   perform set_config('request.jwt.claims', '{"role":"anon"}', true);
   perform set_config('request.jwt.claim.sub', '', true);
   perform set_config('role', 'anon', true);
+end $$;
+
+-- The email sender (server code with the service role key).
+create or replace function tests.as_service() returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', '{"role":"service_role"}', true);
+  perform set_config('request.jwt.claim.sub', '', true);
+  perform set_config('role', 'service_role', true);
 end $$;
 
 create or replace function tests.as_super() returns void language plpgsql as $$
@@ -68,7 +76,7 @@ begin
   return v;
 end $$;
 
-grant execute on all functions in schema tests to anon, authenticated;
+grant execute on all functions in schema tests to anon, authenticated, service_role;
 
 -- Simulates the hub's billing for one test (inside its transaction): billing on,
 -- and the listed organizations have lapsed (read-only). Core's has_app_access()
@@ -92,4 +100,4 @@ begin
   insert into public.memberships (org_id, user_id, role) values (p_org, p_user, p_role);
 end $$;
 
-grant execute on all functions in schema tests to anon, authenticated;
+grant execute on all functions in schema tests to anon, authenticated, service_role;
