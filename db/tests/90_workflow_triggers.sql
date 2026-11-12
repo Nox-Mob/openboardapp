@@ -61,3 +61,34 @@ begin
 end
 $$;
 rollback;
+
+-- S-19: finishing an action item from the hub (0011).
+begin;
+do $$
+declare
+  owner uuid := tests.create_user('owner@done.org', '{"full_name":"Olive"}');
+  sam uuid := tests.create_user('sam@done.org', '{"full_name":"Sam"}');
+  pat uuid := tests.create_user('pat@done.org', '{"full_name":"Pat"}');
+  org uuid; mine uuid; theirs uuid;
+begin
+  perform tests.as_user(owner);
+  org := public.create_organization('Done Board');
+  perform tests.add_member(org, sam, 'member');
+  perform tests.add_member(org, pat, 'member');
+  perform tests.as_super();
+  insert into board.action_items (org_id, title, assignee_id, due_date) values (org, 'Sam''s', sam, current_date) returning id into mine;
+  insert into board.action_items (org_id, title, assignee_id, due_date) values (org, 'Pat''s', pat, current_date) returning id into theirs;
+
+  perform tests.as_user(sam);
+  perform tests.ok((select completable from board.api_action_items where id = mine), 'the assignee can finish it');
+  perform tests.ok(not (select completable from board.api_action_items where id = theirs), 'not someone else''s');
+  perform board.complete_action_item(mine);
+  perform tests.ok((select status from board.action_items where id = mine) = 'done', 'marked done');
+  perform tests.throws(format('select board.complete_action_item(%L)', mine), 'not twice', 'already done');
+  perform tests.throws(format('select board.complete_action_item(%L)', theirs), 'not someone else''s', 'isn''t yours');
+  perform tests.as_user(owner);
+  perform tests.ok((select completable from board.api_action_items where id = theirs), 'an owner can finish anyone''s');
+  perform board.complete_action_item(theirs);
+end
+$$;
+rollback;
