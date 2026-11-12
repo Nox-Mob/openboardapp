@@ -21,6 +21,7 @@ import { Route as AuthenticatedBoardIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedBoardAuditRouteImport } from './routes/_authenticated/board.audit'
 import { Route as AuthenticatedBoardCommitteesRouteImport } from './routes/_authenticated/board.committees'
 import { Route as AuthenticatedBoardDocumentsRouteImport } from './routes/_authenticated/board.documents'
+import { Route as AuthenticatedBoardEmailRouteImport } from './routes/_authenticated/board.email'
 import { Route as AuthenticatedBoardMembersRouteImport } from './routes/_authenticated/board.members'
 import { Route as AuthenticatedBoardSettingsRouteImport } from './routes/_authenticated/board.settings'
 import { Route as AuthenticatedBoardTasksRouteImport } from './routes/_authenticated/board.tasks'
@@ -90,6 +91,11 @@ const AuthenticatedBoardDocumentsRoute =
     path: '/documents',
     getParentRoute: () => AuthenticatedBoardRoute,
   } as any)
+const AuthenticatedBoardEmailRoute = AuthenticatedBoardEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
+  getParentRoute: () => AuthenticatedBoardRoute,
+} as any)
 const AuthenticatedBoardMembersRoute =
   AuthenticatedBoardMembersRouteImport.update({
     id: '/members',
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/board/audit': typeof AuthenticatedBoardAuditRoute
   '/board/committees': typeof AuthenticatedBoardCommitteesRoute
   '/board/documents': typeof AuthenticatedBoardDocumentsRoute
+  '/board/email': typeof AuthenticatedBoardEmailRoute
   '/board/members': typeof AuthenticatedBoardMembersRoute
   '/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/board/tasks': typeof AuthenticatedBoardTasksRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/board/audit': typeof AuthenticatedBoardAuditRoute
   '/board/committees': typeof AuthenticatedBoardCommitteesRoute
   '/board/documents': typeof AuthenticatedBoardDocumentsRoute
+  '/board/email': typeof AuthenticatedBoardEmailRoute
   '/board/members': typeof AuthenticatedBoardMembersRoute
   '/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/board/tasks': typeof AuthenticatedBoardTasksRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/_authenticated/board/audit': typeof AuthenticatedBoardAuditRoute
   '/_authenticated/board/committees': typeof AuthenticatedBoardCommitteesRoute
   '/_authenticated/board/documents': typeof AuthenticatedBoardDocumentsRoute
+  '/_authenticated/board/email': typeof AuthenticatedBoardEmailRoute
   '/_authenticated/board/members': typeof AuthenticatedBoardMembersRoute
   '/_authenticated/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/_authenticated/board/tasks': typeof AuthenticatedBoardTasksRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/board/audit'
     | '/board/committees'
     | '/board/documents'
+    | '/board/email'
     | '/board/members'
     | '/board/settings'
     | '/board/tasks'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/board/audit'
     | '/board/committees'
     | '/board/documents'
+    | '/board/email'
     | '/board/members'
     | '/board/settings'
     | '/board/tasks'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/_authenticated/board/audit'
     | '/_authenticated/board/committees'
     | '/_authenticated/board/documents'
+    | '/_authenticated/board/email'
     | '/_authenticated/board/members'
     | '/_authenticated/board/settings'
     | '/_authenticated/board/tasks'
@@ -352,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoardDocumentsRouteImport
       parentRoute: typeof AuthenticatedBoardRoute
     }
+    '/_authenticated/board/email': {
+      id: '/_authenticated/board/email'
+      path: '/email'
+      fullPath: '/board/email'
+      preLoaderRoute: typeof AuthenticatedBoardEmailRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
     '/_authenticated/board/members': {
       id: '/_authenticated/board/members'
       path: '/members'
@@ -408,6 +427,7 @@ interface AuthenticatedBoardRouteChildren {
   AuthenticatedBoardAuditRoute: typeof AuthenticatedBoardAuditRoute
   AuthenticatedBoardCommitteesRoute: typeof AuthenticatedBoardCommitteesRoute
   AuthenticatedBoardDocumentsRoute: typeof AuthenticatedBoardDocumentsRoute
+  AuthenticatedBoardEmailRoute: typeof AuthenticatedBoardEmailRoute
   AuthenticatedBoardMembersRoute: typeof AuthenticatedBoardMembersRoute
   AuthenticatedBoardSettingsRoute: typeof AuthenticatedBoardSettingsRoute
   AuthenticatedBoardTasksRoute: typeof AuthenticatedBoardTasksRoute
@@ -422,6 +442,7 @@ const AuthenticatedBoardRouteChildren: AuthenticatedBoardRouteChildren = {
   AuthenticatedBoardAuditRoute: AuthenticatedBoardAuditRoute,
   AuthenticatedBoardCommitteesRoute: AuthenticatedBoardCommitteesRoute,
   AuthenticatedBoardDocumentsRoute: AuthenticatedBoardDocumentsRoute,
+  AuthenticatedBoardEmailRoute: AuthenticatedBoardEmailRoute,
   AuthenticatedBoardMembersRoute: AuthenticatedBoardMembersRoute,
   AuthenticatedBoardSettingsRoute: AuthenticatedBoardSettingsRoute,
   AuthenticatedBoardTasksRoute: AuthenticatedBoardTasksRoute,

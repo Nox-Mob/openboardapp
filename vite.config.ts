@@ -43,7 +43,10 @@ export default defineConfig(({ command }) => ({
       // TanStack Start's server entry is src/server.ts (SSR error page and security headers).
       server: { entry: "server" },
     }),
-    ...(command === "build" ? [nitro({ preset: "cloudflare-module" })] : []),
+    // server/email-cron.ts: the self-hosted email sender, on the Worker's cron trigger (S-16).
+    ...(command === "build"
+      ? [nitro({ preset: "cloudflare-module", plugins: ["./server/email-cron.ts"] })]
+      : []),
     viteReact(),
   ],
 }));

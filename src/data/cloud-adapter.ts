@@ -88,6 +88,11 @@ export type ExportTable = (typeof EXPORT_TABLES)[number];
 export const cloudAdapter = {
   platform: "supabase" as const,
 
+  /** The signed-in user's client, for shared suite UI that calls core functions (shared/ui). */
+  sharedClient(): SupabaseClient {
+    return supabase as unknown as SupabaseClient;
+  },
+
   auth: {
     async hasSession() {
       return !!(await supabase.auth.getSession()).data.session;
