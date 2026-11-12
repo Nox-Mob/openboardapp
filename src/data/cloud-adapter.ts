@@ -105,6 +105,12 @@ async function boardOverrides(orgIds: string[], userIds?: string[]): Promise<Ove
   }
 }
 
+/**
+ * A database function parameter that accepts null: the generated types (H-06) can only describe it
+ * as required, so say here that null is meant.
+ */
+const orNull = <T>(v: T | null | undefined) => (v ?? null) as T;
+
 /** The core role and office to store for a Board role. */
 export function coreFor(role: OrgRole): {
   role: Exclude<CoreRole, "owner">;
@@ -523,9 +529,9 @@ export const cloudAdapter = {
           p_position_id: row.position_id,
           p_position: row.position ?? "",
           p_person_name: row.person_name,
-          p_user_id: row.user_id ?? null,
+          p_user_id: orNull(row.user_id),
           p_start_date: row.start_date,
-          p_end_date: row.end_date ?? null,
+          p_end_date: orNull(row.end_date),
         }),
       );
     },
@@ -608,8 +614,8 @@ export const cloudAdapter = {
           p_org: row.org_id,
           p_title: row.title,
           p_meeting_date: row.meeting_date,
-          p_start_time: row.start_time ?? null,
-          p_location: row.location ?? null,
+          p_start_time: orNull(row.start_time),
+          p_location: orNull(row.location),
           p_agenda: normalizeAgenda(agenda) as unknown as Json,
         }),
       );
@@ -740,7 +746,7 @@ export const cloudAdapter = {
               p_org: row.org_id,
               p_title: row.title,
               p_category: row.category,
-              p_meeting_id: row.meeting_id,
+              p_meeting_id: orNull(row.meeting_id),
               p_storage_path: path,
               p_file_name: file.name,
               p_mime_type: file.type,
