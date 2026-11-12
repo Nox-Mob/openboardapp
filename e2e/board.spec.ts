@@ -129,3 +129,38 @@ test("when the plan makes Board read-only, writing is switched off", async ({ pa
   await expect(page.getByRole("heading", { level: 1, name: "Meetings" })).toBeVisible();
   await expect(page.getByRole("button", { name: "New meeting" })).toHaveCount(0);
 });
+
+// This round (B-15, in-app explanations, S-25 reminders as automations).
+test("the sign-in page has no demo button of its own (OpenAppHub offers the demos)", async ({
+  page,
+}) => {
+  await page.goto("/auth");
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /demo/i })).toHaveCount(0);
+});
+
+test("settings explain what quorum and the decision rule mean", async ({ page }) => {
+  await signIn(page, "owner");
+  await page.goto("/board/settings");
+  await expect(page.getByText(/must be present for the meeting to make decisions/)).toBeVisible();
+  await expect(page.getByText(/How many yes votes a motion needs to pass/)).toBeVisible();
+});
+
+test("the Email page lists Board's reminders, which owners can change", async ({ page }) => {
+  await signIn(page, "owner");
+  await page.goto("/board/email");
+  const panel = page.getByRole("region", { name: "Automations" });
+  await expect(panel).toBeVisible();
+  // Until Board's migration 0009 runs on staging, the panel has nothing to show.
+  await expect(
+    panel.getByText(/^Meeting reminders$|No automations here yet\./).first(),
+  ).toBeVisible();
+  test.skip(
+    await panel.getByText("No automations here yet.").isVisible(),
+    "Board 0009 isn't on staging yet",
+  );
+  await expect(panel.getByText("Meeting reminders")).toBeVisible();
+  await expect(panel.getByText("Action item reminders")).toBeVisible();
+  await expect(panel.getByLabel(/Days before the meeting/)).toBeEnabled();
+});

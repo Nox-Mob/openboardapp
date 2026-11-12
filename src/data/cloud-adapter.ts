@@ -36,6 +36,52 @@ export function boardRole(
   return office && OFFICES.includes(office) ? (office as Office) : "member";
 }
 
+/**
+ * A person's role in Board (core 0010): the owner is the owner; otherwise the role an owner or
+ * admin set for Board, or their OpenAppHub role.
+ */
+export function effectiveRole(core: CoreRole, override: CoreRole | null | undefined): CoreRole {
+  return core === "owner" ? "owner" : (override ?? core);
+}
+
+type Override = { org_id: string; user_id: string; role: CoreRole };
+async function boardOverrides(orgIds: string[], userIds?: string[]): Promise<Override[]> {
+  if (orgIds.length === 0) return [];
+  // app_role_overrides isn't in the generated types until they're regenerated (H-06).
+  const pub = supabase.schema("public") as unknown as {
+    from: (t: string) => {
+      select: (c: string) => {
+        eq: (
+          k: string,
+          v: string,
+        ) => {
+          in: (
+            k: string,
+            v: string[],
+          ) => PromiseLike<{ data: Override[] | null; error: unknown }> & {
+            in: (
+              k: string,
+              v: string[],
+            ) => PromiseLike<{ data: Override[] | null; error: unknown }>;
+          };
+        };
+      };
+    };
+  };
+  const q = pub
+    .from("app_role_overrides")
+    .select("org_id, user_id, role")
+    .eq("app", "board")
+    .in("org_id", orgIds);
+  try {
+    const { data, error } = await (userIds ? q.in("user_id", userIds) : q);
+    // Missing until core 0010 is applied: everyone has their OpenAppHub role.
+    return error ? [] : (data ?? []);
+  } catch {
+    return [];
+  }
+}
+
 /** The core role and office to store for a Board role. */
 export function coreFor(role: OrgRole): {
   role: Exclude<CoreRole, "owner">;
@@ -183,6 +229,7 @@ export const cloudAdapter = {
         ) ?? []
       ).filter((m) => m.organizations);
       const ids = rows.map((m) => m.organizations!.id);
+      const overrides = await boardOverrides(ids, [userId]);
       const [settings, offices] = ids.length
         ? await Promise.all([
             supabase.from("org_settings").select("*").in("org_id", ids),
@@ -209,7 +256,10 @@ export const cloudAdapter = {
             ...picked,
             id: org.id,
             name: org.name,
-            role: boardRole(m.role, (offices.data ?? []).find((o) => o.org_id === org.id)?.office)!,
+            role: boardRole(
+              effectiveRole(m.role, overrides.find((o) => o.org_id === org.id)?.role),
+              (offices.data ?? []).find((o) => o.org_id === org.id)?.office,
+            )!,
           } satisfies OrgSummary;
         })
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -303,31 +353,42 @@ export const cloudAdapter = {
 
   members: {
     async list(orgId: string) {
-      const [dir, offices] = await Promise.all([
+      const [dir, offices, overrides] = await Promise.all([
         core().rpc("org_member_directory", { p_org: orgId }),
         supabase.from("officers").select("user_id, office").eq("org_id", orgId),
+        boardOverrides([orgId]),
       ]);
       if (dir.error) throw dir.error;
       return (dir.data ?? []).map((m) => ({
         id: m.user_id,
         user_id: m.user_id,
         org_id: orgId,
-        role: boardRole(m.role, (offices.data ?? []).find((o) => o.user_id === m.user_id)?.office)!,
+        role: boardRole(
+          effectiveRole(m.role, overrides.find((o) => o.user_id === m.user_id)?.role),
+          (offices.data ?? []).find((o) => o.user_id === m.user_id)?.office,
+        )!,
         name: m.display_name || m.email || "Member",
         email: m.email ?? "",
       }));
     },
-    /** Core role first (owner and admins only), then the office, which needs a member role. */
+    /**
+     * The Board role first (core 0010: only in Board; their role in OpenAppHub and the other apps
+     * stays as it is; owners and admins only), then the office, which needs a member role.
+     */
     async setRole(orgId: string, userId: string, role: OrgRole) {
       if (role === "owner") throw new Error("Use Transfer ownership to make someone the owner.");
       const next = coreFor(role);
-      must(
-        await core()
-          .from("memberships")
-          .update({ role: next.role })
-          .eq("org_id", orgId)
-          .eq("user_id", userId),
-      );
+      const rpc = core().rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+      const { error } = await rpc("set_app_role", {
+        p_org: orgId,
+        p_user: userId,
+        p_app: "board",
+        p_role: next.role,
+      });
+      if (error) throw new Error(error.message);
       if (next.office)
         must(
           await supabase
