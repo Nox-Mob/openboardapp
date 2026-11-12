@@ -60,3 +60,24 @@ begin
 end
 $$;
 rollback;
+
+-- Deleting an organization removes its terms from OpenCharterApp too (0007).
+begin;
+do $$
+declare
+  owner uuid := tests.create_user('owner@cascade.org', '{"full_name":"Olive"}');
+  org uuid;
+begin
+  perform tests.as_user(owner);
+  org := public.create_organization('Cascade Board');
+  perform tests.as_super();
+  perform set_config('oah.syncing', 'on', true);
+  insert into board.terms (org_id, person_name, start_date, source, source_id)
+  values (org, 'Mirrored', current_date, 'charter', gen_random_uuid());
+  perform set_config('oah.syncing', '', true);
+  perform tests.throws(format('delete from board.terms where org_id = %L', org), 'a mirrored term alone can''t be deleted', 'OpenCharterApp');
+  delete from public.organizations where id = org;
+  perform tests.ok(not exists (select 1 from board.terms where org_id = org), 'deleting the organization removes it');
+end
+$$;
+rollback;
