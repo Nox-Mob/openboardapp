@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { hubUrl, isHosted } from "@shared/supabase/hosted";
+import { AutomationsPanel } from "@shared/ui/Automations";
 import { EmailPreferencesPanel, EmailServerPanel } from "@shared/ui/EmailSettings";
 import { PageHeader } from "@/components/PageStates";
 import { db } from "@/data";
+import { useCurrentOrg } from "@/lib/org-context";
 import { loadEmailSettings, saveEmailSettings, sendTestEmail } from "@/lib/email.functions";
+
+const BOARD_ONLY = ["board" as const];
 
 export const Route = createFileRoute("/_authenticated/board/email")({
   head: () => ({ meta: [{ title: "Email · OpenBoardApp" }] }),
@@ -11,6 +15,7 @@ export const Route = createFileRoute("/_authenticated/board/email")({
 });
 
 function EmailPage() {
+  const { org, can } = useCurrentOrg();
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader eyebrow="Settings" title="Email">
@@ -19,6 +24,15 @@ function EmailPage() {
         </p>
       </PageHeader>
       <div className="space-y-6">
+        <section className="rounded-lg border bg-card p-5">
+          <h2 className="mb-3 text-base font-semibold">Reminders for {org.name}</h2>
+          <AutomationsPanel
+            client={db.sharedClient()}
+            orgId={org.id}
+            canEdit={can("org.manage")}
+            apps={BOARD_ONLY}
+          />
+        </section>
         {isHosted() ? (
           <section className="rounded-lg border bg-card p-5 text-sm">
             <h2 className="text-base font-semibold">Your email</h2>
