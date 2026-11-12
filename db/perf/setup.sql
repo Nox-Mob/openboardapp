@@ -24,6 +24,11 @@ select ('22222222-0000-4000-8000-' || lpad(i::text, 12, '0'))::uuid,
   ('11111111-0000-4000-8000-' || lpad((30 + i)::text, 12, '0'))::uuid, 'owner'
 from generate_series(2, 41) i
 on conflict do nothing;
+-- Their roles in this app too (H-09: separate from the OpenAppHub role).
+insert into public.app_role_overrides (org_id, user_id, app, role)
+select m.org_id, m.user_id, 'board', m.role from public.memberships m
+where m.role in ('admin', 'member') and m.org_id::text like '22222222-0000-4000-8000-%'
+on conflict do nothing;
 insert into board.officers (org_id, user_id, office) values
   ('22222222-0000-4000-8000-000000000001', '11111111-0000-4000-8000-000000000003', 'chair'),
   ('22222222-0000-4000-8000-000000000001', '11111111-0000-4000-8000-000000000004', 'secretary');
