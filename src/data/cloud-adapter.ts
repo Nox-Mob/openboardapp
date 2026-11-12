@@ -1,10 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getOrgBilling } from "@shared/supabase/billing";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type {
+  Database,
+  Json,
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "@/integrations/supabase/types";
 import type { OrgRole } from "@/lib/permissions";
 import type { OrgSummary } from "@/lib/org-context";
-import { agendaRowsFor, normalizeAgenda, type TemplateAgendaItem } from "@/lib/templates";
+import { normalizeAgenda, type TemplateAgendaItem } from "@/lib/templates";
+import { documentPath } from "@/lib/documents";
 
 type Status = Database["board"]["Enums"]["task_status"];
 type MeetingStatus = Database["board"]["Enums"]["meeting_status"];
@@ -57,6 +64,28 @@ const BUCKET = "board-files";
 function must<R extends { data: unknown; error: unknown }>(r: R): NonNullable<R["data"]> {
   if (r.error) throw r.error;
   return r.data as NonNullable<R["data"]>;
+}
+
+/**
+ * B-11: a file and its record can't share one database transaction, so the file goes up first
+ * and, if writing its record fails, comes back out: nothing is left half-done.
+ */
+async function withUploadedFile<T>(
+  path: string,
+  upload: () => Promise<{ error: unknown }>,
+  record: () => Promise<T>,
+): Promise<T> {
+  const up = await upload();
+  if (up.error) throw up.error;
+  try {
+    return await record();
+  } catch (err) {
+    await supabase.storage
+      .from(BUCKET)
+      .remove([path])
+      .catch(() => undefined);
+    throw err;
+  }
 }
 
 export const EXPORT_TABLES = [
@@ -251,16 +280,20 @@ export const cloudAdapter = {
       return r.data;
     },
     async save(row: TablesInsert<"letterheads">, file?: Blob) {
-      if (file)
-        must(
-          await supabase.storage
+      const write = async () =>
+        void must(
+          await supabase
+            .from("letterheads")
+            .upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "org_id" }),
+        );
+      if (!file) return write();
+      await withUploadedFile(
+        row.storage_path,
+        () =>
+          supabase.storage
             .from(BUCKET)
             .upload(row.storage_path, file, { contentType: row.mime_type, upsert: false }),
-        );
-      must(
-        await supabase
-          .from("letterheads")
-          .upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "org_id" }),
+        write,
       );
     },
     async remove(orgId: string) {
@@ -373,20 +406,22 @@ export const cloudAdapter = {
     async add(row: TablesInsert<"terms">) {
       must(await supabase.from("terms").insert(row));
     },
-    /** Hands a role to a new holder: open terms for that role end the day before, history is kept. */
+    /**
+     * Hands a role to a new holder: open terms for that role end the day before, history is kept.
+     * One database call (board.assign_term, B-11), so the old term never ends without the new one.
+     */
     async assign(row: TablesInsert<"terms"> & { position_id: string }) {
-      const d = new Date(row.start_date + "T00:00:00Z");
-      d.setUTCDate(d.getUTCDate() - 1);
-      const dayBefore = d.toISOString().slice(0, 10);
       must(
-        await supabase
-          .from("terms")
-          .update({ end_date: dayBefore })
-          .eq("position_id", row.position_id)
-          .lt("start_date", row.start_date)
-          .or(`end_date.is.null,end_date.gte.${row.start_date}`),
+        await supabase.rpc("assign_term", {
+          p_org: row.org_id,
+          p_position_id: row.position_id,
+          p_position: row.position ?? "",
+          p_person_name: row.person_name,
+          p_user_id: row.user_id ?? null,
+          p_start_date: row.start_date,
+          p_end_date: row.end_date ?? null,
+        }),
       );
-      must(await supabase.from("terms").insert(row));
     },
     async remove(id: string) {
       must(await supabase.from("terms").delete().eq("id", id));
@@ -457,12 +492,21 @@ export const cloudAdapter = {
       if (r.error) throw r.error;
       return r.data;
     },
-    /** Creates a meeting and its starting agenda (from a template, or the standard outline). */
+    /**
+     * Creates a meeting and its starting agenda (from a template, or the standard outline) in one
+     * database call (board.create_meeting_with_agenda, B-11): never a meeting without its agenda.
+     */
     async create(row: TablesInsert<"meetings">, agenda: TemplateAgendaItem[]) {
-      const m = must(await supabase.from("meetings").insert(row).select("id").single());
-      const rows = agendaRowsFor(agenda, m.id, row.org_id);
-      if (rows.length) must(await supabase.from("agenda_items").insert(rows));
-      return m.id;
+      return must(
+        await supabase.rpc("create_meeting_with_agenda", {
+          p_org: row.org_id,
+          p_title: row.title,
+          p_meeting_date: row.meeting_date,
+          p_start_time: row.start_time ?? null,
+          p_location: row.location ?? null,
+          p_agenda: normalizeAgenda(agenda) as unknown as Json,
+        }),
+      );
     },
     async setStatus(id: string, status: MeetingStatus) {
       must(await supabase.from("meetings").update({ status }).eq("id", id));
@@ -567,16 +611,47 @@ export const cloudAdapter = {
         ) ?? []
       );
     },
-    async create(row: TablesInsert<"documents">) {
-      return must(await supabase.from("documents").insert(row).select("id").single()).id;
+    /**
+     * A new document with its first file (B-11): the file goes up, then the document and its
+     * version are written in one call (board.add_document); if that fails, the file is removed.
+     */
+    async createWithFile(
+      row: { org_id: string; title: string; category: string; meeting_id: string | null },
+      file: File,
+    ) {
+      const id = crypto.randomUUID();
+      const path = documentPath(row.org_id, id, 1, file.name);
+      return withUploadedFile(
+        path,
+        () =>
+          supabase.storage
+            .from(BUCKET)
+            .upload(path, file, file.type ? { contentType: file.type } : {}),
+        async () =>
+          must(
+            await supabase.rpc("add_document", {
+              p_id: id,
+              p_org: row.org_id,
+              p_title: row.title,
+              p_category: row.category,
+              p_meeting_id: row.meeting_id,
+              p_storage_path: path,
+              p_file_name: file.name,
+              p_mime_type: file.type,
+              p_size_bytes: file.size,
+            }),
+          ),
+      );
     },
     async addVersion(row: TablesInsert<"document_versions">, file: Blob, contentType?: string) {
-      must(
-        await supabase.storage
-          .from(BUCKET)
-          .upload(row.storage_path, file, contentType ? { contentType } : {}),
+      await withUploadedFile(
+        row.storage_path,
+        () =>
+          supabase.storage
+            .from(BUCKET)
+            .upload(row.storage_path, file, contentType ? { contentType } : {}),
+        async () => void must(await supabase.from("document_versions").insert(row)),
       );
-      must(await supabase.from("document_versions").insert(row));
     },
   },
 
@@ -593,8 +668,11 @@ export const cloudAdapter = {
       );
     },
     async create(row: TablesInsert<"packets">, pdf: Blob) {
-      must(await supabase.storage.from(BUCKET).upload(row.storage_path, pdf, { upsert: false }));
-      must(await supabase.from("packets").insert(row));
+      await withUploadedFile(
+        row.storage_path,
+        () => supabase.storage.from(BUCKET).upload(row.storage_path, pdf, { upsert: false }),
+        async () => void must(await supabase.from("packets").insert(row)),
+      );
     },
     async distribute(id: string) {
       must(

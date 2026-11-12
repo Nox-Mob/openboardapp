@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { db } from "@/data";
+import { documentPath } from "@/lib/documents";
 import { useCurrentOrg } from "@/lib/org-context";
 
 import { errorMessage } from "@/lib/export";
@@ -66,8 +67,7 @@ function Documents() {
 
   async function uploadVersion(documentId: string, f: File, existing: { version: number }[]) {
     const version = nextVersion(existing);
-    const safe = f.name.replace(/[^\w.-]+/g, "_");
-    const path = `${org.id}/documents/${documentId}/v${version}-${safe}`;
+    const path = documentPath(org.id, documentId, version, f.name);
     await db.documents.addVersion(
       {
         document_id: documentId,
@@ -89,14 +89,16 @@ function Documents() {
     if (!file) return;
     setBusy(true);
     try {
-      const id = await db.documents.create({
-        title: f.title,
-        category: f.category,
-        meeting_id: f.meeting_id === "none" ? null : f.meeting_id,
-        org_id: org.id,
-        created_by: userId,
-      });
-      await uploadVersion(id, file, []);
+      // The document and its first file are saved together, or not at all (B-11).
+      await db.documents.createWithFile(
+        {
+          title: f.title,
+          category: f.category,
+          meeting_id: f.meeting_id === "none" ? null : f.meeting_id,
+          org_id: org.id,
+        },
+        file,
+      );
       setF({ title: "", category: "General", meeting_id: "none" });
       setFile(null);
       (e.target as HTMLFormElement).reset();
