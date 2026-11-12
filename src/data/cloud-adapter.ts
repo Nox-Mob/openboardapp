@@ -45,38 +45,61 @@ export function effectiveRole(core: CoreRole, override: CoreRole | null | undefi
 }
 
 type Override = { org_id: string; user_id: string; role: CoreRole };
+/**
+ * Each person's Board role as the database works it out (core 0011, H-09): the owner; a role
+ * set for them in Board; their named role's role in Board; otherwise viewer. One person's
+ * organizations (userIds = [me]) or everyone in one organization.
+ */
 async function boardOverrides(orgIds: string[], userIds?: string[]): Promise<Override[]> {
   if (orgIds.length === 0) return [];
-  // app_role_overrides isn't in the generated types until they're regenerated (H-06).
+  // The core functions aren't in the generated types until they're regenerated (H-06).
   const pub = supabase.schema("public") as unknown as {
+    rpc: (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => PromiseLike<{ data: Array<Record<string, string>> | null; error: unknown }>;
     from: (t: string) => {
       select: (c: string) => {
         eq: (
           k: string,
           v: string,
         ) => {
-          in: (
-            k: string,
-            v: string[],
-          ) => PromiseLike<{ data: Override[] | null; error: unknown }> & {
-            in: (
-              k: string,
-              v: string[],
-            ) => PromiseLike<{ data: Override[] | null; error: unknown }>;
-          };
+          in: (k: string, v: string[]) => PromiseLike<{ data: Override[] | null; error: unknown }>;
         };
       };
     };
   };
-  const q = pub
-    .from("app_role_overrides")
-    .select("org_id, user_id, role")
-    .eq("app", "board")
-    .in("org_id", orgIds);
   try {
-    const { data, error } = await (userIds ? q.in("user_id", userIds) : q);
-    // Missing until core 0010 is applied: everyone has their OpenAppHub role.
-    return error ? [] : (data ?? []);
+    if (userIds?.length === 1) {
+      const { data, error } = await pub.rpc("my_app_memberships", { p_app: "board" });
+      if (!error && data)
+        return data
+          .filter((r) => orgIds.includes(r["org_id"]!))
+          .map((r) => ({
+            org_id: r["org_id"]!,
+            user_id: userIds[0]!,
+            role: r["role"] as CoreRole,
+          }));
+    } else {
+      const all = await Promise.all(orgIds.map((org) => pub.rpc("org_app_roles", { p_org: org })));
+      if (all.every((r) => !r.error && r.data))
+        return all.flatMap((r, i) =>
+          (r.data ?? [])
+            .filter((x) => x["app"] === "board" && (!userIds || userIds.includes(x["user_id"]!)))
+            .map((x) => ({
+              org_id: orgIds[i]!,
+              user_id: x["user_id"]!,
+              role: x["role"] as CoreRole,
+            })),
+        );
+    }
+    // Older databases (before core 0011): roles set for Board, otherwise the OpenAppHub role.
+    const { data, error } = await pub
+      .from("app_role_overrides")
+      .select("org_id, user_id, role")
+      .eq("app", "board")
+      .in("org_id", orgIds);
+    return error ? [] : (data ?? []).filter((o) => !userIds || userIds.includes(o.user_id));
   } catch {
     return [];
   }
@@ -423,20 +446,42 @@ export const cloudAdapter = {
         return { ...r, role: boardRole(r.role, r.app === "board" ? office : null) ?? "member" };
       });
     },
-    /** A core invitation for this email; an office rides along for Board to apply. Returns the token. */
+    /**
+     * A core invitation for this email (H-09): an OpenAppHub member with this role in Board only;
+     * an office rides along for Board to apply. Returns the token.
+     */
     async create(orgId: string, email: string, role: OrgRole) {
       const next = coreFor(role);
-      const rows = must(
-        await core().rpc("create_invitation", {
-          p_org: orgId,
-          p_email: email,
-          p_role: next.role,
-          p_app: "board",
-          p_payload: next.office ? { office: next.office } : {},
-        }),
-      );
-      const row = Array.isArray(rows) ? rows[0] : rows;
-      return row!.token as string;
+      const invite = async (hubRole: string) => {
+        const rows = must(
+          await core().rpc("create_invitation", {
+            p_org: orgId,
+            p_email: email,
+            p_role: hubRole as CoreRole,
+            p_app: "board",
+            p_payload: next.office ? { office: next.office } : {},
+          }),
+        );
+        return (Array.isArray(rows) ? rows[0] : rows) as { invitation_id: string; token: string };
+      };
+      const row = await invite("member");
+      // set_invitation_roles isn't in the generated types until they're regenerated (H-06).
+      const rpc = core().rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => PromiseLike<{ error: { code?: string; message: string } | null }>;
+      const { error } = await rpc.call(core(), "set_invitation_roles", {
+        p_invitation: row.invitation_id,
+        p_named_role: null,
+        p_app_roles: { board: next.role },
+      });
+      if (!error) return row.token;
+      // A database before core 0011: the role was the OpenAppHub role then.
+      if (error.code === "PGRST202" || /set_invitation_roles/.test(error.message)) {
+        must(await core().rpc("revoke_invitation", { p_id: row.invitation_id }));
+        return (await invite(next.role)).token;
+      }
+      throw new Error(error.message);
     },
     async revoke(id: string) {
       must(await core().rpc("revoke_invitation", { p_id: id }));

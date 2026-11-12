@@ -73,8 +73,13 @@ begin
   perform tests.ok((select status from board.action_items where id = task) = 'done', 'an assignee updates their own task');
   perform tests.ok((select status from board.action_items where id = other_task) = 'open', 'a member cannot update someone else''s task');
 
-  -- An officer who becomes a viewer loses the office's rights.
+  -- H-09: the OpenAppHub role alone changes nothing in Board.
   update public.memberships set role = 'viewer' where org_id = org and user_id = chair;
+  perform tests.as_user(chair);
+  perform tests.ok(board.can_edit_records(org), 'an OpenAppHub viewer who is a Board member and chair still edits');
+  perform tests.as_super();
+  -- An officer who becomes a viewer in Board loses the office's rights.
+  update public.app_role_overrides set role = 'viewer' where org_id = org and user_id = chair and app = 'board';
   perform tests.as_user(chair);
   perform tests.ok(not board.can_edit_records(org), 'a chair demoted to viewer can no longer edit');
   perform tests.as_super();
