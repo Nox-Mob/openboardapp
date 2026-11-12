@@ -826,6 +826,8 @@ export type Database = {
           person_name: string
           position: string
           position_id: string | null
+          source: string | null
+          source_id: string | null
           start_date: string
           user_id: string | null
         }
@@ -840,6 +842,8 @@ export type Database = {
           person_name: string
           position?: string
           position_id?: string | null
+          source?: string | null
+          source_id?: string | null
           start_date: string
           user_id?: string | null
         }
@@ -853,6 +857,8 @@ export type Database = {
           person_name?: string
           position?: string
           position_id?: string | null
+          source?: string | null
+          source_id?: string | null
           start_date?: string
           user_id?: string | null
         }
