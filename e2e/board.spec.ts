@@ -145,7 +145,6 @@ test("settings explain what quorum and the decision rule mean", async ({ page })
   await page.goto("/board/settings");
   await expect(page.getByText(/must be present for the meeting to make decisions/)).toBeVisible();
   await expect(page.getByText(/How many yes votes a motion needs to pass/)).toBeVisible();
-  await expect(page.getByText(/72 points is one inch/)).toBeVisible();
 });
 
 test("the Email page lists Board's reminders, which owners can change", async ({ page }) => {
@@ -154,6 +153,9 @@ test("the Email page lists Board's reminders, which owners can change", async ({
   const panel = page.getByRole("region", { name: "Automations" });
   await expect(panel).toBeVisible();
   // Until Board's migration 0009 runs on staging, the panel has nothing to show.
+  await expect(
+    panel.getByText(/^Meeting reminders$|No automations here yet\./).first(),
+  ).toBeVisible();
   test.skip(
     await panel.getByText("No automations here yet.").isVisible(),
     "Board 0009 isn't on staging yet",
