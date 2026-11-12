@@ -51,6 +51,32 @@ insert into charter.seat_templates (id, unit_id, key, title, scope) values
 select tests.as_user('11111111-0000-4000-8000-000000000002');
 select charter.appoint_officer('22222222-0000-4000-8000-000000000002', '44444444-0000-4000-8000-000000000093', '33333333-0000-4000-8000-000000000002', '2026-01-01');
 select tests.reset_role();
-select tests.eq((select count(*) from board.terms where position = 'Chapter Chair'), 0::bigint, '7. chapter officers stay in Charter');
+select tests.eq((select count(*) from board.terms where position = 'Chapter Chair'), 0::bigint, '7. chapter officers stay in Charter (no OpenBoardApp for the chapter yet)');
+
+-- 8. The national lets chapters use OpenBoardApp; Chapter A turns it on: its own organization,
+--    with its current officers already on its board.
+insert into charter.org_settings (unit_id, key, value) values ('22222222-0000-4000-8000-000000000001', 'board.chapters', '"open"');
+select tests.as_user('11111111-0000-4000-8000-000000000002');
+select charter.request_chapter_board('22222222-0000-4000-8000-000000000002');
+select tests.reset_role();
+select charter.board_org_for_unit('22222222-0000-4000-8000-000000000002') as chap_org \gset
+select tests.eq((select person_name || ' / ' || position from board.terms where org_id = :'chap_org' and source = 'charter'),
+  'a@test.org / Chapter Chair', '8. the chapter''s officer is on the chapter''s own board');
+select tests.eq((select count(*) from board.terms where org_id = '22222222-0000-4000-8000-000000000001' and position = 'Chapter Chair'), 0::bigint,
+  '8b. and not on the national''s');
+
+-- 9. A new chapter appointment reaches the chapter's board.
+insert into charter.seat_templates (id, unit_id, key, title, scope) values
+  ('44444444-0000-4000-8000-000000000094', '22222222-0000-4000-8000-000000000002', 'secretary', 'Chapter Secretary', 'self');
+select tests.as_user('11111111-0000-4000-8000-000000000002');
+select charter.appoint_officer('22222222-0000-4000-8000-000000000002', '44444444-0000-4000-8000-000000000094', '33333333-0000-4000-8000-000000000003', '2026-03-01') as chap_appt \gset
+select tests.reset_role();
+select tests.eq((select org_id from board.terms where source_id = :'chap_appt'), :'chap_org'::uuid, '9. a new chapter appointment goes to the chapter''s board');
+
+-- 10. Ending it on the chapter's board ends it in Charter.
+select tests.as_user('11111111-0000-4000-8000-000000000002');
+update board.terms set end_date = current_date where source_id = :'chap_appt';
+select tests.reset_role();
+select tests.eq((select ended_on from charter.appointments where id = :'chap_appt'), current_date, '10. ending it in the chapter''s Board ends the Charter appointment');
 rollback;
 \echo ALL SYNC CHECKS PASSED
