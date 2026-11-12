@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { buildPacket } from "@/lib/packet";
 import { loadLetterhead } from "@/lib/load-letterhead";
@@ -17,12 +17,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
 export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, can } = useCurrentOrg();
   const qc = useQueryClient();
   const agenda = useAgenda(meeting.id);
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
-  const editor = can(org.role, "records.edit");
+  const editor = can("records.edit");
 
   const docs = useQuery({
     queryKey: ["packet-docs", org.id],

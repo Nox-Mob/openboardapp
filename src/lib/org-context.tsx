@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/data";
-import type { OrgRole } from "./permissions";
+import { isReadOnly } from "@shared/supabase/billing";
+import { useBilling } from "./use-billing";
+import { canNow, type Capability, type OrgRole } from "./permissions";
 import { titleIndex, withTitle } from "./titles";
 import {
   getCurrentOrgCookie,
@@ -92,7 +94,16 @@ export function useOrg() {
 export function useCurrentOrg() {
   const c = useOrg();
   if (!c.org) throw new Error("No organization selected");
-  return { ...c, org: c.org };
+  const org = c.org;
+  const billing = useBilling(org.id);
+  // S-05: while the plan makes Board read-only, write controls are off (reads and exports stay).
+  const readOnly = isReadOnly(billing.data, "board");
+  return {
+    ...c,
+    org,
+    readOnly,
+    can: (cap: Capability) => canNow(org.role, cap, readOnly),
+  };
 }
 
 export function useOrgMembers(orgId: string) {

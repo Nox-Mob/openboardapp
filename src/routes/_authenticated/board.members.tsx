@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Trash2, Copy } from "lucide-react";
 import { attempt, db } from "@/data";
 import { useCurrentOrg, useOrgMembers, useTitles } from "@/lib/org-context";
-import { can, ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
+import { ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { currentHolder, termEnd } from "@/lib/titles";
 import type { Tables } from "@/integrations/supabase/types";
@@ -246,11 +246,11 @@ function RoleCard({
 }
 
 function Members() {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, can } = useCurrentOrg();
   const qc = useQueryClient();
   const members = useOrgMembers(org.id);
-  const manager = can(org.role, "org.manage");
-  const editor = can(org.role, "records.edit");
+  const manager = can("org.manage");
+  const editor = can("records.edit");
   const [inv, setInv] = useState({ email: "", role: "member" as OrgRole });
   const [link, setLink] = useState<string | null>(null);
   const [role, setRole] = useState({ title: "", term_years: 1 as number | null });

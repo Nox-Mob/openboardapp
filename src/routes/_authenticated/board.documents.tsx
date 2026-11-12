@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { nextVersion } from "@/lib/minutes";
 import { signedUrl } from "@/lib/meeting-data";
@@ -47,9 +47,9 @@ export const Route = createFileRoute("/_authenticated/board/documents")({
 });
 
 function Documents() {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, can } = useCurrentOrg();
   const qc = useQueryClient();
-  const editor = can(org.role, "records.edit");
+  const editor = can("records.edit");
   const [f, setF] = useState({ title: "", category: "General", meeting_id: "none" });
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);

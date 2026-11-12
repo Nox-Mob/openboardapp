@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { attempt, db, EXPORT_TABLES } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can, ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
+import { ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
 import { CLOSE_MODES, DECISION_RULES, type CloseMode } from "@/lib/votes";
 import { downloadBlob, errorMessage, toCsv } from "@/lib/export";
 import { PageHeader } from "@/components/PageStates";
@@ -38,8 +38,8 @@ export const Route = createFileRoute("/_authenticated/board/settings")({
 const TABLES = EXPORT_TABLES;
 
 function Settings() {
-  const { org, refetch, setOrgId } = useCurrentOrg();
-  const manager = can(org.role, "org.manage");
+  const { org, refetch, setOrgId, can } = useCurrentOrg();
+  const manager = can("org.manage");
   const [f, setF] = useState({
     name: org.name,
     timezone: org.timezone,
@@ -263,7 +263,7 @@ function Settings() {
         </form>
         <section className="space-y-3 rounded-lg border bg-card p-5">
           <p className="eyebrow">Data export</p>
-          {can(org.role, "export.run") ? (
+          {can("export.run") ? (
             <>
               <p className="text-sm text-muted-foreground">
                 A complete JSON export of your organization's records, with a manifest of record

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { useTemplates } from "@/lib/meeting-data";
 import { agendaToText, parseAgendaText, STANDARD_AGENDA, totalMinutes } from "@/lib/templates";
@@ -49,10 +49,10 @@ const blank: Form = {
 };
 
 function Templates() {
-  const { org, userId } = useCurrentOrg();
+  const { org, userId, can } = useCurrentOrg();
   const qc = useQueryClient();
   const q = useTemplates(org.id);
-  const editor = can(org.role, "records.edit");
+  const editor = can("records.edit");
   const [form, setForm] = useState<Form | null>(null);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["templates", org.id] });

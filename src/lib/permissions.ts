@@ -45,6 +45,26 @@ export const CAPABILITIES: Record<Capability, OrgRole[]> = {
   "records.read": ["owner", "admin", "chair", "secretary", "treasurer", "member", "observer"],
 };
 
+/**
+ * What still works while billing makes Board read-only (S-05): reading, the audit log, exports,
+ * and ownership (a core action, not Board's records). The database refuses every other write.
+ */
+export const READ_ONLY_SAFE: readonly Capability[] = [
+  "records.read",
+  "audit.read",
+  "export.run",
+  "ownership.transfer",
+];
+
+/** `can()`, and off for writes while the organization's plan makes Board read-only. */
+export function canNow(
+  role: OrgRole | null | undefined,
+  cap: Capability,
+  readOnly: boolean,
+): boolean {
+  return can(role, cap) && (!readOnly || READ_ONLY_SAFE.includes(cap));
+}
+
 export function can(role: OrgRole | null | undefined, cap: Capability): boolean {
   if (!role) return false;
   return CAPABILITIES[cap].includes(role);

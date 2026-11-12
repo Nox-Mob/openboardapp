@@ -110,5 +110,5 @@
     "vite": "8.3.6",
     "vitest": "^4.1.10"
   },
-  "oahShared": "1.5.0"
+  "oahShared": "1.6.0"
 }

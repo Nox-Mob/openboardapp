@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { attempt, db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
-import { can } from "@/lib/permissions";
+
 import { errorMessage } from "@/lib/export";
 import { useMeeting, useMinutes, useInvalidateMeeting } from "@/lib/meeting-data";
 import { PageHeader, LoadingState, ErrorState, EmptyState } from "@/components/PageStates";
@@ -52,7 +52,7 @@ function MeetingPage() {
   const { meetingId } = Route.useParams();
   const { tab = "agenda" } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { org } = useCurrentOrg();
+  const { org, can } = useCurrentOrg();
   const meeting = useMeeting(meetingId);
   const minutes = useMinutes(meetingId);
   const invalidate = useInvalidateMeeting(meetingId);
@@ -72,7 +72,7 @@ function MeetingPage() {
   const m = meeting.data;
   const approved = (minutes.data ?? []).some((v) => v.status === "approved");
   const locked = approved || m.status === "archived";
-  const editable = can(org.role, "records.edit") && !locked;
+  const editable = can("records.edit") && !locked;
 
   async function setStatus(status: string) {
     const { error } = await attempt(db.meetings.setStatus(m.id, status as typeof m.status));
@@ -90,7 +90,7 @@ function MeetingPage() {
         eyebrow={`${m.meeting_date}${m.start_time ? " · " + m.start_time : ""}${m.location ? " · " + m.location : ""}`}
         title={m.title}
         actions={
-          can(org.role, "records.edit") ? (
+          can("records.edit") ? (
             <div className="flex gap-2">
               <SaveAsTemplate meeting={m} />
               <Select value={m.status} onValueChange={setStatus}>
