@@ -16,7 +16,7 @@ OpenBoardApp is one of the apps of **[OpenAppHub](https://openapphub.org)**: one
 - **With OpenCharterApp:** officers stay in sync both ways, chapters can run their own board, and reports from OpenCharterApp and OpenLedgerApp can be added to a meeting's packet
 - **Isolation:** every organization's data is separated by row-level security in the database
 
-What's left and what's next: [`docs/epic.md`](docs/epic.md).
+What's left and what's next: [`OpenAppHub/docs/ROADMAP.md`](https://github.com/Nox-Mob/OpenAppHub/blob/staging/docs/ROADMAP.md).
 
 ## Editions
 
@@ -102,8 +102,8 @@ With `VITE_HOSTED=false` (the default), Board keeps its own sign-in, organizatio
 ## Docs
 
 - User guide: [docs.openapphub.org](https://docs.openapphub.org)
-- Architecture: [`docs/architecture.md`](docs/architecture.md)
-- To-do list: [`docs/epic.md`](docs/epic.md)
+- Architecture: [`OpenAppHub/docs/board/architecture.md`](https://github.com/Nox-Mob/OpenAppHub/blob/staging/docs/board/architecture.md)
+- To-do list: [`OpenAppHub/docs/ROADMAP.md`](https://github.com/Nox-Mob/OpenAppHub/blob/staging/docs/ROADMAP.md)
 - Suite contract: [`docs/SHARED-SPEC.md`](docs/SHARED-SPEC.md)
 - Rules for contributors and AI assistants: [`AGENTS.md`](AGENTS.md)
 

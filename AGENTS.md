@@ -1,10 +1,12 @@
 # AGENTS.md — OpenBoardApp (Nox-Mob/OpenBoardApp)
 
+**Docs:** every internal document is in OpenAppHub's `docs/` (reader: `OpenAppHub/docs/README.md`; this app's: `OpenAppHub/docs/board/`; roadmap: `OpenAppHub/docs/ROADMAP.md`). Only `docs/SHARED-SPEC.md` (vendored) stays here.
+
 > **Branches (owner rule, 2026-11-11):** pull requests target `staging`, and every merge goes to `staging`. Nothing merges into `main` (production) without the owner's approval, or the owner merging it. CI runs on pull requests and on pushes to `staging`; only workflows that must run on `main` (releases) do.
 
 ## Suite migration (v2)
 
-**Read `docs/SHARED-SPEC.md` (v2) first.** Your step plan is the **Progress** table in `docs/MIGRATION-NOTES.md`; this file gives the owner's answers and the changes v2 makes to it.
+**Read `docs/SHARED-SPEC.md` (v2) first.** Your step plan is the **Progress** table in `OpenAppHub/docs/board/MIGRATION-NOTES.md`; this file gives the owner's answers and the changes v2 makes to it.
 
 App ID `board` · schema `board` · hosted at `board.openapphub.org` (staging `staging.board.staging.openapphub.org`) · package manager **npm**.
 
@@ -82,7 +84,7 @@ SHARED-SPEC §13 is satisfied; Board runs on the shared project; a hub sign-in c
 
 ## Current architecture rules (before the suite migration)
 
-These describe the code as it is today. Each migration step that changes one of them updates it here in the same PR. Where they conflict with the suite migration section above or with `docs/SHARED-SPEC.md`, the spec wins. `docs/MIGRATION-NOTES.md` §7 lists which rule is replaced in which step.
+These describe the code as it is today. Each migration step that changes one of them updates it here in the same PR. Where they conflict with the suite migration section above or with `docs/SHARED-SPEC.md`, the spec wins. `OpenAppHub/docs/board/MIGRATION-NOTES.md` §7 lists which rule is replaced in which step.
 
 - Tenancy: every tenant table carries organization_id; RLS uses security-definer helpers is_org_member / can_edit_records / can_manage_org, and same-org triggers reject cross-org parent links, so isolation never depends on the UI.
 - Permissions: CAPABILITIES in src/lib/permissions.ts is the only role table and must mirror the DB helpers; src/lib/board.test.ts pins every cell.
