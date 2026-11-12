@@ -92,3 +92,27 @@ begin
 end
 $$;
 rollback;
+
+-- A different role in each app (core 0010, 0013): admin in OpenBoardApp only.
+begin;
+do $$
+declare
+  owner uuid := tests.create_user('owner@approle.org', '{"full_name":"Olive"}');
+  bob uuid := tests.create_user('bob@approle.org', '{"full_name":"Bob"}');
+  org uuid;
+begin
+  perform tests.as_user(owner);
+  org := public.create_organization('App Role Board');
+  perform tests.add_member(org, bob, 'viewer');
+  perform tests.as_user(bob);
+  perform tests.ok(not board.can_manage(org), 'a viewer can''t manage Board');
+  perform tests.as_user(owner);
+  perform public.set_app_role(org, bob, 'board', 'admin');
+  perform tests.as_user(bob);
+  perform tests.ok(board.can_manage(org) and board.can_edit_records(org), 'an admin in Board now');
+  perform tests.ok(org in (select board.managed_org_ids()), 'row rules agree');
+  insert into board.meetings (org_id, title, meeting_date, status) values (org, 'Bob''s meeting', current_date + 3, 'scheduled');
+  perform tests.ok(not public.has_role(org, '{owner,admin}'), 'still a viewer in OpenAppHub');
+end
+$$;
+rollback;
