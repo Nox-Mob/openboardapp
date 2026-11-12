@@ -158,6 +158,11 @@ export function PacketTab({ meeting }: { meeting: Tables<"meetings"> }) {
       )}
       <section className="space-y-3">
         <p className="eyebrow">Packet versions</p>
+        <p className="text-xs text-muted-foreground">
+          Each PDF you build is kept as a new version. &ldquo;Mark as distributed&rdquo; records
+          that you sent it to the board (by email or on paper); it doesn&apos;t send anything
+          itself.
+        </p>
         {!packets.data?.length ? (
           <EmptyState title="No packets generated" />
         ) : (

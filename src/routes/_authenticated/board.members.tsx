@@ -567,6 +567,10 @@ function Members() {
           {editor && (
             <form onSubmit={addRole} className="h-fit space-y-3 rounded-lg border bg-card p-5">
               <p className="eyebrow">Create a board role</p>
+              <p className="text-xs text-muted-foreground">
+                A role is a seat on the board, like President or Treasurer. You then fill it with a
+                person for a term; when the term ends, the history stays here.
+              </p>
               <div>
                 <Label>Title</Label>
                 <Input

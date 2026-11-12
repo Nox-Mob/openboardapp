@@ -159,6 +159,12 @@ export function LetterheadSettings() {
             )}
           </div>
           {saved.data && (
+            <p className="text-xs text-muted-foreground">
+              Header and footer space is how much room the letterhead takes at the top and bottom of
+              each page, so text doesn&apos;t print over it. 72 points is one inch.
+            </p>
+          )}
+          {saved.data && (
             <div className="flex flex-wrap items-end gap-3">
               <div>
                 <Label htmlFor="letterhead-top">Header space (points)</Label>
