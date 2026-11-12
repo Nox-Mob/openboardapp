@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Trash2, Copy } from "lucide-react";
 import { attempt, db } from "@/data";
 import { useCurrentOrg, useOrgMembers, useTitles } from "@/lib/org-context";
+import { suiteUrls } from "@shared/supabase/hosted";
 import { ROLES, ROLE_LABELS, type OrgRole } from "@/lib/permissions";
 import { errorMessage } from "@/lib/export";
 import { currentHolder, termEnd } from "@/lib/titles";
@@ -330,7 +331,12 @@ function Members() {
     qc.invalidateQueries({ queryKey: ["invites", org.id] });
   }
 
-  const unlinked = (terms.data ?? []).filter((t) => !t.position_id);
+  // S-14: officers OpenCharterApp manages appear here, linked (change them there).
+  const fromCharter = (terms.data ?? []).filter(
+    (t) => t.source === "charter" && (!t.end_date || t.end_date >= today),
+  );
+  const unlinked = (terms.data ?? []).filter((t) => !t.position_id && t.source !== "charter");
+  const charterUrl = suiteUrls().charter;
 
   return (
     <>
@@ -504,6 +510,33 @@ function Members() {
                   orgId={org.id}
                 />
               ))
+            )}
+            {!!fromCharter.length && (
+              <div className="rounded-lg border bg-card p-4 text-sm">
+                <p className="eyebrow mb-1">Officers from OpenCharterApp</p>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  These officers are kept in step with OpenCharterApp. Change them there; ending a
+                  term here ends it there too.{" "}
+                  {charterUrl ? (
+                    <a
+                      className="underline"
+                      href={`${charterUrl.replace(/\/+$/, "")}/orgs/${org.id}?tab=board-settings`}
+                    >
+                      Open OpenCharterApp
+                    </a>
+                  ) : null}
+                </p>
+                {fromCharter.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between py-1">
+                    <span>
+                      {t.person_name} · {t.position}
+                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {t.start_date} → {t.end_date ?? "present"}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
             {!!unlinked.length && (
               <div className="rounded-lg border bg-card p-4 text-sm">
