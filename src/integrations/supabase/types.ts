@@ -22,7 +22,6 @@ export type Database = {
           status: Database["board"]["Enums"]["task_status"]
           title: string
         }
-        ComputedFields: never
         Insert: {
           assignee_id?: string | null
           created_at?: string
@@ -51,6 +50,14 @@ export type Database = {
           {
             foreignKeyName: "action_items_meeting_id_fkey"
             columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
@@ -72,7 +79,6 @@ export type Database = {
           proposed_motion: string | null
           title: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           decision_rule?: string | null
@@ -107,6 +113,14 @@ export type Database = {
           {
             foreignKeyName: "agenda_items_meeting_id_fkey"
             columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agenda_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
@@ -124,7 +138,6 @@ export type Database = {
           status: Database["board"]["Enums"]["attendance_status"]
           user_id: string | null
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           id?: string
@@ -151,12 +164,21 @@ export type Database = {
           {
             foreignKeyName: "attendance_meeting_id_fkey"
             columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "attendance_person_id_fkey"
             columns: ["person_id"]
+            isOneToOne: false
             referencedRelation: "people"
             referencedColumns: ["id"]
           },
@@ -174,7 +196,6 @@ export type Database = {
           org_id: string
           summary: string | null
         }
-        ComputedFields: never
         Insert: {
           action: string
           actor_id?: string | null
@@ -210,7 +231,6 @@ export type Database = {
           role: string
           user_id: string | null
         }
-        ComputedFields: never
         Insert: {
           committee_id: string
           created_at?: string
@@ -235,12 +255,14 @@ export type Database = {
           {
             foreignKeyName: "committee_members_committee_id_fkey"
             columns: ["committee_id"]
+            isOneToOne: false
             referencedRelation: "committees"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "committee_members_person_id_fkey"
             columns: ["person_id"]
+            isOneToOne: false
             referencedRelation: "people"
             referencedColumns: ["id"]
           },
@@ -254,7 +276,6 @@ export type Database = {
           name: string
           org_id: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           description?: string | null
@@ -284,7 +305,6 @@ export type Database = {
           uploaded_by: string | null
           version: number
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           document_id: string
@@ -313,6 +333,7 @@ export type Database = {
           {
             foreignKeyName: "document_versions_document_id_fkey"
             columns: ["document_id"]
+            isOneToOne: false
             referencedRelation: "documents"
             referencedColumns: ["id"]
           },
@@ -328,7 +349,6 @@ export type Database = {
           org_id: string
           title: string
         }
-        ComputedFields: never
         Insert: {
           category?: string
           created_at?: string
@@ -351,6 +371,14 @@ export type Database = {
           {
             foreignKeyName: "documents_meeting_id_fkey"
             columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
@@ -367,7 +395,6 @@ export type Database = {
           storage_path: string
           updated_at: string
         }
-        ComputedFields: never
         Insert: {
           file_name: string
           footer_points?: number
@@ -392,7 +419,7 @@ export type Database = {
       }
       meeting_templates: {
         Row: {
-          agenda: NonNullable<Json>
+          agenda: Json
           created_at: string
           created_by: string | null
           id: string
@@ -402,9 +429,8 @@ export type Database = {
           org_id: string
           start_time: string | null
         }
-        ComputedFields: never
         Insert: {
-          agenda?: NonNullable<Json>
+          agenda?: Json
           created_at?: string
           created_by?: string | null
           id?: string
@@ -415,7 +441,7 @@ export type Database = {
           start_time?: string | null
         }
         Update: {
-          agenda?: NonNullable<Json>
+          agenda?: Json
           created_at?: string
           created_by?: string | null
           id?: string
@@ -439,7 +465,6 @@ export type Database = {
           status: Database["board"]["Enums"]["meeting_status"]
           title: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           created_by?: string | null
@@ -475,7 +500,6 @@ export type Database = {
           user_id: string
           vote: string
         }
-        ComputedFields: never
         Insert: {
           attendance_id?: string | null
           created_at?: string
@@ -500,6 +524,14 @@ export type Database = {
           {
             foreignKeyName: "member_votes_motion_id_fkey"
             columns: ["motion_id"]
+            isOneToOne: false
+            referencedRelation: "api_decisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_votes_motion_id_fkey"
+            columns: ["motion_id"]
+            isOneToOne: false
             referencedRelation: "motions"
             referencedColumns: ["id"]
           },
@@ -519,7 +551,6 @@ export type Database = {
           submitted_at: string | null
           version: number
         }
-        ComputedFields: never
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
@@ -550,6 +581,14 @@ export type Database = {
           {
             foreignKeyName: "minutes_meeting_id_fkey"
             columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "minutes_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
@@ -583,7 +622,6 @@ export type Database = {
           votes_yes: number
           voting_status: string
         }
-        ComputedFields: never
         Insert: {
           agenda_item_id?: string | null
           closed_at?: string | null
@@ -642,12 +680,21 @@ export type Database = {
           {
             foreignKeyName: "motions_agenda_item_id_fkey"
             columns: ["agenda_item_id"]
+            isOneToOne: false
             referencedRelation: "agenda_items"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "motions_meeting_id_fkey"
             columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "motions_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
@@ -660,7 +707,6 @@ export type Database = {
           org_id: string
           user_id: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           office: Database["board"]["Enums"]["office"]
@@ -688,7 +734,6 @@ export type Database = {
           vote_recording: string
           vote_timer_minutes: number | null
         }
-        ComputedFields: never
         Insert: {
           decision_rule?: string
           org_id: string
@@ -717,7 +762,7 @@ export type Database = {
       }
       packets: {
         Row: {
-          contents: NonNullable<Json>
+          contents: Json
           created_at: string
           created_by: string | null
           distributed_at: string | null
@@ -727,9 +772,8 @@ export type Database = {
           storage_path: string
           version: number
         }
-        ComputedFields: never
         Insert: {
-          contents?: NonNullable<Json>
+          contents?: Json
           created_at?: string
           created_by?: string | null
           distributed_at?: string | null
@@ -740,7 +784,7 @@ export type Database = {
           version: number
         }
         Update: {
-          contents?: NonNullable<Json>
+          contents?: Json
           created_at?: string
           created_by?: string | null
           distributed_at?: string | null
@@ -754,6 +798,14 @@ export type Database = {
           {
             foreignKeyName: "packets_meeting_id_fkey"
             columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "packets_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
           },
@@ -768,7 +820,6 @@ export type Database = {
           notes: string | null
           org_id: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           email?: string | null
@@ -796,7 +847,6 @@ export type Database = {
           term_years: number | null
           title: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           id?: string
@@ -831,7 +881,6 @@ export type Database = {
           start_date: string
           user_id: string | null
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           end_date?: string | null
@@ -866,12 +915,14 @@ export type Database = {
           {
             foreignKeyName: "terms_person_id_fkey"
             columns: ["person_id"]
+            isOneToOne: false
             referencedRelation: "people"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "terms_position_id_fkey"
             columns: ["position_id"]
+            isOneToOne: false
             referencedRelation: "positions"
             referencedColumns: ["id"]
           },
@@ -887,7 +938,6 @@ export type Database = {
           person_name: string
           user_id: string
         }
-        ComputedFields: never
         Insert: {
           attendance_id?: string | null
           created_at?: string
@@ -910,6 +960,14 @@ export type Database = {
           {
             foreignKeyName: "vote_electorate_motion_id_fkey"
             columns: ["motion_id"]
+            isOneToOne: false
+            referencedRelation: "api_decisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vote_electorate_motion_id_fkey"
+            columns: ["motion_id"]
+            isOneToOne: false
             referencedRelation: "motions"
             referencedColumns: ["id"]
           },
@@ -917,15 +975,141 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      api_action_items: {
+        Row: {
+          assignee_id: string | null
+          completable: boolean | null
+          created_at: string | null
+          due_date: string | null
+          id: string | null
+          link: string | null
+          meeting_id: string | null
+          meeting_title: string | null
+          org_id: string | null
+          status: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_decisions: {
+        Row: {
+          decided_at: string | null
+          id: string | null
+          meeting_date: string | null
+          meeting_id: string | null
+          meeting_title: string | null
+          motion_text: string | null
+          org_id: string | null
+          outcome: string | null
+          votes_abstain: number | null
+          votes_no: number | null
+          votes_recused: number | null
+          votes_yes: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motions_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "api_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "motions_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_meetings: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          location: string | null
+          meeting_date: string | null
+          minutes_status: string | null
+          motion_count: number | null
+          org_id: string | null
+          start_time: string | null
+          status: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          location?: string | null
+          meeting_date?: string | null
+          minutes_status?: never
+          motion_count?: never
+          org_id?: string | null
+          start_time?: string | null
+          status?: never
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          location?: string | null
+          meeting_date?: string | null
+          minutes_status?: never
+          motion_count?: never
+          org_id?: string | null
+          start_time?: string | null
+          status?: never
+          title?: string | null
+        }
+        Relationships: []
+      }
+      api_people: {
+        Row: {
+          office: string | null
+          org_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          office?: never
+          org_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          office?: never
+          org_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      _wf_meeting_ctx: {
+        Args: {
+          p_days: number
+          p_meeting: Database["board"]["Tables"]["meetings"]["Row"]
+        }
+        Returns: Json
+      }
       add_document: {
         Args: {
           p_category: string
           p_file_name: string
           p_id: string
-          p_meeting_id: string | null
+          p_meeting_id: string
           p_mime_type: string
           p_org: string
           p_size_bytes: number
@@ -934,36 +1118,49 @@ export type Database = {
         }
         Returns: string
       }
+      add_report_to_meeting: {
+        Args: {
+          p_file_name: string
+          p_meeting: string
+          p_source_app?: string
+          p_title: string
+        }
+        Returns: {
+          document_id: string
+          storage_path: string
+        }[]
+      }
       assign_term: {
         Args: {
-          p_end_date?: string | null
+          p_end_date?: string
           p_org: string
           p_person_name: string
           p_position: string
           p_position_id: string
           p_start_date: string
-          p_user_id: string | null
+          p_user_id: string
         }
         Returns: string
       }
-      create_meeting_with_agenda: {
-        Args: {
-          p_agenda?: Json
-          p_location?: string | null
-          p_meeting_date: string
-          p_org: string
-          p_start_time?: string | null
-          p_title: string
-        }
-        Returns: string
-      }
-      audit_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
+      audit_org_ids: { Args: never; Returns: string[] }
       can_edit_records: { Args: { p_org: string }; Returns: boolean }
       can_manage: { Args: { p_org: string }; Returns: boolean }
       can_read_audit: { Args: { p_org: string }; Returns: boolean }
       cast_vote: { Args: { p_motion: string; p_vote: string }; Returns: string }
       close_vote: { Args: { p_motion: string }; Returns: undefined }
-      editable_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
+      complete_action_item: { Args: { p_id: string }; Returns: undefined }
+      create_meeting_with_agenda: {
+        Args: {
+          p_agenda?: Json
+          p_location?: string
+          p_meeting_date: string
+          p_org: string
+          p_start_time?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      editable_org_ids: { Args: never; Returns: string[] }
       finish_vote: {
         Args: { p_how: string; p_motion: string }
         Returns: undefined
@@ -972,7 +1169,7 @@ export type Database = {
         Args: { p_org: string; p_roles: string[] }
         Returns: boolean
       }
-      managed_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
+      managed_org_ids: { Args: never; Returns: string[] }
       my_office: {
         Args: { p_org: string }
         Returns: Database["board"]["Enums"]["office"]
@@ -982,7 +1179,8 @@ export type Database = {
         Returns: undefined
       }
       org_gone: { Args: { p_org: string }; Returns: boolean }
-      readable_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
+      queue_email_reminders: { Args: never; Returns: number }
+      readable_org_ids: { Args: never; Returns: string[] }
       record_disposition: {
         Args: {
           p_motion: string
@@ -1022,8 +1220,42 @@ export type Database = {
         }
         Returns: string
       }
+      sync_term_from_charter: {
+        Args: {
+          p_appointment: string
+          p_end: string
+          p_org: string
+          p_person_name: string
+          p_position: string
+          p_removed?: boolean
+          p_start: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       vote_is_closed: { Args: { p_motion: string }; Returns: boolean }
       vote_progress: { Args: { p_motion: string }; Returns: Json }
+      wf_action_item_overdue: {
+        Args: { p_org: string; p_params: Json }
+        Returns: {
+          ctx: Json
+          dedupe: string
+        }[]
+      }
+      wf_meeting_upcoming: {
+        Args: { p_org: string; p_params: Json }
+        Returns: {
+          ctx: Json
+          dedupe: string
+        }[]
+      }
+      wf_office_holders: {
+        Args: { p_ctx: Json; p_org: string; p_params: Json }
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       attendance_status: "present" | "absent" | "excused" | "remote"
@@ -1044,13 +1276,775 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_role_overrides: {
+        Row: {
+          app: string
+          org_id: string
+          role: Database["public"]["Enums"]["org_role"]
+          set_at: string
+          set_by: string | null
+          user_id: string
+        }
+        Insert: {
+          app: string
+          org_id: string
+          role: Database["public"]["Enums"]["org_role"]
+          set_at?: string
+          set_by?: string | null
+          user_id: string
+        }
+        Update: {
+          app?: string
+          org_id?: string
+          role?: Database["public"]["Enums"]["org_role"]
+          set_at?: string
+          set_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_role_overrides_org_id_user_id_fkey"
+            columns: ["org_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["org_id", "user_id"]
+          },
+        ]
+      }
+      automation_action_types: {
+        Row: {
+          app: string
+          description: string
+          label: string
+          params_schema: Json
+          requires: string[]
+          sort: number
+          type: string
+        }
+        Insert: {
+          app: string
+          description?: string
+          label: string
+          params_schema?: Json
+          requires?: string[]
+          sort?: number
+          type: string
+        }
+        Update: {
+          app?: string
+          description?: string
+          label?: string
+          params_schema?: Json
+          requires?: string[]
+          sort?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      automation_editors: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          org_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          org_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          org_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_editors_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_events: {
+        Row: {
+          ctx: Json
+          id: number
+          occurred_at: string
+          org_id: string
+          processed_at: string | null
+          type: string
+        }
+        Insert: {
+          ctx?: Json
+          id?: never
+          occurred_at?: string
+          org_id: string
+          processed_at?: string | null
+          type: string
+        }
+        Update: {
+          ctx?: Json
+          id?: never
+          occurred_at?: string
+          org_id?: string
+          processed_at?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_jobs: {
+        Row: {
+          app: string
+          attempts: number
+          created_at: string
+          error: string | null
+          id: number
+          kind: string
+          org_id: string
+          payload: Json
+          result: Json | null
+          run_id: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          app: string
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          id?: never
+          kind: string
+          org_id: string
+          payload?: Json
+          result?: Json | null
+          run_id?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          app?: string
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          id?: never
+          kind?: string
+          org_id?: string
+          payload?: Json
+          result?: Json | null
+          run_id?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_jobs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_jobs_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "automation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_kinds: {
+        Row: {
+          app: string
+          category: string
+          default_enabled: boolean
+          default_params: Json
+          description: string
+          key: string
+          name: string
+          params_schema: Json
+          sort: number
+        }
+        Insert: {
+          app: string
+          category?: string
+          default_enabled?: boolean
+          default_params?: Json
+          description: string
+          key: string
+          name: string
+          params_schema?: Json
+          sort?: number
+        }
+        Update: {
+          app?: string
+          category?: string
+          default_enabled?: boolean
+          default_params?: Json
+          description?: string
+          key?: string
+          name?: string
+          params_schema?: Json
+          sort?: number
+        }
+        Relationships: []
+      }
+      automation_log: {
+        Row: {
+          at: string
+          count: number
+          id: number
+          kind: string
+          org_id: string
+          summary: string
+        }
+        Insert: {
+          at?: string
+          count?: number
+          id?: never
+          kind: string
+          org_id: string
+          summary: string
+        }
+        Update: {
+          at?: string
+          count?: number
+          id?: never
+          kind?: string
+          org_id?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_log_kind_fkey"
+            columns: ["kind"]
+            isOneToOne: false
+            referencedRelation: "automation_kinds"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "automation_log_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_org_settings: {
+        Row: {
+          chapters_may_build: boolean
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          chapters_may_build?: boolean
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          chapters_may_build?: boolean
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_org_settings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_recipient_types: {
+        Row: {
+          app: string
+          description: string
+          label: string
+          options_fn: string | null
+          params_schema: Json
+          resolve_fn: string
+          sort: number
+          type: string
+        }
+        Insert: {
+          app: string
+          description?: string
+          label: string
+          options_fn?: string | null
+          params_schema?: Json
+          resolve_fn: string
+          sort?: number
+          type: string
+        }
+        Update: {
+          app?: string
+          description?: string
+          label?: string
+          options_fn?: string | null
+          params_schema?: Json
+          resolve_fn?: string
+          sort?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      automation_runs: {
+        Row: {
+          branch: string | null
+          ctx: Json
+          dedupe_key: string
+          error: string | null
+          finished_at: string | null
+          id: number
+          log: Json
+          org_id: string
+          started_at: string
+          status: string
+          trigger_type: string
+          workflow_id: string
+        }
+        Insert: {
+          branch?: string | null
+          ctx?: Json
+          dedupe_key: string
+          error?: string | null
+          finished_at?: string | null
+          id?: never
+          log?: Json
+          org_id: string
+          started_at?: string
+          status?: string
+          trigger_type: string
+          workflow_id: string
+        }
+        Update: {
+          branch?: string | null
+          ctx?: Json
+          dedupe_key?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: never
+          log?: Json
+          org_id?: string
+          started_at?: string
+          status?: string
+          trigger_type?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_runs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_runs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "automation_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_tasks: {
+        Row: {
+          assignee_id: string
+          created_at: string
+          done_at: string | null
+          done_by: string | null
+          due_on: string | null
+          id: string
+          link: string | null
+          note: string
+          org_id: string
+          run_id: number | null
+          status: string
+          title: string
+        }
+        Insert: {
+          assignee_id: string
+          created_at?: string
+          done_at?: string | null
+          done_by?: string | null
+          due_on?: string | null
+          id?: string
+          link?: string | null
+          note?: string
+          org_id: string
+          run_id?: number | null
+          status?: string
+          title: string
+        }
+        Update: {
+          assignee_id?: string
+          created_at?: string
+          done_at?: string | null
+          done_by?: string | null
+          due_on?: string | null
+          id?: string
+          link?: string | null
+          note?: string
+          org_id?: string
+          run_id?: number | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_tasks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_tasks_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "automation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_trigger_types: {
+        Row: {
+          app: string
+          description: string
+          fields: Json
+          fields_fn: string | null
+          kind: string
+          label: string
+          params_schema: Json
+          provides: string[]
+          scan_fn: string | null
+          sort: number
+          type: string
+        }
+        Insert: {
+          app: string
+          description?: string
+          fields?: Json
+          fields_fn?: string | null
+          kind: string
+          label: string
+          params_schema?: Json
+          provides?: string[]
+          scan_fn?: string | null
+          sort?: number
+          type: string
+        }
+        Update: {
+          app?: string
+          description?: string
+          fields?: Json
+          fields_fn?: string | null
+          kind?: string
+          label?: string
+          params_schema?: Json
+          provides?: string[]
+          scan_fn?: string | null
+          sort?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      automation_workflows: {
+        Row: {
+          adopted_from: string | null
+          created_at: string
+          created_by: string | null
+          definition: Json | null
+          description: string
+          enabled: boolean
+          id: string
+          name: string
+          org_id: string
+          shared: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          adopted_from?: string | null
+          created_at?: string
+          created_by?: string | null
+          definition?: Json | null
+          description?: string
+          enabled?: boolean
+          id?: string
+          name: string
+          org_id: string
+          shared?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          adopted_from?: string | null
+          created_at?: string
+          created_by?: string | null
+          definition?: Json | null
+          description?: string
+          enabled?: boolean
+          id?: string
+          name?: string
+          org_id?: string
+          shared?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_workflows_adopted_from_fkey"
+            columns: ["adopted_from"]
+            isOneToOne: false
+            referencedRelation: "automation_workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_workflows_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automations: {
+        Row: {
+          enabled: boolean
+          kind: string
+          org_id: string
+          params: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled: boolean
+          kind: string
+          org_id: string
+          params?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          kind?: string
+          org_id?: string
+          params?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automations_kind_fkey"
+            columns: ["kind"]
+            isOneToOne: false
+            referencedRelation: "automation_kinds"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "automations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_jobs: {
+        Row: {
+          every: unknown
+          fn: string
+          last_error: string | null
+          last_run_at: string | null
+          name: string
+        }
+        Insert: {
+          every?: unknown
+          fn: string
+          last_error?: string | null
+          last_run_at?: string | null
+          name: string
+        }
+        Update: {
+          every?: unknown
+          fn?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      email_outbox: {
+        Row: {
+          app: string
+          attempts: number
+          category: string
+          claimed_at: string | null
+          created_at: string
+          data: Json
+          dedupe_key: string | null
+          id: string
+          last_error: string | null
+          org_id: string | null
+          provider_id: string | null
+          send_after: string
+          sent_at: string | null
+          status: string
+          template: string
+          to_email: string | null
+          to_user_id: string | null
+        }
+        Insert: {
+          app: string
+          attempts?: number
+          category?: string
+          claimed_at?: string | null
+          created_at?: string
+          data?: Json
+          dedupe_key?: string | null
+          id?: string
+          last_error?: string | null
+          org_id?: string | null
+          provider_id?: string | null
+          send_after?: string
+          sent_at?: string | null
+          status?: string
+          template: string
+          to_email?: string | null
+          to_user_id?: string | null
+        }
+        Update: {
+          app?: string
+          attempts?: number
+          category?: string
+          claimed_at?: string | null
+          created_at?: string
+          data?: Json
+          dedupe_key?: string | null
+          id?: string
+          last_error?: string | null
+          org_id?: string | null
+          provider_id?: string | null
+          send_after?: string
+          sent_at?: string | null
+          status?: string
+          template?: string
+          to_email?: string | null
+          to_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_preferences: {
+        Row: {
+          digest: string
+          digest_day: number
+          digest_hour: number
+          digest_include: string[]
+          digest_last_sent_at: string | null
+          digest_org_ids: string[] | null
+          digest_time_zone: string | null
+          reminders: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          digest?: string
+          digest_day?: number
+          digest_hour?: number
+          digest_include?: string[]
+          digest_last_sent_at?: string | null
+          digest_org_ids?: string[] | null
+          digest_time_zone?: string | null
+          reminders?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          digest?: string
+          digest_day?: number
+          digest_hour?: number
+          digest_include?: string[]
+          digest_last_sent_at?: string | null
+          digest_org_ids?: string[] | null
+          digest_time_zone?: string | null
+          reminders?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      instance_email_settings: {
+        Row: {
+          from_address: string | null
+          from_name: string | null
+          id: boolean
+          reply_to: string | null
+          smtp_host: string | null
+          smtp_password_enc: string | null
+          smtp_port: number | null
+          smtp_security: string
+          smtp_username: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          from_address?: string | null
+          from_name?: string | null
+          id?: boolean
+          reply_to?: string | null
+          smtp_host?: string | null
+          smtp_password_enc?: string | null
+          smtp_port?: number | null
+          smtp_security?: string
+          smtp_username?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          from_address?: string | null
+          from_name?: string | null
+          id?: boolean
+          reply_to?: string | null
+          smtp_host?: string | null
+          smtp_password_enc?: string | null
+          smtp_port?: number | null
+          smtp_security?: string
+          smtp_username?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       instance_settings: {
         Row: {
           billing_enabled: boolean
           hub_url: string | null
           id: boolean
         }
-        ComputedFields: never
         Insert: {
           billing_enabled?: boolean
           hub_url?: string | null
@@ -1068,7 +2062,7 @@ export type Database = {
           accepted_at: string | null
           accepted_by: string | null
           app: string | null
-          app_payload: NonNullable<Json>
+          app_payload: Json
           created_at: string
           email: string | null
           expires_at: string
@@ -1079,12 +2073,11 @@ export type Database = {
           role: Database["public"]["Enums"]["org_role"] | null
           token_hash: string
         }
-        ComputedFields: never
         Insert: {
           accepted_at?: string | null
           accepted_by?: string | null
           app?: string | null
-          app_payload?: NonNullable<Json>
+          app_payload?: Json
           created_at?: string
           email?: string | null
           expires_at: string
@@ -1099,7 +2092,7 @@ export type Database = {
           accepted_at?: string | null
           accepted_by?: string | null
           app?: string | null
-          app_payload?: NonNullable<Json>
+          app_payload?: Json
           created_at?: string
           email?: string | null
           expires_at?: string
@@ -1114,6 +2107,7 @@ export type Database = {
           {
             foreignKeyName: "invitations_org_id_fkey"
             columns: ["org_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1126,7 +2120,6 @@ export type Database = {
           role: Database["public"]["Enums"]["org_role"]
           user_id: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           org_id: string
@@ -1143,6 +2136,7 @@ export type Database = {
           {
             foreignKeyName: "memberships_org_id_fkey"
             columns: ["org_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1155,17 +2149,22 @@ export type Database = {
           currency: string
           id: string
           name: string
+          parent_org_id: string | null
           slug: string | null
+          source_app: string | null
+          source_ref: string | null
           time_zone: string
         }
-        ComputedFields: never
         Insert: {
           created_at?: string
           created_by?: string | null
           currency?: string
           id?: string
           name: string
+          parent_org_id?: string | null
           slug?: string | null
+          source_app?: string | null
+          source_ref?: string | null
           time_zone?: string
         }
         Update: {
@@ -1174,10 +2173,21 @@ export type Database = {
           currency?: string
           id?: string
           name?: string
+          parent_org_id?: string | null
           slug?: string | null
+          source_app?: string | null
+          source_ref?: string | null
           time_zone?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_parent_org_id_fkey"
+            columns: ["parent_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1186,7 +2196,6 @@ export type Database = {
           id: string
           updated_at: string
         }
-        ComputedFields: never
         Insert: {
           avatar_url?: string | null
           display_name?: string | null
@@ -1206,11 +2215,70 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _automation_condition: {
+        Args: { p_c: Json; p_ctx: Json }
+        Returns: boolean
+      }
+      _automation_execute: {
+        Args: {
+          p_ctx: Json
+          p_dedupe: string
+          p_def: Json
+          p_org: string
+          p_wf: Database["public"]["Tables"]["automation_workflows"]["Row"]
+        }
+        Returns: number
+      }
+      _automation_extra_fields: {
+        Args: { p_fn: string; p_org: string }
+        Returns: Json
+      }
+      _automation_fill: {
+        Args: { p_ctx: Json; p_text: string }
+        Returns: string
+      }
+      _automation_recipients: {
+        Args: { p_ctx: Json; p_org: string; p_to: Json }
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
+      _clean_automation_params: {
+        Args: { p_params: Json; p_schema: Json }
+        Returns: Json
+      }
       _clean_org_name: { Args: { p_name: string }; Returns: string }
+      _create_child_organization: {
+        Args: {
+          p_admins?: string[]
+          p_name: string
+          p_owner: string
+          p_parent: string
+          p_source_app: string
+          p_source_ref: string
+        }
+        Returns: string
+      }
+      _email_opted_out: {
+        Args: { p_category: string; p_user: string }
+        Returns: boolean
+      }
       _is_active_user: { Args: { p_user: string }; Returns: boolean }
+      _may_build_workflows: { Args: { p_org: string }; Returns: boolean }
       _member_confirm_text: { Args: { p_user: string }; Returns: string }
-      _require_uid: { Args: Record<PropertyKey, never>; Returns: string }
+      _require_uid: { Args: never; Returns: string }
       _token_hash: { Args: { p_token: string }; Returns: string }
+      _validate_actions: {
+        Args: {
+          p_actions: Json
+          p_trig: Database["public"]["Tables"]["automation_trigger_types"]["Row"]
+          p_where: string
+        }
+        Returns: Json
+      }
+      _validate_recipient: { Args: { p: Json; p_where: string }; Returns: Json }
+      _validate_workflow: { Args: { p_def: Json }; Returns: Json }
       accept_invitation: {
         Args: { p_token: string }
         Returns: {
@@ -1221,7 +2289,64 @@ export type Database = {
           role: Database["public"]["Enums"]["org_role"]
         }[]
       }
+      adopt_workflow: {
+        Args: { p_org: string; p_source: string }
+        Returns: string
+      }
+      app_role: {
+        Args: { p_app: string; p_org: string; p_user?: string }
+        Returns: Database["public"]["Enums"]["org_role"]
+      }
+      automation_settings: {
+        Args: { p_kind: string; p_org: string }
+        Returns: {
+          enabled: boolean
+          params: Json
+        }[]
+      }
+      can_edit_automations: { Args: { p_org: string }; Returns: boolean }
       can_write: { Args: { p_app: string; p_org: string }; Returns: boolean }
+      claim_automation_jobs: {
+        Args: { p_app: string; p_limit?: number }
+        Returns: {
+          app: string
+          attempts: number
+          created_at: string
+          error: string | null
+          id: number
+          kind: string
+          org_id: string
+          payload: Json
+          result: Json | null
+          run_id: number | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "automation_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_emails: {
+        Args: { p_apps?: string[]; p_limit?: number }
+        Returns: {
+          app: string
+          attempts: number
+          category: string
+          data: Json
+          id: string
+          org_id: string
+          org_name: string
+          org_time_zone: string
+          template: string
+          to_email: string
+          to_name: string
+          to_user_id: string
+        }[]
+      }
+      complete_automation_task: { Args: { p_id: string }; Returns: undefined }
       create_invitation: {
         Args: {
           p_app?: string
@@ -1241,6 +2366,65 @@ export type Database = {
         Args: { p_confirm_name: string; p_org: string }
         Returns: undefined
       }
+      delete_workflow: { Args: { p_id: string }; Returns: undefined }
+      digest_automation_tasks: {
+        Args: { p_org: string; p_user: string }
+        Returns: Json
+      }
+      digest_for: { Args: { p_period?: string; p_user: string }; Returns: Json }
+      email_unsubscribe: {
+        Args: { p_category: string; p_user: string }
+        Returns: undefined
+      }
+      emit_automation_event: {
+        Args: { p_ctx: Json; p_org: string; p_type: string }
+        Returns: undefined
+      }
+      enqueue_email: {
+        Args: {
+          p_app: string
+          p_category?: string
+          p_data?: Json
+          p_dedupe_key?: string
+          p_org?: string
+          p_send_after?: string
+          p_template: string
+          p_to_email?: string
+          p_to_user?: string
+        }
+        Returns: string
+      }
+      finish_automation_job: {
+        Args: { p_error: string; p_id: number; p_ok: boolean; p_result: Json }
+        Returns: undefined
+      }
+      finish_email: {
+        Args: {
+          p_error?: string
+          p_id: string
+          p_outcome: string
+          p_provider_id?: string
+        }
+        Returns: undefined
+      }
+      get_digest_preferences: {
+        Args: never
+        Returns: {
+          digest: string
+          digest_day: number
+          digest_hour: number
+          digest_include: string[]
+          digest_org_ids: string[]
+          digest_time_zone: string
+        }[]
+      }
+      get_email_preferences: {
+        Args: never
+        Returns: {
+          digest: string
+          reminders: boolean
+        }[]
+      }
       get_invitation: {
         Args: { p_token: string }
         Returns: {
@@ -1251,8 +2435,20 @@ export type Database = {
           status: string
         }[]
       }
+      grant_automation_editor: {
+        Args: { p_grant: boolean; p_org: string; p_user: string }
+        Returns: undefined
+      }
       has_app_access: {
         Args: { p_app: string; p_org: string }
+        Returns: boolean
+      }
+      has_app_role: {
+        Args: {
+          p_app: string
+          p_org: string
+          p_roles: Database["public"]["Enums"]["org_role"][]
+        }
         Returns: boolean
       }
       has_role: {
@@ -1262,7 +2458,28 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_instance_owner: { Args: never; Returns: boolean }
       is_member: { Args: { p_org: string }; Returns: boolean }
+      is_member_of_child: { Args: { p_org: string }; Returns: boolean }
+      list_automations: {
+        Args: { p_org: string }
+        Returns: {
+          app: string
+          category: string
+          default_enabled: boolean
+          default_params: Json
+          description: string
+          enabled: boolean
+          is_default: boolean
+          kind: string
+          last_run_at: string
+          last_summary: string
+          name: string
+          params: Json
+          params_schema: Json
+          updated_at: string
+        }[]
+      }
       list_invitations: {
         Args: { p_org: string }
         Returns: {
@@ -1275,6 +2492,37 @@ export type Database = {
           invited_by_name: string
           role: Database["public"]["Enums"]["org_role"]
           status: string
+        }[]
+      }
+      log_automation: {
+        Args: {
+          p_count: number
+          p_kind: string
+          p_org: string
+          p_summary: string
+        }
+        Returns: undefined
+      }
+      my_app_memberships: {
+        Args: { p_app: string }
+        Returns: {
+          org_id: string
+          role: Database["public"]["Enums"]["org_role"]
+        }[]
+      }
+      org_email_log: {
+        Args: { p_limit?: number; p_org: string }
+        Returns: {
+          app: string
+          attempts: number
+          category: string
+          created_at: string
+          id: string
+          last_error: string
+          sent_at: string
+          status: string
+          template: string
+          to_email: string
         }[]
       }
       org_member_directory: {
@@ -1295,13 +2543,130 @@ export type Database = {
           user_id: string
         }[]
       }
+      prune_automation_log: { Args: never; Returns: number }
+      prune_workflow_history: { Args: never; Returns: number }
+      queue_digests: { Args: never; Returns: number }
+      register_automation_action: {
+        Args: {
+          p_app: string
+          p_description: string
+          p_label: string
+          p_params_schema: Json
+          p_requires: string[]
+          p_sort?: number
+          p_type: string
+        }
+        Returns: undefined
+      }
+      register_automation_kind: {
+        Args: {
+          p_app: string
+          p_category: string
+          p_default_enabled: boolean
+          p_default_params: Json
+          p_description: string
+          p_key: string
+          p_name: string
+          p_params_schema: Json
+          p_sort?: number
+        }
+        Returns: undefined
+      }
+      register_automation_recipient: {
+        Args: {
+          p_app: string
+          p_description: string
+          p_label: string
+          p_options_fn?: string
+          p_params_schema: Json
+          p_resolve_fn: string
+          p_sort?: number
+          p_type: string
+        }
+        Returns: undefined
+      }
+      register_automation_trigger: {
+        Args: {
+          p_app: string
+          p_description: string
+          p_fields: Json
+          p_fields_fn: string
+          p_kind: string
+          p_label: string
+          p_params_schema: Json
+          p_provides: string[]
+          p_scan_fn: string
+          p_sort?: number
+          p_type: string
+        }
+        Returns: undefined
+      }
       rename_organization: {
         Args: { p_name: string; p_org: string }
         Returns: undefined
       }
+      reset_automation: {
+        Args: { p_kind: string; p_org: string }
+        Returns: undefined
+      }
       revoke_invitation: { Args: { p_id: string }; Returns: undefined }
+      run_email_jobs: { Args: never; Returns: number }
+      run_workflows: { Args: never; Returns: number }
+      save_workflow: {
+        Args: {
+          p_definition: Json
+          p_description: string
+          p_enabled: boolean
+          p_id: string
+          p_name: string
+          p_org: string
+          p_shared?: boolean
+        }
+        Returns: string
+      }
+      set_app_role: {
+        Args: {
+          p_app: string
+          p_org: string
+          p_role: Database["public"]["Enums"]["org_role"]
+          p_user: string
+        }
+        Returns: undefined
+      }
+      set_automation: {
+        Args: {
+          p_enabled: boolean
+          p_kind: string
+          p_org: string
+          p_params: Json
+        }
+        Returns: undefined
+      }
+      set_chapters_may_build: {
+        Args: { p_allowed: boolean; p_org: string }
+        Returns: undefined
+      }
+      set_digest_preferences: {
+        Args: {
+          p_day: number
+          p_digest: string
+          p_hour: number
+          p_include: string[]
+          p_org_ids: string[]
+          p_time_zone: string
+        }
+        Returns: undefined
+      }
+      set_email_preferences: {
+        Args: { p_digest: string; p_reminders: boolean }
+        Returns: undefined
+      }
       set_organization_preferences: {
         Args: { p_currency: string; p_org: string; p_time_zone: string }
+        Returns: undefined
+      }
+      set_workflow_enabled: {
+        Args: { p_enabled: boolean; p_id: string }
         Returns: undefined
       }
       shares_org: { Args: { p_user: string }; Returns: boolean }
@@ -1311,6 +2676,22 @@ export type Database = {
             Args: { p_confirm: string; p_new_owner: string; p_org: string }
             Returns: undefined
           }
+      workflow_overview: { Args: { p_org: string }; Returns: Json }
+      workflow_runs: {
+        Args: { p_limit?: number; p_org: string; p_workflow?: string }
+        Returns: {
+          branch: string
+          error: string
+          id: number
+          log: Json
+          started_at: string
+          status: string
+          summary: string
+          trigger_type: string
+          workflow_id: string
+          workflow_name: string
+        }[]
+      }
     }
     Enums: {
       org_role: "owner" | "admin" | "member" | "viewer"
@@ -1323,19 +2704,18 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-// Board's own schema is the default for Tables<…>, TablesInsert<…>, Enums<…> (the client uses db.schema "board").
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "board">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1359,11 +2739,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1384,11 +2764,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1409,11 +2789,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1426,11 +2806,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1462,3 +2842,4 @@ export const Constants = {
     },
   },
 } as const
+
