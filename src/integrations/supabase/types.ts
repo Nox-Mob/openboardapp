@@ -920,6 +920,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_document: {
+        Args: {
+          p_category: string
+          p_file_name: string
+          p_id: string
+          p_meeting_id: string | null
+          p_mime_type: string
+          p_org: string
+          p_size_bytes: number
+          p_storage_path: string
+          p_title: string
+        }
+        Returns: string
+      }
+      assign_term: {
+        Args: {
+          p_end_date?: string | null
+          p_org: string
+          p_person_name: string
+          p_position: string
+          p_position_id: string
+          p_start_date: string
+          p_user_id: string | null
+        }
+        Returns: string
+      }
+      create_meeting_with_agenda: {
+        Args: {
+          p_agenda?: Json
+          p_location?: string | null
+          p_meeting_date: string
+          p_org: string
+          p_start_time?: string | null
+          p_title: string
+        }
+        Returns: string
+      }
       audit_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
       can_edit_records: { Args: { p_org: string }; Returns: boolean }
       can_manage: { Args: { p_org: string }; Returns: boolean }

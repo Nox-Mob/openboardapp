@@ -130,8 +130,9 @@ function Settings() {
         <form onSubmit={save} className="space-y-3 rounded-lg border bg-card p-5">
           <p className="eyebrow">Organization</p>
           <div>
-            <Label>Name</Label>
+            <Label htmlFor="org-name">Name</Label>
             <Input
+              id="org-name"
               value={f.name}
               onChange={(e) => setF({ ...f, name: e.target.value })}
               disabled={!manager}
@@ -139,27 +140,40 @@ function Settings() {
             />
           </div>
           <div>
-            <Label>Time zone</Label>
+            <Label htmlFor="org-tz">Time zone</Label>
             <Input
+              id="org-tz"
               value={f.timezone}
               onChange={(e) => setF({ ...f, timezone: e.target.value })}
               disabled={!manager}
+              aria-describedby="org-tz-help"
             />
+            <p id="org-tz-help" className="mt-1 text-xs text-muted-foreground">
+              Meeting times, due dates and reminder emails follow this zone. Use a name like
+              America/Chicago.
+            </p>
           </div>
           <div>
-            <Label>Quorum (members required)</Label>
+            <Label htmlFor="quorum">Quorum (members required)</Label>
             <Input
+              id="quorum"
               type="number"
               min={1}
               value={f.quorum_count}
               onChange={(e) => setF({ ...f, quorum_count: Math.max(1, Number(e.target.value)) })}
               disabled={!manager}
+              aria-describedby="quorum-help"
             />
+            <p id="quorum-help" className="mt-1 text-xs text-muted-foreground">
+              How many board members must be present for the meeting to make decisions, as your
+              bylaws say. Attendance shows whether quorum is met.
+            </p>
           </div>
           <div>
             <Label htmlFor="vote-recording">How votes are recorded</Label>
             <select
               id="vote-recording"
+              aria-describedby="vote-recording-help"
               className="mt-1 h-9 w-full rounded-md border bg-background px-3 text-sm"
               value={f.vote_recording}
               onChange={(e) => setF({ ...f, vote_recording: e.target.value })}
@@ -168,6 +182,10 @@ function Settings() {
               <option value="totals">Vote totals only (roll call optional per motion)</option>
               <option value="roll_call">Record how each board member voted</option>
             </select>
+            <p id="vote-recording-help" className="mt-1 text-xs text-muted-foreground">
+              What the minutes keep: just the counts (yes, no, abstain), or each member's vote by
+              name. Some bylaws and public bodies require names.
+            </p>
           </div>
           <div>
             <Label htmlFor="decision-rule">Decision rule for live votes</Label>
@@ -177,6 +195,7 @@ function Settings() {
               value={f.decision_rule}
               onChange={(e) => setF({ ...f, decision_rule: e.target.value })}
               disabled={!manager}
+              aria-describedby="decision-rule-help"
             >
               {Object.entries(DECISION_RULES).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -184,6 +203,10 @@ function Settings() {
                 </option>
               ))}
             </select>
+            <p id="decision-rule-help" className="mt-1 text-xs text-muted-foreground">
+              How many yes votes a motion needs to pass when members vote live in OpenBoardApp. A
+              single agenda item can use a different rule.
+            </p>
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -194,8 +217,14 @@ function Settings() {
             />
             Motions require a seconder
           </label>
+          <p className="-mt-2 pl-6 text-xs text-muted-foreground">
+            When on, a motion can't go to a vote until another member seconds it.
+          </p>
           <fieldset className="space-y-1">
             <legend className="text-sm font-medium">How live votes close</legend>
+            <p className="text-xs text-muted-foreground">
+              Choose one or more. A vote closes as soon as any chosen condition is met.
+            </p>
             {(Object.keys(CLOSE_MODES) as CloseMode[]).map((k) => (
               <label key={k} className="flex items-center gap-2 text-sm">
                 <input

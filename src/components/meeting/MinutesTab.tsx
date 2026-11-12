@@ -158,6 +158,14 @@ export function MinutesTab({ meeting }: { meeting: Tables<"meetings"> }) {
             ) : (
               <pre className="record-paper whitespace-pre-wrap p-8 text-sm">{current.content}</pre>
             )}
+            {current.status !== "approved" ? (
+              <p className="text-xs text-muted-foreground">
+                Minutes go from draft to submitted (ready for the board to review) to approved.
+                Approved minutes are the official record: they, the meeting&apos;s motions and its
+                attendance can&apos;t be changed after that. To correct them, add an amended
+                version.
+              </p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               {current.status === "draft" && editor && (
                 <>
