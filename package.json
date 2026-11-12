@@ -21,7 +21,8 @@
     "db:test": "bash scripts/db/test.sh",
     "db:perf": "bash scripts/db/perf.sh",
     "check:migrations": "node scripts/ci/check-migrations.mjs",
-    "test:unit": "SKIP_DB_TESTS=1 VITE_SUPABASE_URL=https://test.invalid VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_test vitest run"
+    "test:unit": "SKIP_DB_TESTS=1 VITE_SUPABASE_URL=https://test.invalid VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_test vitest run",
+    "gen:types": "bash scripts/db/gen-types.sh"
   },
   "overrides": {
     "rolldown": "1.2.1"
