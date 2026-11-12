@@ -12,6 +12,8 @@ OpenBoardApp is one of the apps of **[OpenAppHub](https://openapphub.org)**: one
 - **Minutes:** notes and motions, minutes approval with versions, and a formatted minutes PDF
 - **Documents:** the board packet PDF, the organization's letterhead and generated documents
 - **Action items**, an append-only **audit log**, and **export** of the full board record (zip)
+- **Reminders by email:** a week and a day before a meeting, and when an action item is due (sent by OpenAppHub when hosted, by your own mail server when self-hosted)
+- **With OpenCharterApp:** officers stay in sync both ways, chapters can run their own board, and reports from OpenCharterApp and OpenLedgerApp can be added to a meeting's packet
 - **Isolation:** every organization's data is separated by row-level security in the database
 
 What's left and what's next: [`docs/epic.md`](docs/epic.md).
@@ -28,12 +30,13 @@ What's left and what's next: [`docs/epic.md`](docs/epic.md).
 
 ## Try it
 
-Staging is at **https://staging.board.staging.openapphub.org**, with the suite demo (reset every 12 hours):
+Staging is at **https://staging.board.staging.openapphub.org**, with the suite demo (reset every 12 hours; the apps' data agree with each other, and every account has tasks waiting):
 
-| Account                    | Password             | What you see                                           |
-| -------------------------- | -------------------- | ------------------------------------------------------ |
-| `demo@demo.openapphub.org` | `OpenAppHubDemo2026` | owns Riverside Community Association, with its history |
-| `test@demo.openapphub.org` | `OpenAppHubDemo2026` | no organization (a first visit)                        |
+| Account                        | Password             | What you see                                                                                                     |
+| ------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `demo@demo.openapphub.org`     | `OpenAppHubDemo2026` | owns Riverside Community Association, with its history                                                           |
+| `national@demo.openapphub.org` | `OpenAppHubDemo2026` | owns Northstar Veterans League (a veterans national): its executive committee's meetings, and Post 7's own board |
+| `test@demo.openapphub.org`     | `OpenAppHubDemo2026` | no organization (a first visit)                                                                                  |
 
 These are public on purpose and exist only on staging.
 
