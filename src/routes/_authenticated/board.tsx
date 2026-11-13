@@ -142,6 +142,10 @@ function Shell() {
       canManageBilling={can(org.role, "org.manage")}
       billingHref={hubUrl("/billing")}
       helpHref={helpHrefFor(pathname)}
+      notificationsClient={db.sharedClient()}
+      notificationSettingsHref={
+        isHosted() ? hubUrl("/account#notifications") : "/board/email#notifications"
+      }
       onSignOut={() => void signOut()}
       LinkComponent={RouterLink}
     >

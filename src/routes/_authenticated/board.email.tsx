@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { hubUrl, isHosted } from "@shared/supabase/hosted";
 import { AutomationsPanel } from "@shared/ui/Automations";
 import { EmailPreferencesPanel, EmailServerPanel } from "@shared/ui/EmailSettings";
+import { NotificationSettings } from "@shared/ui/Notifications";
 import { PageHeader } from "@/components/PageStates";
 import { db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
@@ -40,12 +41,19 @@ function EmailPage() {
               Choose your reminders and task summary on your OpenAppHub account page; they apply to
               every app.
             </p>
-            <a className="mt-3 inline-block underline" href={hubUrl("/account#email")}>
-              Open your email choices
+            <a className="mt-3 inline-block underline" href={hubUrl("/account#notifications")}>
+              Open your notifications and email choices
             </a>
           </section>
         ) : (
           <>
+            <section id="notifications" className="space-y-3 rounded-md border bg-card p-5">
+              <h2 className="text-lg font-semibold">Notifications</h2>
+              <p className="text-sm text-muted-foreground">
+                What you're told about, under the bell at the top and by email.
+              </p>
+              <NotificationSettings client={db.sharedClient()} />
+            </section>
             <EmailPreferencesPanel client={db.sharedClient()} />
             <EmailServerPanel
               load={() => loadEmailSettings()}
