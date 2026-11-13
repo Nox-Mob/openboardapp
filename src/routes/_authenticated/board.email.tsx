@@ -3,6 +3,7 @@ import { hubUrl, isHosted } from "@shared/supabase/hosted";
 import { AutomationsPanel } from "@shared/ui/Automations";
 import { EmailPreferencesPanel, EmailServerPanel } from "@shared/ui/EmailSettings";
 import { NotificationSettings } from "@shared/ui/Notifications";
+import { EmailActionSettingsPanel } from "@shared/ui/ActionLink";
 import { PageHeader } from "@/components/PageStates";
 import { db } from "@/data";
 import { useCurrentOrg } from "@/lib/org-context";
@@ -33,6 +34,21 @@ function EmailPage() {
             canEdit={can("org.manage")}
             apps={BOARD_ONLY}
           />
+        </section>
+        <section id="email-actions" className="space-y-3 rounded-lg border bg-card p-5">
+          <h2 className="text-base font-semibold">Actions from email</h2>
+          {isHosted() ? (
+            <p className="text-sm text-muted-foreground">
+              Whether people may mark action items done (and answer other things) straight from an
+              email is set for every app in{" "}
+              <a className="underline" href={hubUrl("/settings#email-actions")}>
+                OpenAppHub's organization settings
+              </a>
+              .
+            </p>
+          ) : (
+            <EmailActionSettingsPanel client={db.sharedClient()} orgId={org.id} />
+          )}
         </section>
         {isHosted() ? (
           <section className="rounded-lg border bg-card p-5 text-sm">

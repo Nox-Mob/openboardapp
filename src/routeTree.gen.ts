@@ -16,6 +16,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
+import { Route as ActTokenRouteImport } from './routes/act.$token'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AuthenticatedBoardIndexRouteImport } from './routes/_authenticated/board.index'
 import { Route as AuthenticatedBoardAuditRouteImport } from './routes/_authenticated/board.audit'
@@ -63,6 +64,11 @@ const AuthenticatedBoardRoute = AuthenticatedBoardRouteImport.update({
   id: '/board',
   path: '/board',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ActTokenRoute = ActTokenRouteImport.update({
+  id: '/act/$token',
+  path: '/act/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/board': typeof AuthenticatedBoardRouteWithChildren
+  '/act/$token': typeof ActTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/board/audit': typeof AuthenticatedBoardAuditRoute
   '/board/committees': typeof AuthenticatedBoardCommitteesRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/act/$token': typeof ActTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/board/audit': typeof AuthenticatedBoardAuditRoute
   '/board/committees': typeof AuthenticatedBoardCommitteesRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/_authenticated/board': typeof AuthenticatedBoardRouteWithChildren
+  '/act/$token': typeof ActTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/_authenticated/board/audit': typeof AuthenticatedBoardAuditRoute
   '/_authenticated/board/committees': typeof AuthenticatedBoardCommitteesRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/board'
+    | '/act/$token'
     | '/invite/$token'
     | '/board/audit'
     | '/board/committees'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/privacy'
     | '/terms'
+    | '/act/$token'
     | '/invite/$token'
     | '/board/audit'
     | '/board/committees'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/_authenticated/board'
+    | '/act/$token'
     | '/invite/$token'
     | '/_authenticated/board/audit'
     | '/_authenticated/board/committees'
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
+  ActTokenRoute: typeof ActTokenRoute
   InviteTokenRoute: typeof InviteTokenRoute
 }
 
@@ -328,6 +341,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/board'
       preLoaderRoute: typeof AuthenticatedBoardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/act/$token': {
+      id: '/act/$token'
+      path: '/act/$token'
+      fullPath: '/act/$token'
+      preLoaderRoute: typeof ActTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/invite/$token': {
       id: '/invite/$token'
@@ -475,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
+  ActTokenRoute: ActTokenRoute,
   InviteTokenRoute: InviteTokenRoute,
 }
 export const routeTree = rootRouteImport
