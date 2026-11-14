@@ -247,6 +247,7 @@ function Settings() {
               <div className="pl-6">
                 <Label>Timer (minutes)</Label>
                 <Input
+                  aria-label="Timer (minutes)"
                   type="number"
                   min={1}
                   max={240}

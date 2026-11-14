@@ -94,7 +94,7 @@ function MeetingPage() {
             <div className="flex gap-2">
               <SaveAsTemplate meeting={m} />
               <Select value={m.status} onValueChange={setStatus}>
-                <SelectTrigger className="w-44">
+                <SelectTrigger className="w-44" aria-label="Meeting status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
