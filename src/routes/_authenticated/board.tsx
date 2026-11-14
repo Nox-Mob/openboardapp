@@ -153,6 +153,7 @@ function Shell() {
     >
       <TwoStepGate
         client={authClient as unknown as SupabaseClient}
+        {...(isHosted() ? { recoverHref: hubUrl("/recover") } : {})}
         onSignOut={() => void signOut()}
       >
         <div className="mb-4 empty:hidden">

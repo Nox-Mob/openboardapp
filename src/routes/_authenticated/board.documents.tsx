@@ -176,6 +176,7 @@ function Documents() {
                         Upload new version
                         <input
                           type="file"
+                          accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.rtf,.txt,.csv"
                           className="hidden"
                           onChange={(e) =>
                             e.target.files?.[0] && newVersion(d.id, versions, e.target.files[0])
@@ -246,7 +247,12 @@ function Documents() {
             </div>
             <div>
               <Label>File</Label>
-              <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
+              <Input
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.rtf,.txt,.csv"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                required
+              />
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
               {busy ? "Uploading…" : "Upload"}

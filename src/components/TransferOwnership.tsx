@@ -1,7 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { attempt, db } from "@/data";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { ReauthDialog } from "@shared/ui/Reauth";
+import { attempt, authClient, db } from "@/data";
 import { errorMessage } from "@/lib/export";
 import { useCurrentOrg } from "@/lib/org-context";
 import { confirmationMatches } from "@/lib/ownership";
@@ -32,6 +34,8 @@ export function TransferOwnership() {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
+  // After the typed name, "Confirm it's you" (core 0019) makes a one-time pass for the transfer.
+  const [confirming, setConfirming] = useState(false);
 
   const candidates = useQuery({
     queryKey: ["ownership-candidates", org.id],
@@ -49,18 +53,19 @@ export function TransferOwnership() {
     setTyped("");
   }
 
-  async function transfer() {
+  function transfer() {
     if (!target || !ready) return;
-    setBusy(true);
-    const { error } = await attempt(
-      db.orgs.transferOwnership(org.id, target.user_id, typed.trim()),
-    );
-    setBusy(false);
-    if (error) {
-      toast.error(errorMessage(error));
-      return;
-    }
     setOpen(false);
+    setConfirming(true);
+  }
+
+  async function transferWith(reauth: string) {
+    if (!target) return;
+    setBusy(true);
+    const { error } = await attempt(db.orgs.transferOwnership(org.id, target.user_id, reauth));
+    setBusy(false);
+    if (error) throw new Error(errorMessage(error));
+    setConfirming(false);
     setTyped("");
     setSelected("");
     toast.success(`${target.confirm_text} is now the owner. You are an administrator.`);
@@ -165,11 +170,24 @@ export function TransferOwnership() {
               disabled={!ready || busy}
               onClick={() => void transfer()}
             >
-              {busy ? "Transferring…" : "Transfer ownership"}
+              Continue
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ReauthDialog
+        client={authClient as unknown as SupabaseClient}
+        action="transfer_ownership"
+        open={confirming}
+        title={`Transfer ownership of ${org.name}?`}
+        description={`${target?.confirm_text ?? "The member you chose"} will become the owner, and you'll become an administrator.`}
+        confirmLabel="Transfer ownership"
+        onConfirmed={transferWith}
+        onClose={() => {
+          setConfirming(false);
+          setTyped("");
+        }}
+      />
     </section>
   );
 }
