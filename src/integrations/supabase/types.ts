@@ -2805,6 +2805,7 @@ export type Database = {
       _require_people_manager: { Args: { p_org: string }; Returns: undefined }
       _require_uid: { Args: never; Returns: string }
       _token_hash: { Args: { p_token: string }; Returns: string }
+      _tune_schema: { Args: { p_schema: string }; Returns: undefined }
       _validate_actions: {
         Args: {
           p_actions: Json
@@ -3292,6 +3293,7 @@ export type Database = {
         }[]
       }
       prune_automation_log: { Args: never; Returns: number }
+      prune_email_history: { Args: never; Returns: number }
       prune_notifications: { Args: never; Returns: number }
       prune_workflow_history: { Args: never; Returns: number }
       queue_digests: { Args: never; Returns: number }
@@ -3528,6 +3530,13 @@ export type Database = {
             Args: { p_confirm: string; p_new_owner: string; p_org: string }
             Returns: undefined
           }
+      tuning_problems: {
+        Args: { p_schema: string }
+        Returns: {
+          kind: string
+          object: string
+        }[]
+      }
       unread_notification_count: { Args: never; Returns: number }
       workflow_overview: { Args: { p_org: string }; Returns: Json }
       workflow_runs: {
