@@ -14,7 +14,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RecoverRouteImport } from './routes/recover'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as VerifyRecoveryEmailRouteImport } from './routes/verify-recovery-email'
 import { Route as AuthenticatedBoardRouteImport } from './routes/_authenticated/board'
 import { Route as ActTokenRouteImport } from './routes/act.$token'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
@@ -24,6 +26,7 @@ import { Route as AuthenticatedBoardCommitteesRouteImport } from './routes/_auth
 import { Route as AuthenticatedBoardDocumentsRouteImport } from './routes/_authenticated/board.documents'
 import { Route as AuthenticatedBoardEmailRouteImport } from './routes/_authenticated/board.email'
 import { Route as AuthenticatedBoardMembersRouteImport } from './routes/_authenticated/board.members'
+import { Route as AuthenticatedBoardSecurityRouteImport } from './routes/_authenticated/board.security'
 import { Route as AuthenticatedBoardSettingsRouteImport } from './routes/_authenticated/board.settings'
 import { Route as AuthenticatedBoardTasksRouteImport } from './routes/_authenticated/board.tasks'
 import { Route as AuthenticatedBoardTemplatesRouteImport } from './routes/_authenticated/board.templates'
@@ -55,9 +58,19 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecoverRoute = RecoverRouteImport.update({
+  id: '/recover',
+  path: '/recover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRecoveryEmailRoute = VerifyRecoveryEmailRouteImport.update({
+  id: '/verify-recovery-email',
+  path: '/verify-recovery-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedBoardRoute = AuthenticatedBoardRouteImport.update({
@@ -108,6 +121,12 @@ const AuthenticatedBoardMembersRoute =
     path: '/members',
     getParentRoute: () => AuthenticatedBoardRoute,
   } as any)
+const AuthenticatedBoardSecurityRoute =
+  AuthenticatedBoardSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => AuthenticatedBoardRoute,
+  } as any)
 const AuthenticatedBoardSettingsRoute =
   AuthenticatedBoardSettingsRouteImport.update({
     id: '/settings',
@@ -149,7 +168,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/recover': typeof RecoverRoute
   '/terms': typeof TermsRoute
+  '/verify-recovery-email': typeof VerifyRecoveryEmailRoute
   '/board': typeof AuthenticatedBoardRouteWithChildren
   '/act/$token': typeof ActTokenRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -158,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/board/documents': typeof AuthenticatedBoardDocumentsRoute
   '/board/email': typeof AuthenticatedBoardEmailRoute
   '/board/members': typeof AuthenticatedBoardMembersRoute
+  '/board/security': typeof AuthenticatedBoardSecurityRoute
   '/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/board/tasks': typeof AuthenticatedBoardTasksRoute
   '/board/templates': typeof AuthenticatedBoardTemplatesRoute
@@ -171,7 +193,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/recover': typeof RecoverRoute
   '/terms': typeof TermsRoute
+  '/verify-recovery-email': typeof VerifyRecoveryEmailRoute
   '/act/$token': typeof ActTokenRoute
   '/invite/$token': typeof InviteTokenRoute
   '/board/audit': typeof AuthenticatedBoardAuditRoute
@@ -179,6 +203,7 @@ export interface FileRoutesByTo {
   '/board/documents': typeof AuthenticatedBoardDocumentsRoute
   '/board/email': typeof AuthenticatedBoardEmailRoute
   '/board/members': typeof AuthenticatedBoardMembersRoute
+  '/board/security': typeof AuthenticatedBoardSecurityRoute
   '/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/board/tasks': typeof AuthenticatedBoardTasksRoute
   '/board/templates': typeof AuthenticatedBoardTemplatesRoute
@@ -194,7 +219,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/recover': typeof RecoverRoute
   '/terms': typeof TermsRoute
+  '/verify-recovery-email': typeof VerifyRecoveryEmailRoute
   '/_authenticated/board': typeof AuthenticatedBoardRouteWithChildren
   '/act/$token': typeof ActTokenRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -203,6 +230,7 @@ export interface FileRoutesById {
   '/_authenticated/board/documents': typeof AuthenticatedBoardDocumentsRoute
   '/_authenticated/board/email': typeof AuthenticatedBoardEmailRoute
   '/_authenticated/board/members': typeof AuthenticatedBoardMembersRoute
+  '/_authenticated/board/security': typeof AuthenticatedBoardSecurityRoute
   '/_authenticated/board/settings': typeof AuthenticatedBoardSettingsRoute
   '/_authenticated/board/tasks': typeof AuthenticatedBoardTasksRoute
   '/_authenticated/board/templates': typeof AuthenticatedBoardTemplatesRoute
@@ -218,7 +246,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/recover'
     | '/terms'
+    | '/verify-recovery-email'
     | '/board'
     | '/act/$token'
     | '/invite/$token'
@@ -227,6 +257,7 @@ export interface FileRouteTypes {
     | '/board/documents'
     | '/board/email'
     | '/board/members'
+    | '/board/security'
     | '/board/settings'
     | '/board/tasks'
     | '/board/templates'
@@ -240,7 +271,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/recover'
     | '/terms'
+    | '/verify-recovery-email'
     | '/act/$token'
     | '/invite/$token'
     | '/board/audit'
@@ -248,6 +281,7 @@ export interface FileRouteTypes {
     | '/board/documents'
     | '/board/email'
     | '/board/members'
+    | '/board/security'
     | '/board/settings'
     | '/board/tasks'
     | '/board/templates'
@@ -262,7 +296,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/recover'
     | '/terms'
+    | '/verify-recovery-email'
     | '/_authenticated/board'
     | '/act/$token'
     | '/invite/$token'
@@ -271,6 +307,7 @@ export interface FileRouteTypes {
     | '/_authenticated/board/documents'
     | '/_authenticated/board/email'
     | '/_authenticated/board/members'
+    | '/_authenticated/board/security'
     | '/_authenticated/board/settings'
     | '/_authenticated/board/tasks'
     | '/_authenticated/board/templates'
@@ -286,7 +323,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   PrivacyRoute: typeof PrivacyRoute
+  RecoverRoute: typeof RecoverRoute
   TermsRoute: typeof TermsRoute
+  VerifyRecoveryEmailRoute: typeof VerifyRecoveryEmailRoute
   ActTokenRoute: typeof ActTokenRoute
   InviteTokenRoute: typeof InviteTokenRoute
 }
@@ -328,11 +367,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recover': {
+      id: '/recover'
+      path: '/recover'
+      fullPath: '/recover'
+      preLoaderRoute: typeof RecoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-recovery-email': {
+      id: '/verify-recovery-email'
+      path: '/verify-recovery-email'
+      fullPath: '/verify-recovery-email'
+      preLoaderRoute: typeof VerifyRecoveryEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/board': {
@@ -398,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoardMembersRouteImport
       parentRoute: typeof AuthenticatedBoardRoute
     }
+    '/_authenticated/board/security': {
+      id: '/_authenticated/board/security'
+      path: '/security'
+      fullPath: '/board/security'
+      preLoaderRoute: typeof AuthenticatedBoardSecurityRouteImport
+      parentRoute: typeof AuthenticatedBoardRoute
+    }
     '/_authenticated/board/settings': {
       id: '/_authenticated/board/settings'
       path: '/settings'
@@ -449,6 +509,7 @@ interface AuthenticatedBoardRouteChildren {
   AuthenticatedBoardDocumentsRoute: typeof AuthenticatedBoardDocumentsRoute
   AuthenticatedBoardEmailRoute: typeof AuthenticatedBoardEmailRoute
   AuthenticatedBoardMembersRoute: typeof AuthenticatedBoardMembersRoute
+  AuthenticatedBoardSecurityRoute: typeof AuthenticatedBoardSecurityRoute
   AuthenticatedBoardSettingsRoute: typeof AuthenticatedBoardSettingsRoute
   AuthenticatedBoardTasksRoute: typeof AuthenticatedBoardTasksRoute
   AuthenticatedBoardTemplatesRoute: typeof AuthenticatedBoardTemplatesRoute
@@ -464,6 +525,7 @@ const AuthenticatedBoardRouteChildren: AuthenticatedBoardRouteChildren = {
   AuthenticatedBoardDocumentsRoute: AuthenticatedBoardDocumentsRoute,
   AuthenticatedBoardEmailRoute: AuthenticatedBoardEmailRoute,
   AuthenticatedBoardMembersRoute: AuthenticatedBoardMembersRoute,
+  AuthenticatedBoardSecurityRoute: AuthenticatedBoardSecurityRoute,
   AuthenticatedBoardSettingsRoute: AuthenticatedBoardSettingsRoute,
   AuthenticatedBoardTasksRoute: AuthenticatedBoardTasksRoute,
   AuthenticatedBoardTemplatesRoute: AuthenticatedBoardTemplatesRoute,
@@ -494,7 +556,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   PrivacyRoute: PrivacyRoute,
+  RecoverRoute: RecoverRoute,
   TermsRoute: TermsRoute,
+  VerifyRecoveryEmailRoute: VerifyRecoveryEmailRoute,
   ActTokenRoute: ActTokenRoute,
   InviteTokenRoute: InviteTokenRoute,
 }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ReauthDialog } from "@shared/ui/Reauth";
+import { appSendCode } from "@/lib/security.functions";
 import { attempt, authClient, db } from "@/data";
 import { errorMessage } from "@/lib/export";
 import { useCurrentOrg } from "@/lib/org-context";
@@ -182,6 +183,7 @@ export function TransferOwnership() {
         title={`Transfer ownership of ${org.name}?`}
         description={`${target?.confirm_text ?? "The member you chose"} will become the owner, and you'll become an administrator.`}
         confirmLabel="Transfer ownership"
+        sendCode={appSendCode}
         onConfirmed={transferWith}
         onClose={() => {
           setConfirming(false);

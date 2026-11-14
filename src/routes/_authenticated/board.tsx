@@ -19,6 +19,7 @@ import {
   Network,
   LayoutTemplate,
   Mail,
+  ShieldCheck,
 } from "lucide-react";
 import { attempt, authClient, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
@@ -134,6 +135,12 @@ function Shell() {
           icon: <Mail aria-hidden="true" />,
           current: isCurrent("/board/email"),
         },
+        {
+          label: "Security",
+          href: "/board/security",
+          icon: <ShieldCheck aria-hidden="true" />,
+          current: isCurrent("/board/security"),
+        },
       ]}
       user={user.data ?? null}
       orgs={orgs.map((o) => ({ id: o.id, name: o.name, role: ROLE_LABELS[o.role] }))}
@@ -153,13 +160,13 @@ function Shell() {
     >
       <TwoStepGate
         client={authClient as unknown as SupabaseClient}
-        {...(isHosted() ? { recoverHref: hubUrl("/recover") } : {})}
+        recoverHref={isHosted() ? hubUrl("/recover") : "/recover"}
         onSignOut={() => void signOut()}
       >
         <div className="mb-4 empty:hidden">
           <TwoStepNotice
             client={authClient as unknown as SupabaseClient}
-            accountHref={isHosted() ? hubUrl("/account#two-step") : "/account"}
+            accountHref={isHosted() ? hubUrl("/account#two-step") : "/board/security"}
           />
         </div>
         <Outlet />
