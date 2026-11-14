@@ -151,7 +151,15 @@ async function withUploadedFile<T>(
   record: () => Promise<T>,
 ): Promise<T> {
   const up = await upload();
-  if (up.error) throw up.error;
+  if (up.error) {
+    // The bucket refuses files over 50 MB (migration 0018); say so in plain words.
+    const message = (up.error as { message?: string }).message ?? "";
+    if (/maximum allowed size|too large|payload too large|413/i.test(message))
+      throw new Error(
+        "That file is larger than 50 MB, the most OpenBoardApp stores. Make it smaller (for example, save a PDF at a lower quality) and try again.",
+      );
+    throw up.error;
+  }
   try {
     return await record();
   } catch (err) {
