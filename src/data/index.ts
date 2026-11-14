@@ -7,6 +7,9 @@ import { detectPlatform, type Platform, type PlatformEnv } from "./platform";
 
 export { EXPORT_TABLES, type ExportTable, type DataLayer } from "./cloud-adapter";
 export { detectPlatform, type Platform } from "./platform";
+// Sign-in features only (two-step sign-in, security review round 2): the auth client, so screens
+// can ask for a code without importing the database client themselves.
+export { supabase as authClient } from "@/integrations/supabase/client";
 
 export function selectAdapter(platform: Platform): DataLayer {
   switch (platform) {

@@ -1,7 +1,9 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@shared/ui/AppShell";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { hubUrl, isHosted } from "@shared/supabase/hosted";
+import { TwoStepGate, TwoStepNotice } from "@shared/ui/TwoStep";
 import { helpHrefFor } from "@/config/help";
 import { RouterLink } from "@/lib/router-link";
 import { useState } from "react";
@@ -18,7 +20,7 @@ import {
   LayoutTemplate,
   Mail,
 } from "lucide-react";
-import { attempt, db } from "@/data";
+import { attempt, authClient, db } from "@/data";
 import { OrgProvider, useOrg } from "@/lib/org-context";
 import { useBilling } from "@/lib/use-billing";
 import { can, ROLE_LABELS } from "@/lib/permissions";
@@ -149,7 +151,18 @@ function Shell() {
       onSignOut={() => void signOut()}
       LinkComponent={RouterLink}
     >
-      <Outlet />
+      <TwoStepGate
+        client={authClient as unknown as SupabaseClient}
+        onSignOut={() => void signOut()}
+      >
+        <div className="mb-4 empty:hidden">
+          <TwoStepNotice
+            client={authClient as unknown as SupabaseClient}
+            accountHref={isHosted() ? hubUrl("/account#two-step") : "/account"}
+          />
+        </div>
+        <Outlet />
+      </TwoStepGate>
     </AppShell>
   );
 }
