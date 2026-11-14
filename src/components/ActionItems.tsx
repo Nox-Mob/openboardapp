@@ -82,13 +82,14 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
           className="grid gap-2 rounded-lg border bg-card p-4 md:grid-cols-[1fr_200px_160px_auto]"
         >
           <Input
+            aria-label="Action item"
             placeholder="What needs to happen?"
             value={f.title}
             onChange={(e) => setF({ ...f, title: e.target.value })}
             required
           />
           <Select value={f.assignee_id} onValueChange={(v) => setF({ ...f, assignee_id: v })}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Assign to">
               <SelectValue placeholder="Assign to…" />
             </SelectTrigger>
             <SelectContent>
@@ -101,6 +102,7 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
           </Select>
           <Input
             type="date"
+            aria-label="Due date"
             value={f.due_date}
             onChange={(e) => setF({ ...f, due_date: e.target.value })}
           />
@@ -152,7 +154,7 @@ export function ActionItems({ meetingId, mineOnly }: { meetingId?: string; mineO
                     onValueChange={(v) => setStatus(t.id, v as Status)}
                     disabled={readOnly || (!editor && t.assignee_id !== userId)}
                   >
-                    <SelectTrigger className="w-36">
+                    <SelectTrigger className="w-36" aria-label={`Status of ${t.title}`}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

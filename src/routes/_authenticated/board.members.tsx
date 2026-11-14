@@ -48,7 +48,9 @@ function TermSelect({
   value,
   onChange,
   disabled,
+  label = "Term length",
 }: {
+  label?: string;
   value: number | null;
   onChange: (v: number | null) => void;
   disabled?: boolean;
@@ -59,7 +61,7 @@ function TermSelect({
       onValueChange={(v) => onChange(v === "none" ? null : Number(v))}
       disabled={!!disabled}
     >
-      <SelectTrigger className="w-36">
+      <SelectTrigger className="w-36" aria-label={label}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -166,7 +168,11 @@ function RoleCard({
         </div>
         <div className="flex items-center gap-2">
           {editor ? (
-            <TermSelect value={role.term_years} onChange={setYears} />
+            <TermSelect
+              value={role.term_years}
+              onChange={setYears}
+              label={`Term length for ${role.title}`}
+            />
           ) : (
             <Badge variant="secondary">
               {role.term_years ? `${role.term_years}-year term` : "No fixed term"}
@@ -372,7 +378,10 @@ function Members() {
                   <div className="flex items-center gap-2">
                     {manager && m.role !== "owner" ? (
                       <Select value={m.role} onValueChange={(v) => changeRole(m.id, v as OrgRole)}>
-                        <SelectTrigger className="w-40">
+                        <SelectTrigger
+                          className="w-40"
+                          aria-label={`Role for ${m.name || m.email}`}
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -424,6 +433,7 @@ function Members() {
                 <div>
                   <Label>Email (for your records)</Label>
                   <Input
+                    aria-label="Email (for your records)"
                     type="email"
                     value={inv.email}
                     onChange={(e) => setInv({ ...inv, email: e.target.value })}
@@ -435,7 +445,7 @@ function Members() {
                     value={inv.role}
                     onValueChange={(v) => setInv({ ...inv, role: v as OrgRole })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -574,6 +584,7 @@ function Members() {
               <div>
                 <Label>Title</Label>
                 <Input
+                  aria-label="Title"
                   value={role.title}
                   onChange={(e) => setRole({ ...role, title: e.target.value })}
                   placeholder="President, Membership VP…"

@@ -139,7 +139,7 @@ function Documents() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-56">
+            <SelectTrigger className="w-56" aria-label="Show documents">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -172,12 +172,14 @@ function Documents() {
                       <h3 className="text-base">{d.title}</h3>
                     </div>
                     {editor && (
-                      <label className="cursor-pointer text-sm text-primary hover:underline">
+                      <label className="cursor-pointer rounded-sm text-sm text-primary hover:underline focus-within:outline-2 focus-within:outline-ring">
                         Upload new version
+                        <span className="sr-only"> of {d.title}</span>
+                        {/* sr-only, not hidden, so the file picker can be reached with the keyboard. */}
                         <input
                           type="file"
                           accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.rtf,.txt,.csv"
-                          className="hidden"
+                          className="sr-only"
                           onChange={(e) =>
                             e.target.files?.[0] && newVersion(d.id, versions, e.target.files[0])
                           }
@@ -209,6 +211,7 @@ function Documents() {
             <div>
               <Label>Title</Label>
               <Input
+                aria-label="Title"
                 value={f.title}
                 onChange={(e) => setF({ ...f, title: e.target.value })}
                 required
@@ -217,7 +220,7 @@ function Documents() {
             <div>
               <Label>Category</Label>
               <Select value={f.category} onValueChange={(v) => setF({ ...f, category: v })}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Category">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,7 +235,7 @@ function Documents() {
             <div>
               <Label>Meeting (optional)</Label>
               <Select value={f.meeting_id} onValueChange={(v) => setF({ ...f, meeting_id: v })}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Meeting (optional)">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,6 +251,7 @@ function Documents() {
             <div>
               <Label>File</Label>
               <Input
+                aria-label="File"
                 type="file"
                 accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.rtf,.txt,.csv"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}

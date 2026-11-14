@@ -156,6 +156,7 @@ export function DispositionForm({ motion, onDone }: { motion: LiveMotion; onDone
         <div>
           <Label>Explanation (required)</Label>
           <Textarea
+            aria-label="Explanation (required)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             required

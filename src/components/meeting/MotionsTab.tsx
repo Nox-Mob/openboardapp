@@ -154,7 +154,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
               value={f.agenda_item_id}
               onValueChange={(v) => setF({ ...f, agenda_item_id: v })}
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Agenda item">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -170,6 +170,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
           <div>
             <Label>Motion</Label>
             <Textarea
+              aria-label="Motion"
               value={f.motion_text}
               onChange={(e) => setF({ ...f, motion_text: e.target.value })}
               placeholder="To approve the 2027 operating budget as presented"
@@ -286,7 +287,7 @@ export function MotionsTab({ meetingId, editable }: { meetingId: string; editabl
               value={f.outcome}
               onValueChange={(v) => setF({ ...f, outcome: v as (typeof OUTCOMES)[number] })}
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Outcome">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
