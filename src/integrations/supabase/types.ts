@@ -2643,18 +2643,21 @@ export type Database = {
         Row: {
           app_admins_manage_roles: boolean
           org_id: string
+          require_mfa_admins: boolean
           set_at: string
           set_by: string | null
         }
         Insert: {
           app_admins_manage_roles?: boolean
           org_id: string
+          require_mfa_admins?: boolean
           set_at?: string
           set_by?: string | null
         }
         Update: {
           app_admins_manage_roles?: boolean
           org_id?: string
+          require_mfa_admins?: boolean
           set_at?: string
           set_by?: string | null
         }
@@ -2741,6 +2744,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _anon_allowed_functions: { Args: never; Returns: string[] }
       _approval_output: { Args: { p_id: string }; Returns: Json }
       _automation_condition: {
         Args: { p_c: Json; p_ctx: Json }
@@ -2794,9 +2798,15 @@ export type Database = {
         Args: { p_category: string; p_user: string }
         Returns: boolean
       }
+      _has_verified_factor: { Args: never; Returns: boolean }
       _is_active_user: { Args: { p_user: string }; Returns: boolean }
+      _jwt: { Args: never; Returns: Json }
       _may_build_workflows: { Args: { p_org: string }; Returns: boolean }
       _member_confirm_text: { Args: { p_user: string }; Returns: string }
+      _mfa_ok_for: {
+        Args: { p_org: string; p_role: Database["public"]["Enums"]["org_role"] }
+        Returns: boolean
+      }
       _org_owner: { Args: { p_org: string }; Returns: string }
       _require_app_role_manager: {
         Args: { p_app: string; p_org: string }
@@ -2805,6 +2815,7 @@ export type Database = {
       _require_people_manager: { Args: { p_org: string }; Returns: undefined }
       _require_uid: { Args: never; Returns: string }
       _token_hash: { Args: { p_token: string }; Returns: string }
+      _tune_schema: { Args: { p_schema: string }; Returns: undefined }
       _validate_actions: {
         Args: {
           p_actions: Json
@@ -2924,6 +2935,10 @@ export type Database = {
         Returns: string
       }
       approval: { Args: { p_id: string }; Returns: Json }
+      assert_recent_sign_in: {
+        Args: { p_minutes?: number }
+        Returns: undefined
+      }
       automation_settings: {
         Args: { p_kind: string; p_org: string }
         Returns: {
@@ -3188,6 +3203,7 @@ export type Database = {
           workflow: string
         }[]
       }
+      my_mfa_status: { Args: never; Returns: Json }
       my_notifications: {
         Args: { p_limit?: number; p_org?: string }
         Returns: {
@@ -3282,6 +3298,7 @@ export type Database = {
           can_change: boolean
         }[]
       }
+      org_security_settings: { Args: { p_org: string }; Returns: Json }
       ownership_transfer_candidates: {
         Args: { p_org: string }
         Returns: {
@@ -3292,6 +3309,7 @@ export type Database = {
         }[]
       }
       prune_automation_log: { Args: never; Returns: number }
+      prune_email_history: { Args: never; Returns: number }
       prune_notifications: { Args: never; Returns: number }
       prune_workflow_history: { Args: never; Returns: number }
       queue_digests: { Args: never; Returns: number }
@@ -3505,6 +3523,10 @@ export type Database = {
         Args: { p_email: boolean; p_in_app: boolean; p_kind: string }
         Returns: undefined
       }
+      set_org_require_mfa: {
+        Args: { p_on: boolean; p_org: string }
+        Returns: undefined
+      }
       set_org_role_settings: {
         Args: { p_app_admins_manage_roles: boolean; p_org: string }
         Returns: undefined
@@ -3528,6 +3550,13 @@ export type Database = {
             Args: { p_confirm: string; p_new_owner: string; p_org: string }
             Returns: undefined
           }
+      tuning_problems: {
+        Args: { p_schema: string }
+        Returns: {
+          kind: string
+          object: string
+        }[]
+      }
       unread_notification_count: { Args: never; Returns: number }
       workflow_overview: { Args: { p_org: string }; Returns: Json }
       workflow_runs: {
