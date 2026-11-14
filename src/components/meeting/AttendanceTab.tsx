@@ -141,7 +141,10 @@ export function AttendanceTab({ meetingId, editable }: { meetingId: string; edit
                   onValueChange={(v) => update(a.id, { status: v as (typeof STATUSES)[number] })}
                   disabled={!editable}
                 >
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger
+                    className="w-32"
+                    aria-label={`Attendance for ${titles.label(a.person_name, a.user_id)}`}
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

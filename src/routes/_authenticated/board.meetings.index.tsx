@@ -127,6 +127,7 @@ function Meetings() {
                   <div>
                     <Label>Title</Label>
                     <Input
+                      aria-label="Title"
                       value={form.title}
                       onChange={(e) => setForm({ ...form, title: e.target.value })}
                       required
@@ -136,6 +137,7 @@ function Meetings() {
                     <div>
                       <Label>Date</Label>
                       <Input
+                        aria-label="Date"
                         type="date"
                         value={form.meeting_date}
                         onChange={(e) => setForm({ ...form, meeting_date: e.target.value })}
@@ -145,6 +147,7 @@ function Meetings() {
                     <div>
                       <Label>Start time</Label>
                       <Input
+                        aria-label="Start time"
                         type="time"
                         value={form.start_time}
                         onChange={(e) => setForm({ ...form, start_time: e.target.value })}
@@ -154,6 +157,7 @@ function Meetings() {
                   <div>
                     <Label>Location</Label>
                     <Input
+                      aria-label="Location"
                       value={form.location}
                       onChange={(e) => setForm({ ...form, location: e.target.value })}
                       placeholder="Community hall or video link"

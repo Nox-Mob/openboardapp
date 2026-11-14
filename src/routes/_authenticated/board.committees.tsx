@@ -103,8 +103,8 @@ function Committees() {
         <div className="grid gap-4 md:grid-cols-2">
           {q.data.map((c) => (
             <div key={c.id} className="rounded-lg border bg-card p-5">
-              <div className="flex items-start justify-between">
-                <div>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
                   <h3 className="text-lg">{c.name}</h3>
                   {c.description && (
                     <p className="text-sm text-muted-foreground">{c.description}</p>
@@ -114,8 +114,9 @@ function Committees() {
                   <Button
                     size="icon"
                     variant="ghost"
+                    className="shrink-0"
                     onClick={() => del("committees", c.id)}
-                    aria-label="Delete committee"
+                    aria-label={`Delete committee ${c.name}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -130,9 +131,10 @@ function Committees() {
                     {editor && (
                       <button
                         onClick={() => del("committee_members", m.id)}
-                        className="text-xs text-muted-foreground hover:text-destructive"
+                        type="button"
+                        className="min-h-6 px-1 text-xs text-muted-foreground hover:text-destructive"
                       >
-                        Remove
+                        Remove<span className="sr-only"> {m.person_name}</span>
                       </button>
                     )}
                   </li>

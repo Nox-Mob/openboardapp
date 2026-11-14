@@ -158,6 +158,11 @@ async function withUploadedFile<T>(
       throw new Error(
         "That file is larger than 25 MB, the most OpenBoardApp stores. Make it smaller (for example, save a PDF at a lower quality) and try again.",
       );
+    // Only documents and pictures are stored (migration 0021).
+    if (/mime type|content type|not supported|invalid_mime/i.test(message))
+      throw new Error(
+        "OpenBoardApp stores documents and pictures only: PDF, Word, Excel, PowerPoint, OpenDocument, text, CSV, PNG, JPG, GIF, WebP or HEIC. Save the file as one of these and try again.",
+      );
     throw up.error;
   }
   try {
@@ -338,9 +343,18 @@ export const cloudAdapter = {
         confirm_text: c.display_name || c.email,
       }));
     },
-    /** Makes newOwnerId the owner and the caller an administrator. The database re-checks everything. */
-    async transferOwnership(orgId: string, newOwnerId: string, _confirmation: string) {
-      must(await core().rpc("transfer_ownership", { p_org: orgId, p_new_owner: newOwnerId }));
+    /**
+     * Makes newOwnerId the owner and the caller an administrator, with the one-time pass from
+     * "Confirm it's you" (core 0019). The database re-checks everything.
+     */
+    async transferOwnership(orgId: string, newOwnerId: string, reauth: string) {
+      must(
+        await core().rpc("transfer_ownership", {
+          p_org: orgId,
+          p_new_owner: newOwnerId,
+          p_reauth: reauth,
+        }),
+      );
     },
     async exportAll(orgId: string) {
       const out: Record<string, Record<string, unknown>[]> = {};

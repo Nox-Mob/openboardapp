@@ -330,7 +330,12 @@ function StartVoteForm({
     <form onSubmit={submit} className="space-y-3">
       <div>
         <Label>Motion</Label>
-        <Textarea value={text} onChange={(e) => setText(e.target.value)} required />
+        <Textarea
+          aria-label="Motion"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          required
+        />
       </div>
       <div className="grid grid-cols-2 gap-2">
         {pick("Moved by", moved, setMoved)}
