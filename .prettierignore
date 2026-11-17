@@ -14,3 +14,5 @@ db/core/
 scripts/migrate.mjs
 scripts/check-shared.mjs
 docs/SHARED-SPEC.md
+public/third-party.json
+public/third-party-licenses.txt

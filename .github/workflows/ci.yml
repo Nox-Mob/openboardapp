@@ -59,6 +59,8 @@ jobs:
       - run: npm ci
       - name: Vendored shared code matches OpenAppHub
         run: node scripts/check-shared.mjs
+      - name: Open-source license list is up to date (SHARED-SPEC §10.3)
+        run: node shared/licenses/generate.mjs --check
       - name: Data layer (UI never talks to the database directly)
         run: |
           npx vitest run src/data/data-layer.test.ts --reporter=default --reporter=github-actions || {
