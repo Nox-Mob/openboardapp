@@ -58,6 +58,9 @@ export function LegalDocument({ doc }: { doc: LegalDoc }) {
             <Link to="/privacy" className="hover:text-foreground">
               Privacy
             </Link>
+            <Link to="/about" className="hover:text-foreground">
+              About
+            </Link>
           </nav>
         </div>
       </header>
@@ -100,6 +103,9 @@ export function LegalFooter() {
         </Link>
         <Link to="/privacy" className="hover:text-foreground">
           Privacy Policy
+        </Link>
+        <Link to="/about" className="hover:text-foreground">
+          About and licenses
         </Link>
       </p>
     </footer>
