@@ -1,16 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AboutLicenses } from "@shared/ui/About";
 
-// About and open-source licenses (SHARED-SPEC §10.3): the services the suite uses and every
-// package OpenBoardApp ships, from public/third-party.json (shared/licenses/generate.mjs).
+// About and open-source licenses (SHARED-SPEC §10.3): every open-source library used within the
+// suite, by name and license (shared/licenses/suite.json, built by the hub).
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About and open-source licenses — OpenBoardApp" },
       {
         name: "description",
-        content:
-          "The services OpenBoardApp uses and the open-source software it's built on, with each license.",
+        content: "The open-source libraries used within the OpenAppHub suite, with each license.",
       },
     ],
   }),
