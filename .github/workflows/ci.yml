@@ -220,7 +220,7 @@ jobs:
       - run: npm ci
       - name: Audit shipped packages (fails on high/critical)
         run: |
-          npm audit --omit=dev --audit-level=high 2>&1 | tee audit.log
+          node shared/security/audit.mjs 2>&1 | tee audit.log
           code=${PIPESTATUS[0]}
           if [ $code -ne 0 ]; then
             echo "### ❌ High/critical vulnerable packages found" >> "$GITHUB_STEP_SUMMARY"
