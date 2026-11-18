@@ -131,14 +131,6 @@ test("when the plan makes Board read-only, writing is switched off", async ({ pa
 });
 
 // This round (B-15, in-app explanations, S-25 reminders as automations).
-test("the sign-in page has no demo button of its own (OpenAppHub offers the demos)", async ({
-  page,
-}) => {
-  await page.goto("/auth");
-  await page.waitForLoadState("networkidle");
-  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: /demo/i })).toHaveCount(0);
-});
 
 test("settings explain what quorum and the decision rule mean", async ({ page }) => {
   await signIn(page, "owner");

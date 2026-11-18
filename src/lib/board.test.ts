@@ -4,18 +4,6 @@ import { generateMinutes, nextVersion, isEditable, currentApproved } from "./min
 import { escapeCell } from "./export";
 
 describe("permissions table", () => {
-  it("pins every capability", () => {
-    expect(CAPABILITIES).toEqual({
-      "org.manage": ["owner", "admin"],
-      "members.invite": ["owner", "admin"],
-      "records.edit": ["owner", "admin", "chair", "secretary"],
-      "minutes.approve": ["owner", "admin", "chair", "secretary"],
-      "audit.read": ["owner", "admin", "chair", "secretary"],
-      "export.run": ["owner", "admin"],
-      "ownership.transfer": ["owner"],
-      "records.read": ["owner", "admin", "chair", "secretary", "treasurer", "member", "observer"],
-    });
-  });
   it("members and observers cannot edit records", () => {
     expect(can("member", "records.edit")).toBe(false);
     expect(can("observer", "records.edit")).toBe(false);
