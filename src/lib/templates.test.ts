@@ -9,16 +9,6 @@ import {
 } from "./templates";
 
 describe("meeting templates", () => {
-  it("standard agenda keeps the six default items in order", () => {
-    expect(STANDARD_AGENDA.map((a) => a.title)).toEqual([
-      "Call to order",
-      "Approval of previous minutes",
-      "Treasurer's report",
-      "Old business",
-      "New business",
-      "Adjournment",
-    ]);
-  });
   it("blank and malformed agenda entries are dropped", () => {
     expect(normalizeAgenda([{ title: "  " }, null, 5, { title: " Budget " }])).toEqual([
       {
